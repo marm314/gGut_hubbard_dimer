@@ -1,0 +1,45 @@
+READING FCIDUMP FILE FCIDUMP_loc_1.dat
+Read 2 integrals
+READING FCIDUMP FILE FCIDUMP_loc_2.dat
+Read 2 integrals
+READING FCIDUMP FILE FCIDUMP_env.dat
+Read 1 1-body integrals
+Testing with 4 ghosts, i.e. a Gutzwiller calculation
+Using CMZED solver!
+From SetqpRenorm(): Nr. of effective orbitals changend! Setting lambda potential to zero.
+From SetqpRenorm(): Nr. of effective orbitals changend! Setting lambda potential to zero.
+----------------------------------------------------------------------------------------------------
+       Iteration Nr.                GS_E               dGS_E            |dDelta|                |dR|
+----------------------------------------------------------------------------------------------------
+                   0                 ***                 ***                 ***                 ***
+                   1        -1.05523e+01                 ***                 ***                 ***
+                   2        -1.00786e+01         4.73679e-01         3.45460e-02         2.60951e-01
+                   3        -1.01000e+01        -2.14107e-02         7.15000e-03         2.86510e-02
+                   4        -1.01015e+01        -1.46558e-03         3.96259e-03         8.39687e-03
+                   5        -1.01014e+01         1.08423e-04         2.44157e-03         5.14125e-03
+                   6        -1.01013e+01         3.69247e-05         1.51609e-03         3.19280e-03
+                   7        -1.01013e+01         1.32159e-05         9.41822e-04         1.98341e-03
+                   8        -1.01013e+01         5.01848e-06         5.85092e-04         1.23215e-03
+                   9        -1.01013e+01         1.93076e-06         3.63479e-04         7.65451e-04
+                  10        -1.01013e+01         7.44717e-07         2.25806e-04         4.75523e-04
+Ghost Gutzwiller iteration terminated!
+Status:  Ghost Gutzwiller calculation converged after 10 iterations.
+Final dE: 0.000001, ddelta: 0.000226, dR: 0.000476
+Ground state energy: -10.101
+Ghost Gutzwiller simulation took: 0.102 s, ( 0.0102 s per iteration ) of which:
+-- 0.002 s on lambda optimization
+-- 0 s on evaluating hybridization tensor
+-- 0.085 s on impurity solver
+-- 0 s on computing derivatives
+-- 0 s on evaluating energies
+-- 0 s on updating parameters
+Saving R and lambda matrices to file
+Final quasiparticle weight: 0.69617 0.69617 0.15029       0       0       0
+      0       0       0 0.69617 0.69617 0.15029
+Eigenvalues of R^+R: -1.1284e-16  -3.363e-18           0  2.2914e-16     0.99189     0.99189
+Zmat: 
+-4.0837e-06  2.0189e-19
+ 1.2552e-20 -4.0837e-06
+Computing GF...
+gf_num[0].shape = (1, 1); gf.shape = (2, 2)
+GF evaluation took: 0.018 s ( 8.9955e-06 s per point )
