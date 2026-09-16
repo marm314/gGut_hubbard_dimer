@@ -1,4 +1,4 @@
-# gGut_hubbad
+# gGut_hubbard_dimer
 
 Ghost Gutzwiller Approximation (gGA) for the half-filled two-site Hubbard
 dimer, with a tunable number of ghost bath orbitals `Ng`, implemented in
