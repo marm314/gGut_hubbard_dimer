@@ -1476,10 +1476,13 @@ for the $U/t=2$, $\Ng=2$ solutions. They only \emph{read} the solver
 \paragraph{Lagrangian used.} In the conventions of \texttt{gga\_dimer.py} (spin
 summed, $S(\Delta)=\sqrt{\Delta(\mathbf I-\Delta)+\varepsilon}$),
 \begin{equation}
-  L = -2t\,(R^{0}\rho^{01}R^{1}+R^{1}\rho^{10}R^{0}) + \sum_I\Bigl\{\langle\Phi^I|\Hloc|\Phi^I\rangle
-  + 4V^I\!\cdot\!(D^I-S(\Delta^I)R^I)
-  + 2\mathrm{Tr}\bigl[\lambda^{I,c}(\Delta^I+\Delta^{I,\mathrm{bb}}-\langle\Phi^I|\Phi^I\rangle)\bigr]
-  + 2\mathrm{Tr}\bigl[\lambda^{I}(\Delta^I-\rho^{II})\bigr]\Bigr\},
+  \begin{split}
+  L ={}& -2t\,(R^{0}\rho^{01}R^{1}+R^{1}\rho^{10}R^{0})
+  + \sum_I\Bigl\{\langle\Phi^I|\Hloc|\Phi^I\rangle \\
+  & + 4V^I\!\cdot\!(D^I-S(\Delta^I)R^I) \\
+  & + 2\mathrm{Tr}\bigl[\lambda^{I,c}(\Delta^I+\Delta^{I,\mathrm{bb}}-\langle\Phi^I|\Phi^I\rangle)\bigr] \\
+  & + 2\mathrm{Tr}\bigl[\lambda^{I}(\Delta^I-\rho^{II})\bigr]\Bigr\},
+  \end{split}
   \label{eq:Lcode}
 \end{equation}
 with $\rho=CC^{T}$ the 1-RDM of the qp Slater determinant ($C$: the $\Neff$
