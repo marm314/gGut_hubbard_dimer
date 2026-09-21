@@ -227,7 +227,7 @@ def analytic_jacobian2(R0, R1, lam0, lam1, t):
 
 
 def fit_lambda2(R0, R1, t, Delta00_target, Delta11_target, lam0_guess, lam1_guess,
-                max_lam=1e3, max_newton=30, tol=1e-11):
+                max_lam=1e3, max_newton=30, tol=1e-11, regularize=False):
     """Joint fit for (lambda0, lambda1) so qp_step2 matches both fragments'
     target Delta simultaneously (the two fragments' qp problems are coupled
     through the same H_qp, so they can't be fit independently).
@@ -282,7 +282,7 @@ def fit_lambda2(R0, R1, t, Delta00_target, Delta11_target, lam0_guess, lam1_gues
         # direction) bounds the worst case without touching the Jacobian
         # itself, which is delicately correct for well-conditioned cases.
         dx_norm = np.linalg.norm(dx)
-        if dx_norm > 1.0:
+        if regularize and dx_norm > 1.0:
             dx = dx / dx_norm
         step = 1.0
         for _ in range(30):
@@ -298,7 +298,7 @@ def fit_lambda2(R0, R1, t, Delta00_target, Delta11_target, lam0_guess, lam1_gues
 
     lam0, lam1 = unpack(x)
     if (not np.all(np.isfinite(lam0))) or (not np.all(np.isfinite(lam1))) \
-            or np.abs(lam0).max() > max_lam or np.abs(lam1).max() > max_lam:
+            or (regularize and (np.abs(lam0).max() > max_lam or np.abs(lam1).max() > max_lam)):
         lam0, lam1 = lam0_guess, lam1_guess
 
     Delta00, Delta11, Delta01 = qp_step2(R0, R1, lam0, lam1, t)
@@ -350,7 +350,7 @@ def analytic_jacobian1(R, lam, t):
     return J
 
 
-def fit_lambda(R, Delta_target, t, lam0, max_lam=1e3, max_newton=30, tol=1e-11):
+def fit_lambda(R, Delta_target, t, lam0, max_lam=1e3, max_newton=30, tol=1e-11, regularize=False):
     """Damped, local Newton fit for lambda (Neff x Neff symmetric) so
     qp_step(R,lambda) matches Delta_target, using the analytic Jacobian.
     See fit_lambda2's docstring for why this replaces a generic scipy
@@ -391,7 +391,7 @@ def fit_lambda(R, Delta_target, t, lam0, max_lam=1e3, max_newton=30, tol=1e-11):
         # direction) bounds the worst case without touching the Jacobian
         # itself, which is delicately correct for well-conditioned cases.
         dx_norm = np.linalg.norm(dx)
-        if dx_norm > 1.0:
+        if regularize and dx_norm > 1.0:
             dx = dx / dx_norm
         step = 1.0
         for _ in range(30):
@@ -409,13 +409,13 @@ def fit_lambda(R, Delta_target, t, lam0, max_lam=1e3, max_newton=30, tol=1e-11):
     lam[iu] = x
     lam = lam + lam.T - np.diag(np.diag(lam))
 
-    if (not np.all(np.isfinite(lam))) or np.abs(lam).max() > max_lam:
+    if (not np.all(np.isfinite(lam))) or (regularize and np.abs(lam).max() > max_lam):
         lam = lam0
     Delta, Delta_off = qp_step(R, lam, t)
     return lam, Delta, Delta_off
 
 
-def fit_V(R, Delta, Delta_off, t, eps=1e-10, max_V=1e2):
+def fit_V(R, Delta, Delta_off, t, eps=1e-10, max_V=1e2, regularize=False):
     """Eq. 7: sqrt(Delta(1-Delta)) V = -t Delta_off R.
 
     A pre-emptive fixed eigenvalue clip (eps) is deliberately kept tiny: a
@@ -426,25 +426,37 @@ def fit_V(R, Delta, Delta_off, t, eps=1e-10, max_V=1e2):
     fixed point. Instead, cap the OUTPUT: this only engages exactly when a
     component would actually blow up (rhs not also proportionally small in
     that eigendirection), leaving well-conditioned cases untouched while
-    still preventing the runaway that destabilizes the outer iteration."""
+    still preventing the runaway that destabilizes the outer iteration.
+
+    With regularize=False (default) neither the eigenvalue clip nor the
+    output cap is applied: the raw formula is evaluated."""
     dvals, dvecs = eigh(Delta)
-    dvals = np.clip(dvals, eps, 1 - eps)
-    sqrt_fac = np.sqrt(dvals * (1 - dvals))
     rhs = -t * (Delta_off @ R)
     rhs_eig = dvecs.T @ rhs
-    V_eig = np.clip(rhs_eig / sqrt_fac, -max_V, max_V)
+    if regularize:
+        dvals = np.clip(dvals, eps, 1 - eps)
+        sqrt_fac = np.sqrt(dvals * (1 - dvals))
+        V_eig = np.clip(rhs_eig / sqrt_fac, -max_V, max_V)
+    else:
+        with np.errstate(divide="ignore", invalid="ignore"):
+            V_eig = rhs_eig / np.sqrt(dvals * (1 - dvals))
     return dvecs @ V_eig
 
 
-def fit_R(Delta_new, D, eps=1e-10, max_R=1e2):
+def fit_R(Delta_new, D, eps=1e-10, max_R=1e2, regularize=False):
     """Eq. 10: sqrt(Delta_new(1-Delta_new)) R_new = D, solved in Delta_new's
     own eigenbasis (same regularization as fit_V) to avoid blow-up when an
-    eigenvalue of Delta_new sits near 0 or 1."""
+    eigenvalue of Delta_new sits near 0 or 1 (only when regularize=True;
+    the default regularize=False evaluates the raw formula)."""
     dvals, dvecs = eigh(Delta_new)
-    dvals = np.clip(dvals, eps, 1 - eps)
-    sqrt_fac = np.sqrt(dvals * (1 - dvals))
     D_eig = dvecs.T @ D
-    R_eig = np.clip(D_eig / sqrt_fac, -max_R, max_R)
+    if regularize:
+        dvals = np.clip(dvals, eps, 1 - eps)
+        sqrt_fac = np.sqrt(dvals * (1 - dvals))
+        R_eig = np.clip(D_eig / sqrt_fac, -max_R, max_R)
+    else:
+        with np.errstate(divide="ignore", invalid="ignore"):
+            R_eig = D_eig / np.sqrt(dvals * (1 - dvals))
     return dvecs @ R_eig
 
 
@@ -618,7 +630,7 @@ def impurity_solve(V, lam_c, ops):
 # ---------------------------------------------------------------------------
 
 def run_gga(Ng, U, t=1.0, max_iter=100, tol=1e-8, mix=1.0, verbose=False,
-            Rg0=None, Rg1=None, lamg0=None, lamg1=None):
+            Rg0=None, Rg1=None, lamg0=None, lamg1=None, regularize=False):
     """Self-consistency loop for the 2-site dimer, treating the two
     fragments as INDEPENDENT (not assuming site-exchange symmetry). A
     reference calculation at U=2 converges to a genuinely asymmetric
@@ -668,8 +680,8 @@ def run_gga(Ng, U, t=1.0, max_iter=100, tol=1e-8, mix=1.0, verbose=False,
 
     # Iteration 0 (no fit yet): V, lambda_c per atom, computed directly at
     # the seed, mirroring the reference code's "start_from_L" branch.
-    V0 = fit_V(R1, Delta00_target, Delta01, t)
-    V1 = fit_V(R0, Delta11_target, Delta01.T, t)
+    V0 = fit_V(R1, Delta00_target, Delta01, t, regularize=regularize)
+    V1 = fit_V(R0, Delta11_target, Delta01.T, t, regularize=regularize)
     lamc0 = grad_S(Delta00_target, R0, V0) - lam0
     lamc1 = grad_S(Delta11_target, R1, V1) - lam1
     ddelta_prev = 10.0  # large -> first real iteration prefers the analytic guess as primary
@@ -693,10 +705,10 @@ def run_gga(Ng, U, t=1.0, max_iter=100, tol=1e-8, mix=1.0, verbose=False,
             x0_0, x0_1 = lam0, lam1
 
         lam0, lam1, Delta00, Delta11, Delta01 = fit_lambda2(
-            R0, R1, t, Delta00_target, Delta11_target, x0_0, x0_1)
+            R0, R1, t, Delta00_target, Delta11_target, x0_0, x0_1, regularize=regularize)
 
-        V0 = fit_V(R1, Delta00, Delta01, t)
-        V1 = fit_V(R0, Delta11, Delta01.T, t)
+        V0 = fit_V(R1, Delta00, Delta01, t, regularize=regularize)
+        V1 = fit_V(R0, Delta11, Delta01.T, t, regularize=regularize)
         lamc0 = grad_S(Delta00, R0, V0) - lam0
         lamc1 = grad_S(Delta11, R1, V1) - lam1
         t_fit = time.time()
@@ -707,8 +719,8 @@ def run_gga(Ng, U, t=1.0, max_iter=100, tol=1e-8, mix=1.0, verbose=False,
 
         Delta00_new = np.eye(Neff) - Delta00_bb
         Delta11_new = np.eye(Neff) - Delta11_bb
-        R0_new = fit_R(Delta00_new, D0)
-        R1_new = fit_R(Delta11_new, D1)
+        R0_new = fit_R(Delta00_new, D0, regularize=regularize)
+        R1_new = fit_R(Delta11_new, D1, regularize=regularize)
 
         # NOTE: fix_gauge is NOT applied here. It was needed to stabilize
         # the single-fragment loop when fit_lambda's root-find was landing
@@ -886,6 +898,9 @@ if __name__ == "__main__":
     parser.add_argument("--lam-file", type=str, default="L.in", metavar="PATH",
                          help="file with the initial lambda guess (Neff or 2*Neff rows of Neff numbers); read automatically if it exists (default: L.in)")
     parser.add_argument("--max-iter", type=int, default=100, help="maximum outer self-consistency iterations (default: 100)")
+    parser.add_argument("--regularize", action="store_true",
+                         help="turn ON the numerical regularizations (eigenvalue clips and output caps in the V/R fits, "
+                              "Newton trust-region step cap, |lambda| cap); they are OFF by default")
     parser.add_argument("--omega", type=float, default=None,
                          help="max frequency for the spectral function grid, which runs from -omega to +omega; "
                               "requires --eta and --domega, and writes A_omega.txt after convergence")
@@ -922,7 +937,7 @@ if __name__ == "__main__":
             parser.error(f"{args.lam_file} blocks must be {Neff}x{Neff}")
 
         res = run_gga(args.Ng, args.U, t=args.t, max_iter=args.max_iter, verbose=not args.quiet,
-                       Rg0=Rg0, Rg1=Rg1, lamg0=lamg0, lamg1=lamg1)
+                       Rg0=Rg0, Rg1=Rg1, lamg0=lamg0, lamg1=lamg1, regularize=args.regularize)
         print(f"Ng={res['Ng']}  U/t={res['U']/args.t:.4f}  Z0={res['Z0']:.6f}  Z1={res['Z1']:.6f}  "
               f"E_var/t={res['E_var']/args.t:.6f}  docc={res['docc']:.6f}  iters={res['iters']}")
         save_results(res)
