@@ -43,6 +43,7 @@ orbitals per spin, so the impurity Fock space has dimension
 import os
 
 import numpy as np
+import scipy.sparse as sp
 from scipy.linalg import eigh
 
 
@@ -50,15 +51,17 @@ from scipy.linalg import eigh
 # Jordan-Wigner fermion operators (generic n_modes)
 # ---------------------------------------------------------------------------
 
-I2 = np.eye(2)
-Z = np.array([[1.0, 0.0], [0.0, -1.0]])
-C_LOCAL = np.array([[0.0, 1.0], [0.0, 0.0]])
+# The operators are stored sparse: the Fock space has dimension 4**(2+Ng)
+# (4096 for Ng=4), where the dense matrices would need ~10 GB in total.
+I2 = sp.identity(2, format="csr")
+Z = sp.csr_matrix(np.array([[1.0, 0.0], [0.0, -1.0]]))
+C_LOCAL = sp.csr_matrix(np.array([[0.0, 1.0], [0.0, 0.0]]))
 
 
 def _kron_list(mats):
     out = mats[0]
     for m in mats[1:]:
-        out = np.kron(out, m)
+        out = sp.kron(out, m, format="csr")
     return out
 
 
@@ -212,9 +215,9 @@ def impurity_solve(V, lam_c, ops):
     bath_up, bath_dn = ops["bath_up"], ops["bath_dn"]
     H_loc = ops["H_loc"]
 
-    H_imp = H_loc.copy()
+    H_imp = H_loc
     for a in range(Neff):
-        H_imp += V[a] * (ops["hyb_up"][a] + ops["hyb_dn"][a])
+        H_imp = H_imp + V[a] * (ops["hyb_up"][a] + ops["hyb_dn"][a])
 
     # Eq. 30 (NotesOngGut.pdf): the bath term is -sum_ab lambda^c_ab d_b d^dag_a.
     # Using {d_a,d^dag_b}=delta_ab, d_b d^dag_a = delta_ab - d^dag_a d_b, so
@@ -224,12 +227,12 @@ def impurity_solve(V, lam_c, ops):
         for b in range(Neff):
             if lam_c[a, b] == 0.0:
                 continue
-            H_imp += lam_c[a, b] * (ops["lam_up"][a][b] + ops["lam_dn"][a][b])
+            H_imp = H_imp + lam_c[a, b] * (ops["lam_up"][a][b] + ops["lam_dn"][a][b])
 
     # Ground state in the N_up = N_dn = (1+Neff)/2 sector only (see
     # build_impurity_ops), embedded back into the full Fock space.
     sec = ops["sector"]
-    evals, evecs = eigh(H_imp[np.ix_(sec, sec)])
+    evals, evecs = eigh(H_imp.tocsr()[sec][:, sec].toarray())
     gs = np.zeros(H_imp.shape[0])
     gs[sec] = evecs[:, 0]
 
@@ -283,13 +286,14 @@ def run_gga(Ng, U, t=1.0, max_iter=200, tol_E=1e-6, tol_mat=1e-6, mix=0.65, eq_t
 
     if verbose:
         print(f"[setup] Ng={Ng}  Neff={Neff}  impurity orbitals/spin={1+Neff}  "
-              f"Fock dim={fock_dim}  (dense H_imp is {fock_dim}x{fock_dim})", flush=True)
+              f"Fock dim={fock_dim}  (sparse operators)", flush=True)
         t_build0 = time.time()
 
     ops = build_impurity_ops(Neff, U, mu)
 
     if verbose:
-        print(f"[setup] built impurity operators in {time.time()-t_build0:.2f}s", flush=True)
+        print(f"[setup] built impurity operators in {time.time()-t_build0:.2f}s; "
+              f"ground state searched in the N_up=N_dn sector of dim {len(ops['sector'])}", flush=True)
 
     if Rg0 is not None:
         R0 = np.array(Rg0, dtype=float)

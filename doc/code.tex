@@ -341,7 +341,7 @@ for the details it glosses over.
 step, the one executed by the reference C++ implementation
 (\texttt{GhostGutzwiller::Run} with the input flags \texttt{no\_fit\_scf T},
 \texttt{gg\_updater lin} and the \texttt{msite\_ggm} matrix basis). Only the
-impurity problem is solved by a different code (the dense Jordan--Wigner
+impurity problem is solved by a different code (the Jordan--Wigner
 exact diagonalization of Section~\ref{sec:impurity}). Every other operation
 -- the regularized matrix square roots, the way $\lambda$ is generated, the
 occupation rule of $\Hqp$, the derivative entering $\lambda^c$, the energy
@@ -781,8 +781,9 @@ impurity 1-RDM) term by term against a reference calculation.
 
 \paragraph{Exact diagonalization via Jordan--Wigner strings.}
 \label{sec:JW}
-The impurity Hamiltonian, Eq.~\eqref{eq:Himp}, is diagonalized exactly (dense,
-full Fock space) using explicit Jordan--Wigner fermion operators. For
+The impurity Hamiltonian, Eq.~\eqref{eq:Himp}, is diagonalized exactly, in the half-filled sector of the Fock space
+(see ``Ground-state sector'' below), using explicit Jordan--Wigner fermion
+operators stored as sparse matrices. For
 $n_{\mathrm{modes}}$ ordered fermionic modes, the annihilation operator for
 mode $i$ is
 \begin{equation}
@@ -814,10 +815,13 @@ per $(\Neff,U)$ pair (function \texttt{build\_impurity\_ops}), not rebuilt at
 every self-consistency iteration; the impurity Hamiltonian for a given
 iteration is then simply the weighted sum
 $\Himp = \Hloc + \sum_a V_a\,(\text{hyb bilinear})_a + \sum_{ab}\lambda^{c}_{ab}\,(\text{bath bilinear})_{ab}$.
-This changes the per-iteration cost from $O(\Neff^2\cdot\dim^3)$ (rebuilding
-$\Neff^2$ dense operator products of size $\dim\times\dim$ every iteration) to
-$O(\dim^3)$ (one diagonalization), where $\dim=4^{1+\Neff}$; it was the
-dominant bottleneck before being fixed.
+This changes the per-iteration cost from rebuilding $\Neff^2$ operator
+products of size $\dim\times\dim$ every iteration, with $\dim=4^{1+\Neff}$, to a
+single diagonalization of the sector block (dimension $36$ for $\Ng=2$, $400$
+for $\Ng=4$, see below); it was the dominant bottleneck before being fixed.
+The operators are stored as \texttt{scipy.sparse} matrices: they have only a
+few non-zeros per row, whereas dense $\dim\times\dim$ matrices for $\Ng=4$
+($\dim=4096$, $134$~MB each, about $80$ of them) would need $\sim10$~GB.
 
 \paragraph{Ground-state sector.} The reference solver (\texttt{CMZEDsolver})
 does not search the whole Fock space. For an even number of impurity orbitals
@@ -1256,6 +1260,24 @@ for others), while the reference code gives $E=-10$ for all six perturbed
 seeds. With the quantization emulated the code gives $E=-10.0000$ in all six, in
 $34$ iterations like the reference (and $188$ iterations, $Z=0.007935$ at
 $U/t=8$, again as the reference).
+
+\paragraph{Larger $\Ng$: $\Ng=4$ gives the same energy as $\Ng=2$.} The
+reference code finds the same $E_{\mathrm{var}}$ at $\Ng=4$ as at $\Ng=2$, and so
+does this code. Three seed types of Table~\ref{tab:cold} (``ones'', ``onesN'',
+``pydefN'', extended to $\Neff=5$ and given as identical seed files to both
+codes) were run at $\Ng=4$, $U/t\in\{2,4,8,10\}$, i.e.\ $12$ runs per code; all
+converge in both codes. With a small random $\lambda$ the energies are $-3.125661$,
+$-4.511137$, $-8.127658$, $-10.101314$ (C++: $-3.1257$, $-4.5111$, $-8.1277$,
+$-10.101$), identical to the $\Ng=2$ values of Table~\ref{tab:cold}; with
+$\lambda=0$ they are $-3.1250$, $-4.5000$, $-8.0001$, $-10.0000$, again equal to
+$\Ng=2$ and to the C++. The two extra ghost orbitals therefore lower
+nothing for the dimer from these seeds, and the energies remain well above the
+exact ones ($-3.2361$, $-4.8284$, $-8.4721$, $-10.3852$); this does not rule out
+a lower $\Ng=4$ solution that these seeds do not reach. In $9$ of the $12$ runs
+the iteration count also equals the C++ one; in the other three (small-$\lambda$
+seeds at $U/t=8$ and $10$) the final energy is the same but the count differs
+($30$ against $37$, $12$ against $16$, and $32$ against $29$); this was not
+investigated further.
 
 \section{Observables reported by the code}
 
