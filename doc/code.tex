@@ -1462,6 +1462,141 @@ the same physical solution as \texttt{examples/Ng2\_U2}, Table~\ref{tab:cppcompa
 \label{tab:examples}
 \end{table}
 
+\section{Are the converged points solutions? Stationarity and second-order tests}
+\label{sec:stationarity}
+
+Convergence of the loop of Section~\ref{sec:outer-loop} means that $E_{\mathrm{var}}$, $R$
+and (the changes of) $\Delta_{\mathrm{next}}$ stop changing. It does \emph{not} by itself
+show that the converged point is a stationary point of the Lagrangian
+of Section~\ref{sec:lagrangian}, nor that it is a minimum. Two diagnostic
+scripts, \texttt{check\_stationarity.py} and \texttt{check\_hessian.py}, test both
+for the $U/t=2$, $\Ng=2$ solutions. They only \emph{read} the solver
+(\texttt{gga\_dimer.py} is not modified).
+
+\paragraph{Lagrangian used.} In the conventions of \texttt{gga\_dimer.py} (spin
+summed, $S(\Delta)=\sqrt{\Delta(\mathbf I-\Delta)+\varepsilon}$),
+\begin{equation}
+  L = -2t\,(R^{0}\rho^{01}R^{1}+R^{1}\rho^{10}R^{0}) + \sum_I\Bigl\{\langle\Phi^I|\Hloc|\Phi^I\rangle
+  + 4V^I\!\cdot\!(D^I-S(\Delta^I)R^I)
+  + 2\mathrm{Tr}\bigl[\lambda^{I,c}(\Delta^I+\Delta^{I,\mathrm{bb}}-\langle\Phi^I|\Phi^I\rangle)\bigr]
+  + 2\mathrm{Tr}\bigl[\lambda^{I}(\Delta^I-\rho^{II})\bigr]\Bigr\},
+  \label{eq:Lcode}
+\end{equation}
+with $\rho=CC^{T}$ the 1-RDM of the qp Slater determinant ($C$: the $\Neff$
+occupied orbitals of $2\Neff$) and $\Phi^I$ the impurity state in the
+$N_\uparrow=N_\downarrow$ sector. Its stationarity conditions are exactly the equations
+of the code: $\partial L/\partial V=4(D-SR)$ (R update),
+$\partial L/\partial\lambda^{c}=2(\Delta+\Delta^{\mathrm{bb}}-1)$ (bath density
+$=1-\Delta$), $\partial L/\partial\lambda=2(\Delta-\rho^{II})$,
+$\partial L/\partial R^{0}=-4t\rho^{01}R^{1}-4S(\Delta^0)V^0$ (Eq.~\eqref{eq:eqV}),
+$\partial L/\partial\Delta=2(\lambda+\lambda^{c})-2G(\Delta,VR)$ (Eq.~\eqref{eq:eqlambdac}),
+$H_{\mathrm{imp}}\Phi=E\Phi$, and $[\Hqp,\rho]=0$. Each block was evaluated
+analytically and by central finite differences of $L$ itself, at the converged
+point and at a point with $R^0_0$ shifted by $10^{-2}$ (which must be, and is,
+non-stationary: gradients $\sim10^{-2}$).
+
+\paragraph{Results ($U/t=2$, $\Ng=2$).}
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+ & backward & forward & third \\
+\midrule
+$E_{\mathrm{var}}/t$ & $-3.125661$ & $-3.125000$ & $-3.125324$ \\
+$Z$ & $0.9999$ & $0.9375$ & $0.9683$ \\
+$\max\lvert\partial L/\partial x\rvert$, $x=R,V,\Delta,\rho,\Phi$ & $\lesssim10^{-9}$ & $\lesssim10^{-8}$ & $\lesssim10^{-7}$ \\
+$\max\lvert\partial L/\partial\lambda^{c}\rvert$ & $\lesssim10^{-9}$ & $\mathbf{1.94}$ & $\mathbf{1.95}$ \\
+$L$ at the point & $E_{\mathrm{var}}$ & $-7.15$ & $-7.07$ \\
+\bottomrule
+\end{tabular}
+\caption{Stationarity of $L$ at three converged solutions. ``backward'' and
+``forward'' are the two solutions reached from the reference seeds of
+Section~\ref{sec:validation}; ``third'' is reached from the forward one by a
+relative perturbation of $10^{-3}$ of $R,\lambda$. The finite-difference $\Delta$
+block is limited to $\sim10^{-5}$--$10^{-7}$ by the stiffness of $S$ (its analytic
+value is $\lesssim10^{-7}$).}
+\label{tab:stationarity}
+\end{table}
+
+\begin{itemize}
+  \item \textbf{Backward} is a stationary point of $L$ in every block.
+  \item \textbf{Forward} ($Z=0.9375$, the plain Gutzwiller value $1-(U/8)^2$)
+    is \emph{not}: $\partial L/\partial\lambda^{c}=2$ exactly in the two directions where
+    $\Delta$ has eigenvalue $n=0$ and $n=1$, and $L\neq E_{\mathrm{var}}$. In those
+    directions $R=V=0$ (the ghost orbitals are inert), $G(\Delta,VR)=0$, so
+    $\lambda^{c}=-\lambda$, and the impurity ghost has $\Delta^{\mathrm{bb}}=n$ instead of
+    $1-n$: the constraint is violated by $\sim1$ there. On the active
+    direction ($n=\tfrac12$) all conditions hold to $10^{-16}$. A plain $\Ng=0$
+    Gutzwiller run (same $E$ and $Z$) is stationary in every block. The recorded
+    reference log of this case also has $\lambda^{c}=-\lambda$.
+  \item \textbf{Third} ($E=-3.125324$, one inert ghost per fragment) is again
+    not stationary in $\lambda^{c}$. Moreover $\mathrm{Tr}\,\Delta_{\mathrm{qp}}=(2.50,0.50)$
+    while the impurity gives $\mathrm{Tr}(\mathbf I-\Delta^{\mathrm{bb}})=(1.50,1.50)$: the
+    particle numbers are inconsistent by one electron, so no feasible point with
+    this $R$ exists in the $N_\uparrow=N_\downarrow$ sector.
+\end{itemize}
+The reason such points pass the convergence test is that it monitors the change of
+$\Delta_{\mathrm{next}}$ and $R$, not the difference $\Delta_{\mathrm{qp}}-\Delta_{\mathrm{new}}$; the
+mixed $\Delta$ enters only through $G$ (Section~\ref{sec:lambdafit}), so a
+constant mismatch is invisible. They are fixed points of the iteration, but not
+stationary points of $L$.
+
+\paragraph{Second-order test.} At a stationary point that satisfies the constraints
+the solution is a strict local minimum of the constrained energy if the Hessian of
+the Lagrangian, at fixed multipliers, is positive definite on the tangent space of
+the constraints
+($D-SR=0$, $\Delta+\Delta^{\mathrm{bb}}-\langle\Phi|\Phi\rangle=0$, $\Delta-\rho^{II}=0$,
+$\langle\Phi|\Phi\rangle=1$). The variables are $R^I$, $\Delta^I$, the occupied-to-virtual
+rotations $\kappa$ of $\Psi$ ($99$ variables, $32$ constraints for $\Ng=2$), all
+blocks analytic, including the exact second derivative of $S(\Delta)$ from the
+Sylvester equation. It was validated against finite differences (Hessian blocks
+to $3\times10^{-7}$ for entries up to $29$; Jacobian columns to $3\times10^{-9}$).
+\begin{itemize}
+  \item \textbf{Backward is a strict local minimum}: the reduced Hessian has $61$
+    positive, $0$ negative and $6$ zero eigenvalues; the $6$ zero modes are exactly
+    the $O(\Neff)$ gauge rotations of the ghost basis of the two fragments
+    ($3+3$). The smallest non-gauge eigenvalue is $1.78$. Along an actual
+    feasible curve $x(s)$ (Gauss--Newton projection onto the constraints) the softest
+    mode gives $\Delta E=+2.4\times10^{-5}$ and $+2.1\times10^{-5}$ for $\pm s$ at
+    $s=0.005$, against the predicted $+2.2\times10^{-5}$, and follows $s^{2}$ up to
+    $s=0.05$.
+  \item \textbf{Forward}: as returned by the solver it violates the constraints
+    (violation $0.97$), so a constrained Hessian is not defined there. Making it
+    feasible by hand (flipping the ghost bath occupations, an \emph{excited}
+    eigenstate of the same $H_{\mathrm{imp}}$, same $E_{\mathrm{loc}}$) makes $L$ stationary
+    ($\lesssim10^{-8}$), but that is a different point from the solver's. At it
+    the reduced Hessian has $18$ negative, $6$ zero and $47$ positive
+    eigenvalues, yet the constraint qualification fails (Jacobian rank $28$ of
+    $32$) and along the negative directions the energy on actual feasible curves
+    changes by only $\sim-4\times10^{-12}$ (predicted $-5\times10^{-5}$ to
+    $-5\times10^{-3}$): the negative curvature is spurious and the test is
+    \emph{inconclusive}. What is established is that forward has a higher energy than
+    backward and that it is not a stationary point of $L$.
+  \item \textbf{Stability of the iteration.} Perturbing the converged forward
+    $R,\lambda$ by a relative size $\delta$ and rerunning the solver: for
+    $\delta\le10^{-6}$ it returns to forward; for $\delta\ge10^{-4}$ it goes to
+    backward ($-3.125661$) or to the third solution ($-3.125324$), with or without the
+    FCIDUMP rounding. Forward is a weak attractor of the iteration with a very
+    small basin; this is a statement about the iteration, not about energetic
+    descent.
+\end{itemize}
+
+\paragraph{NaN of $\sqrt{\Delta(\mathbf I-\Delta)}$.} With the shift, $S(\Delta)$
+is real only if every eigenvalue satisfies $n(1-n)+\varepsilon\ge0$, i.e.\ $n\ge-\varepsilon$
+and $n\le1+\varepsilon$ (to first order); otherwise the square root is \texttt{NaN}.
+The forward and third solutions have eigenvalues at $0$ and $1$, so any step
+larger than $\varepsilon=10^{-9}$ leaves the domain. This produced NaN in the
+diagnostics whenever a finite-difference step ($10^{-6}$, $10^{-8}$) or a
+feasible curve pushed such an eigenvalue past the boundary (for example the Jacobian
+by finite differences with step $10^{-8}$, or one side of a curve at $s=0.05$
+for backward); the diagnostics use a $\Delta$ step of $10^{-10}<\varepsilon$ and guard against
+non-finite values. The solver itself produced no NaN in any of the runs reported
+here (the shift covers rounding of the eigenvalues of $\Delta$ to $-10^{-9}$, and
+the mixed $\Delta$ is clipped to $[0,1]$), but noise of the eigenvalues of
+$\Delta$ larger than $\varepsilon$ would produce it; the unshifted formula gave NaN
+on the forward seed (Section~\ref{sec:eqV}).
+
 \section{References}
 \label{sec:refs}
 
