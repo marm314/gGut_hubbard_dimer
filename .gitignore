@@ -11,3 +11,7 @@ doc/code.toc
 examples/*/*.dat
 examples/*/A_omega.txt
 examples/*/gga_Ng*.out
+
+# Local virtualenvs and reference-code test runs (not tracked)
+.venv/
+outside_code/

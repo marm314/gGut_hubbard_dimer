@@ -1,117 +1,50 @@
 """Ghost Gutzwiller Approximation (gGA) for the half-filled 2-site Hubbard dimer.
 
-Each site is its own impurity/fragment; by site-exchange symmetry both fragments
-are identical, so only one impurity problem is solved per iteration. The two
-sites couple only through the quasiparticle Hamiltonian H_qp (renormalized
-hopping -t R R^T). Ng is the number of *extra* ghost bath orbitals beyond the
-one bath orbital standard (non-ghost) Gutzwiller already has; Neff = 1 + Ng is
-the number of quasiparticle/bath orbitals per fragment per spin.
+Each site is its own impurity/fragment (the two fragments are NOT assumed
+equal). Ng is the number of *extra* ghost bath orbitals beyond the one bath
+orbital standard Gutzwiller already has; Neff = 1 + Ng is the number of
+quasiparticle/bath orbitals per fragment per spin.
 
-Equations (specialized from Mejuto-Zaera, arXiv:2403.05157, Eqs. 5-11, to a
-2-fragment, non-periodic dimer):
+The self-consistency cycle deliberately mirrors, step by step, the reference
+C++ code (GhostGutzwiller::Run with no_fit_scf, the 'lin' updater, and the
+msite_ggm matrix basis); only the impurity problem is solved by our own
+solver. One iteration is:
 
-  - Half filling fixes the qp-side occupation rule: fill exactly the lowest
-    Neff of the 2*Neff single-particle levels per spin (this is a fixed
-    LEVEL-COUNT rule, not a fixed chemical-potential threshold). At Ng=0
-    this is "fill 1 of 2", matching the brief's original special case.
-  - lambda (qp-side onsite matrix, Neff x Neff symmetric) is NOT pinned to
-    zero by particle-hole symmetry -- that was an incorrect simplification
-    tried earlier and empirically falsified (a reference calculation gives
-    a lambda with real off-diagonal structure and an O(1) diagonal entry).
-    Instead lambda is found each outer iteration by a root-find: the unique
-    lambda such that diagonalizing H_qp(R, lambda) and filling per the rule
-    above reproduces a target Delta (the Delta produced by the previous
-    iteration's impurity solve, Eq. 10). This is exactly analogous to
-    tuning a chemical potential to match a target density, just promoted to
-    a matrix equation.
-  - V (hybridization): sqrt(Delta(1-Delta)) . V = -t * Delta_off . R   (Eq. 7)
-  - lambda^c (bath potential): lambda^c = -lambda + [d/dDelta (R . sqrt(Delta(1-Delta)) . V)]_sym,
-    with R, V held fixed for the derivative (V is NOT resubstituted via Eq. 7);
-    evaluated here by finite differences since Neff is small.  (Eq. 8)
-  - R, Delta update from the impurity ground state's bath-bath and
-    bath-impurity 1-RDM blocks.  (Eq. 10)
+  1. lambda_i = -lambda^c_i + G(Delta_i, V_i R_i)          (previous V, lambda^c;
+     iteration 0 instead starts from the input lambda)
+  2. H_qp = [[-lambda_0, -t R_0^T R_1], [-t R_1^T R_0, -lambda_1]]; the qp
+     ground state fills the lowest Neff of the 2*Neff levels (the C++
+     RSImpMolecule rule nup_eff = mol_nups + (Neff_tot - Nphys_tot)/2);
+     Delta_i is its fragment-diagonal block, rho_ij its off-diagonal blocks.
+  3. V_i = S(Delta_i)^-1 X_i,   X_i = -t rho_ij R_j          (Eq. 7)
+  4. lambda^c_i = -lambda_i + G(Delta_i, V_i R_i)           (Eq. 8)
+  5. impurity ground state -> Delta^new_i = 1 - <d^dag d>,
+     R^new_i = S(Delta^new_i)^-1 <d^dag c>                  (Eq. 10)
+  6. mixing: plain substitution for the first `eq_time` iterations, then
+     linear mixing with weight `mix`; Delta is then clipped to [0, 1].
 
-Dimension bookkeeping: with Nphys=1 (one physical orbital per fragment,
-spins handled symmetrically), the embedding Hamiltonian has Nphys+Neff =
-2+Ng orbitals per spin, so the impurity Fock space has dimension
-2**(2*(2+Ng)) = 4**(2+Ng) -- not 4**(1+Ng).
+(The impurity ground state is searched in the half-filled, spin-balanced
+sector N_up = N_dn = (1+Neff)/2 only, as in the C++ CMZEDsolver, and V and
+lambda^c are passed to it through a 12-digit / 1e-10-threshold quantization,
+as in the C++ FCIDUMP hand-over.)
+
+with S(D) = sqrt(D(1-D) + shift)  (the shift is added to the *eigenvalues*
+of D(1-D), as in the C++ GetMatSqrt, and Delta itself is never clipped
+before that) and G the derivative of tr[M S(Delta)] projected on symmetric
+matrices (orthonormal generalized Gell-Mann basis), evaluated analytically by
+solving the Sylvester equation in the eigenbasis of Delta.
+
+Dimension bookkeeping: with Nphys=1 (one physical orbital per fragment, spins
+handled symmetrically), the embedding Hamiltonian has Nphys+Neff = 2+Ng
+orbitals per spin, so the impurity Fock space has dimension
+2**(2*(2+Ng)) = 4**(2+Ng).
 """
 
 import os
 
 import numpy as np
-from scipy.linalg import sqrtm, eigh
+from scipy.linalg import eigh
 
-
-# ---------------------------------------------------------------------------
-# Pulay / DIIS mixing for the outer self-consistency loop
-# ---------------------------------------------------------------------------
-
-class DIIS:
-    """Pulay DIIS mixer for a vector fixed-point iteration x = f(x).
-
-    Keeps a short history of (output, residual=output-input) pairs and
-    extrapolates the next trial vector as the residual-minimizing linear
-    combination of past outputs, subject to the coefficients summing to 1.
-    Falls back to plain damped linear mixing when there isn't enough
-    history yet, or if the extrapolated step looks unreasonably large
-    (guards against the near-singular B matrix that shows up right at a
-    degenerate fixed point, e.g. exactly degenerate ghost orbitals).
-    """
-
-    def __init__(self, max_vecs=8, mix=0.5, blowup_factor=50.0):
-        self.max_vecs = max_vecs
-        self.mix = mix
-        self.blowup_factor = blowup_factor
-        self.y_hist = []
-        self.r_hist = []
-
-    def reset(self):
-        self.y_hist.clear()
-        self.r_hist.clear()
-
-    def step(self, x_in, x_out):
-        r = x_out - x_in
-        r_norm = np.linalg.norm(r)
-
-        linear_fallback = x_in + self.mix * r
-
-        self.y_hist.append(x_out.copy())
-        self.r_hist.append(r.copy())
-        if len(self.y_hist) > self.max_vecs:
-            self.y_hist.pop(0)
-            self.r_hist.pop(0)
-
-        n = len(self.r_hist)
-        if n < 2:
-            return linear_fallback
-
-        B = np.empty((n + 1, n + 1))
-        for i in range(n):
-            for j in range(n):
-                B[i, j] = np.dot(self.r_hist[i], self.r_hist[j])
-        B[:n, n] = -1.0
-        B[n, :n] = -1.0
-        B[n, n] = 0.0
-        rhs = np.zeros(n + 1)
-        rhs[n] = -1.0
-
-        try:
-            sol = np.linalg.lstsq(B, rhs, rcond=None)[0]
-        except np.linalg.LinAlgError:
-            return linear_fallback
-
-        c = sol[:n]
-        x_new = sum(c[i] * self.y_hist[i] for i in range(n))
-
-        if not np.all(np.isfinite(x_new)) or np.linalg.norm(x_new - x_out) > self.blowup_factor * max(r_norm, 1e-12):
-            # DIIS extrapolation is unreliable near a degenerate fixed point
-            # (near-singular B) -- drop history and fall back to damped
-            # linear mixing for this step instead of blowing up.
-            self.reset()
-            return linear_fallback
-
-        return x_new
 
 # ---------------------------------------------------------------------------
 # Jordan-Wigner fermion operators (generic n_modes)
@@ -138,405 +71,74 @@ def build_c_ops(n_modes):
 
 
 # ---------------------------------------------------------------------------
-# Quasiparticle side
+# Quasiparticle side (mirrors the C++ reference code)
 # ---------------------------------------------------------------------------
 
-def qp_step(R, lam, t):
-    """Diagonalize H_qp(R, lambda) and fill exactly the lowest Neff of 2*Neff
-    levels per spin (half filling as a fixed level-count rule)."""
-    Neff = len(R)
-    RRt = np.outer(R, R)
+def _sqrt_eig(Delta, shift):
+    """Eigendecomposition of Delta and the eigenvalues s_i = sqrt(d_i(1-d_i) + shift)
+    of S(Delta) = sqrt(Delta(1-Delta) + shift), as in the C++ GetMatSqrt."""
+    d, W = np.linalg.eigh(Delta)
+    return d, W, np.sqrt(d * (1.0 - d) + shift)
+
+
+def apply_S_inv(Delta, B, shift):
+    """S(Delta)^-1 @ B, with B a vector or a matrix."""
+    d, W, s = _sqrt_eig(Delta, shift)
+    Bt = W.T @ B
+    return W @ (Bt / (s[:, None] if Bt.ndim == 2 else s))
+
+
+def qp_state(R, lam, t):
+    """Quasiparticle Hamiltonian and its zero-temperature ground-state 1-RDM
+    (per spin) for the two fragments, R = [R0, R1], lam = [lam0, lam1].
+
+    The occupation is the C++ RSImpMolecule one: a fixed LEVEL COUNT, the
+    lowest nup_eff = mol_nups + (Neff_tot - Nphys_tot)/2 = Neff eigenvectors
+    of the 2*Neff of H_qp are filled (per spin), whatever the signs of their
+    eigenvalues. (The base-class rule "e < 0" is NOT what molecules use.)"""
+    Neff = len(R[0])
     Hqp = np.zeros((2 * Neff, 2 * Neff))
-    Hqp[:Neff, :Neff] = -lam
-    Hqp[Neff:, Neff:] = -lam
-    Hqp[:Neff, Neff:] = -t * RRt
-    Hqp[Neff:, :Neff] = -t * RRt
-    evals, evecs = eigh(Hqp)
+    Hqp[:Neff, :Neff] = -lam[0]
+    Hqp[Neff:, Neff:] = -lam[1]
+    Hqp[:Neff, Neff:] = -t * np.outer(R[0], R[1])
+    Hqp[Neff:, :Neff] = -t * np.outer(R[1], R[0])
+    evals, evecs = np.linalg.eigh(Hqp)
     occ = np.zeros(2 * Neff)
-    occ[:Neff] = 1.0  # eigh returns ascending eigenvalues -> lowest Neff filled
+    occ[:Neff] = 1.0   # eigh returns ascending eigenvalues
     rho = (evecs * occ) @ evecs.T
-    Delta = rho[:Neff, :Neff]
-    Delta_off = rho[:Neff, Neff:]
-    return Delta, Delta_off
+    return Hqp, rho
 
 
-def qp_step2(R0, R1, lam0, lam1, t):
-    """General 2-fragment H_qp, NOT assuming the two sites are equal:
-    H_qp = [[-lam0, -t R0 R1^T], [-t R1 R0^T, -lam1]]. Reduces to qp_step
-    when R0=R1, lam0=lam1. Returns the three independent 1-RDM blocks."""
-    Neff = len(R0)
-    Hqp = np.zeros((2 * Neff, 2 * Neff))
-    Hqp[:Neff, :Neff] = -lam0
-    Hqp[Neff:, Neff:] = -lam1
-    Hqp[:Neff, Neff:] = -t * np.outer(R0, R1)
-    Hqp[Neff:, :Neff] = -t * np.outer(R1, R0)
-    evals, evecs = eigh(Hqp)
-    occ = np.zeros(2 * Neff)
-    occ[:Neff] = 1.0
-    rho = (evecs * occ) @ evecs.T
-    Delta00 = rho[:Neff, :Neff]
-    Delta11 = rho[Neff:, Neff:]
-    Delta01 = rho[:Neff, Neff:]
-    return Delta00, Delta11, Delta01
+def hybridization_V(rho, R, t, shift, i):
+    """Eq. 7: S(Delta_i) V_i = X_i, with X_i = -t rho_ij R_j (the other fragment's R)."""
+    Neff = len(R[0])
+    j = 1 - i
+    rho_ii = rho[i * Neff:(i + 1) * Neff, i * Neff:(i + 1) * Neff]
+    rho_ij = rho[i * Neff:(i + 1) * Neff, j * Neff:(j + 1) * Neff]
+    return apply_S_inv(rho_ii, -t * (rho_ij @ R[j]), shift)
 
 
-def analytic_jacobian2(R0, R1, lam0, lam1, t):
-    """d[Delta00[iu]; Delta11[iu]] / d[lam0[iu]; lam1[iu]], via first-order
-    (Hellmann-Feynman / Daletskii-Krein divided-difference) perturbation
-    theory of the qp projector -- exact, not a finite-difference estimate.
-    Validated against finite differences to ~1e-9."""
-    Neff = len(R0)
-    Hqp = np.zeros((2 * Neff, 2 * Neff))
-    Hqp[:Neff, :Neff] = -lam0
-    Hqp[Neff:, Neff:] = -lam1
-    Hqp[:Neff, Neff:] = -t * np.outer(R0, R1)
-    Hqp[Neff:, :Neff] = -t * np.outer(R1, R0)
-    evals, evecs = eigh(Hqp)
-    occ = np.zeros(2 * Neff)
-    occ[:Neff] = 1.0
+def grad_S(Delta, M, shift):
+    """Symmetric derivative G of tr[M S(Delta)] with respect to Delta:
 
-    iu = np.triu_indices(Neff)
-    npar = len(iu[0])
-    # Lorentzian-regularized divided difference: F -> (occ_n-occ_m)*dE/(dE^2+reg^2).
-    # As dE -> 0 this smoothly goes to 0 (not 1/dE -> infinity); for
-    # |dE| >> reg it reduces to the correct (occ_n-occ_m)/dE. A plain
-    # "zero out |dE|<thresh" step function still lets F blow up for any
-    # dE just above threshold, which is exactly what happens as a qp level
-    # crosses the Fermi surface (confirmed: Newton steps exploding by
-    # ~10-100x right as an eigenvalue of Delta approaches 0, even though
-    # nothing else in the pipeline -- V, R -- was diverging at that point).
-    dE = evals[:, None] - evals[None, :]
-    with np.errstate(divide="ignore", invalid="ignore"):
-        F = (occ[:, None] - occ[None, :]) / dE
-    F[np.abs(dE) < 1e-10] = 0.0
+        G = sum_k B_k * 2 tr(M dS[B_k]),   B_k an orthonormal basis of the
+                                            real symmetric matrices,
 
-    J = np.zeros((2 * npar, 2 * npar))
-    for which, offset in ((0, 0), (1, Neff)):
-        for k, (a, b) in enumerate(zip(*iu)):
-            dH = np.zeros((2 * Neff, 2 * Neff))
-            if a == b:
-                dH[offset + a, offset + a] = -1.0
-            else:
-                dH[offset + a, offset + b] = -1.0
-                dH[offset + b, offset + a] = -1.0
-            drho = evecs @ (F * (evecs.T @ dH @ evecs)) @ evecs.T
-            col = which * npar + k
-            J[:npar, col] = drho[:Neff, :Neff][iu]
-            J[npar:, col] = drho[Neff:, Neff:][iu]
-    return J
+    the C++ eigspaceOneRDMDerivator sum. In the eigenbasis of Delta (M~ = W^T M W)
+    the Sylvester equation is diagonal,
+        dS[B]_ij = B_ij (1 - d_i - d_j) / (s_i + s_j),
+    which gives G = W [(M~ + M~^T) o w] W^T with w_ij = (1-d_i-d_j)/(s_i+s_j).
+    Exact (no finite differences), and finite for eigenvalues of Delta at 0 or 1
+    thanks to the shift."""
+    d, W, s = _sqrt_eig(Delta, shift)
+    w = (1.0 - d[:, None] - d[None, :]) / (s[:, None] + s[None, :])
+    Mt = W.T @ M @ W
+    return W @ ((Mt + Mt.T) * w) @ W.T
 
 
-def fit_lambda2(R0, R1, t, Delta00_target, Delta11_target, lam0_guess, lam1_guess,
-                max_lam=1e3, max_newton=30, tol=1e-11, regularize=False):
-    """Joint fit for (lambda0, lambda1) so qp_step2 matches both fragments'
-    target Delta simultaneously (the two fragments' qp problems are coupled
-    through the same H_qp, so they can't be fit independently).
-
-    Uses a DAMPED, LOCAL Newton iteration with the analytic Jacobian, not
-    scipy's generic root() -- this 12-parameter system is badly non-unique
-    (many lambda pairs give near-zero residual), and confirmed empirically
-    that scipy's hybr will wander from an already-good guess (residual
-    ~1e-4) to a wildly different root (lambda ~20 instead of ~2) even
-    though both "solve" the equation. A backtracking-line-search Newton
-    step starting at the guess and only ever taken if it reduces the
-    residual cannot do that -- it stays in the guess's basin by
-    construction."""
-    Neff = len(R0)
-    iu = np.triu_indices(Neff)
-    npar = len(iu[0])
-
-    def unpack(x):
-        lam0 = np.zeros((Neff, Neff))
-        lam0[iu] = x[:npar]
-        lam0 = lam0 + lam0.T - np.diag(np.diag(lam0))
-        lam1 = np.zeros((Neff, Neff))
-        lam1[iu] = x[npar:]
-        lam1 = lam1 + lam1.T - np.diag(np.diag(lam1))
-        return lam0, lam1
-
-    def residual(x):
-        lam0, lam1 = unpack(x)
-        Delta00, Delta11, _ = qp_step2(R0, R1, lam0, lam1, t)
-        return np.concatenate([(Delta00 - Delta00_target)[iu], (Delta11 - Delta11_target)[iu]])
-
-    x = np.concatenate([lam0_guess[iu], lam1_guess[iu]])
-    f = residual(x)
-    f_norm = np.linalg.norm(f)
-
-    for _ in range(max_newton):
-        if f_norm < tol:
-            break
-        lam0, lam1 = unpack(x)
-        J = analytic_jacobian2(R0, R1, lam0, lam1, t)
-        try:
-            dx = np.linalg.lstsq(J, -f, rcond=None)[0]
-        except np.linalg.LinAlgError:
-            break
-        # Trust-region cap on the raw step: the analytic Jacobian can
-        # become transiently ill-conditioned right as a qp level crosses
-        # the Fermi surface (an eigenvalue of Delta passing near 0 or 1),
-        # producing a huge dx that a backtracking line search can still
-        # "accept" after a few halvings simply because it happens to
-        # reduce the residual slightly -- even though it is a wild,
-        # qualitatively wrong jump. Rescaling dx's magnitude (not its
-        # direction) bounds the worst case without touching the Jacobian
-        # itself, which is delicately correct for well-conditioned cases.
-        dx_norm = np.linalg.norm(dx)
-        if regularize and dx_norm > 1.0:
-            dx = dx / dx_norm
-        step = 1.0
-        for _ in range(30):
-            x_try = x + step * dx
-            f_try = residual(x_try)
-            f_try_norm = np.linalg.norm(f_try)
-            if f_try_norm < f_norm:
-                x, f, f_norm = x_try, f_try, f_try_norm
-                break
-            step *= 0.5
-        else:
-            break  # no step size (down to ~1e-9 of the full step) helped
-
-    lam0, lam1 = unpack(x)
-    if (not np.all(np.isfinite(lam0))) or (not np.all(np.isfinite(lam1))) \
-            or (regularize and (np.abs(lam0).max() > max_lam or np.abs(lam1).max() > max_lam)):
-        lam0, lam1 = lam0_guess, lam1_guess
-
-    Delta00, Delta11, Delta01 = qp_step2(R0, R1, lam0, lam1, t)
-    return lam0, lam1, Delta00, Delta11, Delta01
-
-
-def analytic_jacobian1(R, lam, t):
-    """d[Delta[iu]] / d[lam[iu]] for the single-(shared)-fragment qp_step,
-    via the same first-order perturbation theory as analytic_jacobian2.
-    Here lam enters BOTH diagonal blocks of H_qp identically (R0=R1=R,
-    lam0=lam1=lam), so a perturbation to lam contributes to both blocks."""
-    Neff = len(R)
-    RRt = np.outer(R, R)
-    Hqp = np.zeros((2 * Neff, 2 * Neff))
-    Hqp[:Neff, Neff:] = -t * RRt
-    Hqp[Neff:, :Neff] = -t * RRt
-    Hqp[:Neff, :Neff] = -lam
-    Hqp[Neff:, Neff:] = -lam
-    evals, evecs = eigh(Hqp)
-    occ = np.zeros(2 * Neff)
-    occ[:Neff] = 1.0
-
-    iu = np.triu_indices(Neff)
-    npar = len(iu[0])
-    # Lorentzian-regularized divided difference: F -> (occ_n-occ_m)*dE/(dE^2+reg^2).
-    # As dE -> 0 this smoothly goes to 0 (not 1/dE -> infinity); for
-    # |dE| >> reg it reduces to the correct (occ_n-occ_m)/dE. A plain
-    # "zero out |dE|<thresh" step function still lets F blow up for any
-    # dE just above threshold, which is exactly what happens as a qp level
-    # crosses the Fermi surface (confirmed: Newton steps exploding by
-    # ~10-100x right as an eigenvalue of Delta approaches 0, even though
-    # nothing else in the pipeline -- V, R -- was diverging at that point).
-    dE = evals[:, None] - evals[None, :]
-    with np.errstate(divide="ignore", invalid="ignore"):
-        F = (occ[:, None] - occ[None, :]) / dE
-    F[np.abs(dE) < 1e-10] = 0.0
-
-    J = np.zeros((npar, npar))
-    for k, (a, b) in enumerate(zip(*iu)):
-        dH = np.zeros((2 * Neff, 2 * Neff))
-        if a == b:
-            dH[a, a] = -1.0
-            dH[Neff + a, Neff + a] = -1.0
-        else:
-            dH[a, b] = dH[b, a] = -1.0
-            dH[Neff + a, Neff + b] = dH[Neff + b, Neff + a] = -1.0
-        drho = evecs @ (F * (evecs.T @ dH @ evecs)) @ evecs.T
-        J[:, k] = drho[:Neff, :Neff][iu]
-    return J
-
-
-def fit_lambda(R, Delta_target, t, lam0, max_lam=1e3, max_newton=30, tol=1e-11, regularize=False):
-    """Damped, local Newton fit for lambda (Neff x Neff symmetric) so
-    qp_step(R,lambda) matches Delta_target, using the analytic Jacobian.
-    See fit_lambda2's docstring for why this replaces a generic scipy
-    root() call: the same branch non-uniqueness and solver-wanders-off
-    failure mode applies here too."""
-    Neff = len(R)
-    iu = np.triu_indices(Neff)
-
-    def residual(x):
-        lam = np.zeros((Neff, Neff))
-        lam[iu] = x
-        lam = lam + lam.T - np.diag(np.diag(lam))
-        Delta, _ = qp_step(R, lam, t)
-        return (Delta - Delta_target)[iu]
-
-    x = lam0[iu].copy()
-    f = residual(x)
-    f_norm = np.linalg.norm(f)
-
-    for _ in range(max_newton):
-        if f_norm < tol:
-            break
-        lam_cur = np.zeros((Neff, Neff))
-        lam_cur[iu] = x
-        lam_cur = lam_cur + lam_cur.T - np.diag(np.diag(lam_cur))
-        J = analytic_jacobian1(R, lam_cur, t)
-        try:
-            dx = np.linalg.lstsq(J, -f, rcond=None)[0]
-        except np.linalg.LinAlgError:
-            break
-        # Trust-region cap on the raw step: the analytic Jacobian can
-        # become transiently ill-conditioned right as a qp level crosses
-        # the Fermi surface (an eigenvalue of Delta passing near 0 or 1),
-        # producing a huge dx that a backtracking line search can still
-        # "accept" after a few halvings simply because it happens to
-        # reduce the residual slightly -- even though it is a wild,
-        # qualitatively wrong jump. Rescaling dx's magnitude (not its
-        # direction) bounds the worst case without touching the Jacobian
-        # itself, which is delicately correct for well-conditioned cases.
-        dx_norm = np.linalg.norm(dx)
-        if regularize and dx_norm > 1.0:
-            dx = dx / dx_norm
-        step = 1.0
-        for _ in range(30):
-            x_try = x + step * dx
-            f_try = residual(x_try)
-            f_try_norm = np.linalg.norm(f_try)
-            if f_try_norm < f_norm:
-                x, f, f_norm = x_try, f_try, f_try_norm
-                break
-            step *= 0.5
-        else:
-            break
-
-    lam = np.zeros((Neff, Neff))
-    lam[iu] = x
-    lam = lam + lam.T - np.diag(np.diag(lam))
-
-    if (not np.all(np.isfinite(lam))) or (regularize and np.abs(lam).max() > max_lam):
-        lam = lam0
-    Delta, Delta_off = qp_step(R, lam, t)
-    return lam, Delta, Delta_off
-
-
-def fit_V(R, Delta, Delta_off, t, eps=1e-10, max_V=1e2, regularize=False):
-    """Eq. 7: sqrt(Delta(1-Delta)) V = -t Delta_off R.
-
-    A pre-emptive fixed eigenvalue clip (eps) is deliberately kept tiny: a
-    LARGER eps was tried (1e-4) to tame the blow-up that happens when an
-    eigenvalue of Delta approaches 0 or 1 (a ghost orbital becoming exactly
-    empty/full right at the true U=2 asymmetric solution), but it silently
-    biased the well-conditioned U=10 case enough to converge to the wrong
-    fixed point. Instead, cap the OUTPUT: this only engages exactly when a
-    component would actually blow up (rhs not also proportionally small in
-    that eigendirection), leaving well-conditioned cases untouched while
-    still preventing the runaway that destabilizes the outer iteration.
-
-    With regularize=False (default) neither the eigenvalue clip nor the
-    output cap is applied: the raw formula is evaluated."""
-    dvals, dvecs = eigh(Delta)
-    rhs = -t * (Delta_off @ R)
-    rhs_eig = dvecs.T @ rhs
-    if regularize:
-        dvals = np.clip(dvals, eps, 1 - eps)
-        sqrt_fac = np.sqrt(dvals * (1 - dvals))
-        V_eig = np.clip(rhs_eig / sqrt_fac, -max_V, max_V)
-    else:
-        with np.errstate(divide="ignore", invalid="ignore"):
-            V_eig = rhs_eig / np.sqrt(dvals * (1 - dvals))
-    return dvecs @ V_eig
-
-
-def fit_R(Delta_new, D, eps=1e-10, max_R=1e2, regularize=False):
-    """Eq. 10: sqrt(Delta_new(1-Delta_new)) R_new = D, solved in Delta_new's
-    own eigenbasis (same regularization as fit_V) to avoid blow-up when an
-    eigenvalue of Delta_new sits near 0 or 1 (only when regularize=True;
-    the default regularize=False evaluates the raw formula)."""
-    dvals, dvecs = eigh(Delta_new)
-    D_eig = dvecs.T @ D
-    if regularize:
-        dvals = np.clip(dvals, eps, 1 - eps)
-        sqrt_fac = np.sqrt(dvals * (1 - dvals))
-        R_eig = np.clip(D_eig / sqrt_fac, -max_R, max_R)
-    else:
-        with np.errstate(divide="ignore", invalid="ignore"):
-            R_eig = D_eig / np.sqrt(dvals * (1 - dvals))
-    return dvecs @ R_eig
-
-
-def fix_gauge(R, lam, Delta):
-    """Pin the residual O(Neff) rotational gauge freedom in the ghost-bath
-    space: any orthogonal Q with R->R@Q, lambda->Q^T lambda Q, Delta->Q^T
-    Delta Q leaves the physics (qp_step, impurity solve, energies) exactly
-    invariant, since everything depends on R only through R (x) R and on
-    lambda/Delta only through their role inside the same rotated basis.
-    Without pinning this down, the outer iteration can drift/rotate among
-    gauge-equivalent representations of the same physical fixed point
-    instead of settling onto one (confirmed empirically: Delta and the
-    energy converge cleanly, but R keeps a persistent ~0.05 residual).
-
-    Canonical choice: a Householder reflection Q rotating R's direction
-    onto e_0, so R becomes [|R|, 0, ..., 0, ...] every iteration -- the
-    same convention as the reference code's SVD-based FixGauge, just
-    specialized to Nphys=1 (R a vector, not a matrix)."""
-    Neff = len(R)
-    norm_R = np.linalg.norm(R)
-    if norm_R < 1e-13:
-        return R, lam, Delta
-    r = R / norm_R
-    e0 = np.zeros(Neff)
-    e0[0] = 1.0
-    v = r - e0
-    vnorm = np.linalg.norm(v)
-    if vnorm < 1e-13:
-        return R, lam, Delta
-    v = v / vnorm
-    Q = np.eye(Neff) - 2.0 * np.outer(v, v)
-    R_g = R @ Q
-    lam_g = Q.T @ lam @ Q
-    Delta_g = Q.T @ Delta @ Q
-    return R_g, lam_g, Delta_g
-
-
-def _S(Delta, R, V):
-    Neff = len(R)
-    M = Delta @ (np.eye(Neff) - Delta)
-    fM = sqrtm(M)
-    fM = fM.real
-    return R @ fM @ V
-
-
-def grad_S(Delta, R, V, h=1e-8):
-    """Symmetrized d/dDelta [R . sqrt(Delta(1-Delta)) . V], R and V held fixed.
-
-    From the Lagrangian (NotesOngGut.pdf Eq. 29), stationarity with respect
-    to Delta^(qp) gives lambda_ab + lambda^c_ab = grad_S(Delta,R,V)_ab: lambda
-    and lambda^c are not independent unknowns, they are two evaluations of
-    this single linear relation (Eq. 8 in the periodic-lattice write-up is
-    the same equation solved for lambda^c at fixed lambda)."""
-    Neff = len(R)
-    grad = np.zeros((Neff, Neff))
-    for a in range(Neff):
-        for b in range(a, Neff):
-            Dp = Delta.copy()
-            Dm = Delta.copy()
-            if a == b:
-                # Match the off-diagonal convention below, which perturbs
-                # BOTH symmetric partners (Delta_ab and Delta_ba) at once and
-                # so picks up d/dDelta_ab + d/dDelta_ba = 2*d/dDelta_ab. A
-                # diagonal entry has only one partner (itself), so perturb by
-                # 2h to get the same factor-of-2 convention -- confirmed
-                # against a reference calculation (10.0.out) where
-                # lambda^c's diagonal came out equal to lambda's diagonal,
-                # which requires grad's diagonal to be 2x what a naive
-                # single-entry perturbation gives.
-                Dp[a, a] += 2 * h
-                Dm[a, a] -= 2 * h
-            else:
-                Dp[a, b] += h
-                Dp[b, a] += h
-                Dm[a, b] -= h
-                Dm[b, a] -= h
-            deriv = (_S(Dp, R, V) - _S(Dm, R, V)) / (2 * h)
-            grad[a, b] = deriv
-            grad[b, a] = deriv
-    return grad
+def embedding_lambda_c(Delta, lam, V, R, shift):
+    """Eq. 8: lambda^c = -lambda + G(Delta, V R) (V column, R row)."""
+    return -lam + grad_S(Delta, np.outer(V, R), shift)
 
 
 # ---------------------------------------------------------------------------
@@ -567,12 +169,41 @@ def build_impurity_ops(Neff, U, mu):
     lam_up = [[bath_up[a].conj().T @ bath_up[b] for b in range(Neff)] for a in range(Neff)]
     lam_dn = [[bath_dn[a].conj().T @ bath_dn[b] for b in range(Neff)] for a in range(Neff)]
 
+    # Particle-number sector searched by the ground-state solve. Like the C++
+    # CMZEDsolver (even number of orbitals per spin), only the half-filled,
+    # spin-balanced sector N_up = N_dn = (1+Neff)/2 is diagonalized, not the
+    # whole Fock space: the global minimum of H_imp can lie in another sector
+    # (e.g. a triplet) far from self-consistency, which the reference never
+    # visits. Mode j is occupied in basis state idx iff bit (n_modes-1-j) of
+    # idx is set (Jordan-Wigner kron order, index 1 = occupied).
+    n_orb = 1 + Neff
+    idx = np.arange(2 ** n_modes)
+    occ = lambda j: (idx >> (n_modes - 1 - j)) & 1
+    n_up = sum(occ(j) for j in range(0, n_modes, 2))
+    n_dn = sum(occ(j) for j in range(1, n_modes, 2))
+    sector = np.flatnonzero((n_up == n_orb // 2) & (n_dn == n_orb // 2))
+
     return {
         "c_pu": c_pu, "c_pd": c_pd, "bath_up": bath_up, "bath_dn": bath_dn,
         "n_pu": n_pu, "n_pd": n_pd, "H_loc": H_loc,
         "hyb_up": hyb_up, "hyb_dn": hyb_dn,
-        "lam_up": lam_up, "lam_dn": lam_dn, "Neff": Neff,
+        "lam_up": lam_up, "lam_dn": lam_dn, "Neff": Neff, "sector": sector,
     }
+
+
+def fcidump_round(x):
+    """Emulate the C++ hand-over of the impurity Hamiltonian to the ED solver
+    through a text FCIDUMP file (WriteImpFCIDUMP): every element is written
+    with std::scientific at precision 12 (i.e. '%.12e'), and elements with
+    |x| < 1e-10 are not written at all (read back as zero). This quantization
+    is part of what the reference does before its solver runs, and it matters
+    for cold starts: the R update S^-1 D divides by sqrt(n(1-n)+shift), so
+    without it noise far below 1e-10 is amplified into O(1) changes of R and
+    the iteration flips between branches; with it the trajectory is
+    reproducible (see doc/code.tex, Section on validation)."""
+    x = np.asarray(x, dtype=float)
+    y = np.array([float("%.12e" % v) for v in x.ravel()]).reshape(x.shape)
+    return np.where(np.abs(x) < 1e-10, 0.0, y)
 
 
 def impurity_solve(V, lam_c, ops):
@@ -595,8 +226,12 @@ def impurity_solve(V, lam_c, ops):
                 continue
             H_imp += lam_c[a, b] * (ops["lam_up"][a][b] + ops["lam_dn"][a][b])
 
-    evals, evecs = eigh(H_imp)
-    gs = evecs[:, 0]
+    # Ground state in the N_up = N_dn = (1+Neff)/2 sector only (see
+    # build_impurity_ops), embedded back into the full Fock space.
+    sec = ops["sector"]
+    evals, evecs = eigh(H_imp[np.ix_(sec, sec)])
+    gs = np.zeros(H_imp.shape[0])
+    gs[sec] = evecs[:, 0]
 
     # Expectation values via matrix-vector products only (O(Neff*dim^2)),
     # never forming the O(dim x dim) operator products A^dag B explicitly.
@@ -629,18 +264,17 @@ def impurity_solve(V, lam_c, ops):
 # Self-consistency loop
 # ---------------------------------------------------------------------------
 
-def run_gga(Ng, U, t=1.0, max_iter=100, tol=1e-8, mix=1.0, verbose=False,
-            Rg0=None, Rg1=None, lamg0=None, lamg1=None, regularize=False):
-    """Self-consistency loop for the 2-site dimer, treating the two
-    fragments as INDEPENDENT (not assuming site-exchange symmetry). A
-    reference calculation at U=2 converges to a genuinely asymmetric
-    solution (different R, lambda, Delta per atom), so that symmetry
-    cannot be assumed in general -- only R0==R1==... at a converged fixed
-    point tells you the symmetric solution happens to be the one found.
+def run_gga(Ng, U, t=1.0, max_iter=200, tol_E=1e-6, tol_mat=1e-6, mix=0.65, eq_time=10,
+            sqmat_shift=1e-9, round_fcidump=True, verbose=False,
+            Rg0=None, Rg1=None, lamg0=None, lamg1=None):
+    """Self-consistency loop for the 2-site dimer, treating the two fragments as
+    INDEPENDENT (no site-exchange symmetry assumed). See the module docstring
+    for the cycle, which follows the reference C++ code step by step.
 
-    Rg1/lamg1 default to Rg0/lamg0 (a symmetric starting guess) if not
-    given, but nothing in the iteration enforces the two fragments to stay
-    equal."""
+    Convergence (as in the C++ GhostGutTerminationTracker): |dE| < tol_E, or
+    both ddelta < tol_mat and dR < tol_mat, where ddelta and dR are the
+    summed Frobenius norms (over fragments) of the change of the next
+    Delta / R with respect to the previous / current ones."""
     import time
 
     Neff = 1 + Ng
@@ -668,128 +302,101 @@ def run_gga(Ng, U, t=1.0, max_iter=100, tol=1e-8, mix=1.0, verbose=False,
             # shared by the trivial "sleeping ghost" fixed points
             R0[1:] = 0.05 * (1.0 + 0.3 * np.arange(Neff - 1))
     R1 = np.array(Rg1, dtype=float) if Rg1 is not None else R0.copy()
+    R = [R0, R1]
 
     lam0 = np.array(lamg0, dtype=float) if lamg0 is not None else np.zeros((Neff, Neff))
     lam1 = np.array(lamg1, dtype=float) if lamg1 is not None else lam0.copy()
+    lam = [lam0, lam1]
 
-    # Seed Delta_target from an actually-achievable point (whatever
-    # qp_step2(R0,R1,lam0,lam1) produces), not an arbitrary guess like
-    # 0.5*I -- that is generically NOT reachable by any lambda, which made
-    # the root-find fail permanently on iteration 0.
-    Delta00_target, Delta11_target, Delta01 = qp_step2(R0, R1, lam0, lam1, t)
+    lamc = [np.zeros((Neff, Neff)), np.zeros((Neff, Neff))]
+    V = [np.zeros(Neff), np.zeros(Neff)]
 
-    # Iteration 0 (no fit yet): V, lambda_c per atom, computed directly at
-    # the seed, mirroring the reference code's "start_from_L" branch.
-    V0 = fit_V(R1, Delta00_target, Delta01, t, regularize=regularize)
-    V1 = fit_V(R0, Delta11_target, Delta01.T, t, regularize=regularize)
-    lamc0 = grad_S(Delta00_target, R0, V0) - lam0
-    lamc1 = grad_S(Delta11_target, R1, V1) - lam1
-    ddelta_prev = 10.0  # large -> first real iteration prefers the analytic guess as primary
+    def blocks(rho):
+        return [rho[:Neff, :Neff], rho[Neff:, Neff:]]
 
-    last = None
-    best_diff = np.inf
-    best = None
+    curr_E = 100.0   # same starting value as the C++ tracker
+    n_updates = 0    # calls of the linear mixer
+    res = None
+    converged = False
     for it in range(max_iter):
         t_iter0 = time.time()
 
-        # Analytic guess for the new (lambda0, lambda1), per fragment
-        # (reference code's EvaluateEmbeddingPot in reverse): uses the
-        # PREVIOUS iteration's V, lambda_c with the CURRENT target Delta.
-        # Deliberately not compared against a "secondary" guess each
-        # iteration -- see fit_lambda's docstring for why that causes drift.
-        guess_lam0 = grad_S(Delta00_target, R0, V0) - lamc0
-        guess_lam1 = grad_S(Delta11_target, R1, V1) - lamc1
-        if ddelta_prev > 1.0:
-            x0_0, x0_1 = guess_lam0, guess_lam1
+        if it == 0:
+            # start from the input lambda: Delta from the qp ground state
+            Hqp, rho = qp_state(R, lam, t)
+            Delta = blocks(rho)
+            prev_Delta = [d.copy() for d in Delta]
         else:
-            x0_0, x0_1 = lam0, lam1
+            # lambda from the previous lambda^c and V, at the (mixed) Delta and R
+            lam = [embedding_lambda_c(Delta[i], lamc[i], V[i], R[i], sqmat_shift) for i in range(2)]
+            Hqp, rho = qp_state(R, lam, t)
+            Delta = blocks(rho)
 
-        lam0, lam1, Delta00, Delta11, Delta01 = fit_lambda2(
-            R0, R1, t, Delta00_target, Delta11_target, x0_0, x0_1, regularize=regularize)
+        V = [hybridization_V(rho, R, t, sqmat_shift, i) for i in range(2)]
+        lamc = [embedding_lambda_c(Delta[i], lam[i], V[i], R[i], sqmat_shift) for i in range(2)]
+        t_qp = time.time()
 
-        V0 = fit_V(R1, Delta00, Delta01, t, regularize=regularize)
-        V1 = fit_V(R0, Delta11, Delta01.T, t, regularize=regularize)
-        lamc0 = grad_S(Delta00, R0, V0) - lam0
-        lamc1 = grad_S(Delta11, R1, V1) - lam1
-        t_fit = time.time()
-
-        Delta00_bb, D0, Eloc0, docc0, nphys0 = impurity_solve(V0, lamc0, ops)
-        Delta11_bb, D1, Eloc1, docc1, nphys1 = impurity_solve(V1, lamc1, ops)
+        # The C++ hands V and lambda^c to its solver through a text FCIDUMP
+        # (12 digits, elements < 1e-10 dropped); emulate that (see fcidump_round).
+        rnd = fcidump_round if round_fcidump else (lambda x: x)
+        imp = [impurity_solve(rnd(V[i]), rnd(lamc[i]), ops) for i in range(2)]
         t_solve = time.time()
 
-        Delta00_new = np.eye(Neff) - Delta00_bb
-        Delta11_new = np.eye(Neff) - Delta11_bb
-        R0_new = fit_R(Delta00_new, D0, regularize=regularize)
-        R1_new = fit_R(Delta11_new, D1, regularize=regularize)
+        Delta_new = [np.eye(Neff) - imp[i][0] for i in range(2)]
+        R_new = [apply_S_inv(Delta_new[i], imp[i][1], sqmat_shift) for i in range(2)]
 
-        # NOTE: fix_gauge is NOT applied here. It was needed to stabilize
-        # the single-fragment loop when fit_lambda's root-find was landing
-        # on discontinuous branches, but with fit_lambda2's damped-Newton
-        # solve (which stays in the guess's basin by construction) it does
-        # more harm than good: confirmed empirically that with fix_gauge
-        # applied, this same seed converges cleanly to the WRONG fixed
-        # point (E_var=-2.04, a trivial/decoupled solution), while without
-        # it, it converges cleanly to the correct one (E_var=-3.1257,
-        # matching the reference to 5-6 significant figures).
+        E_loc = imp[0][2] + imp[1][2]
+        Lblk = np.zeros_like(Hqp)
+        Lblk[:Neff, :Neff] = lam[0]
+        Lblk[Neff:, Neff:] = lam[1]
+        E_qp = 2.0 * np.trace(rho @ (Hqp + Lblk))   # 2 = spin
+        E_var = E_qp + E_loc
+        docc = 0.5 * (imp[0][3] + imp[1][3])
+        n_phys = 0.5 * (imp[0][4] + imp[1][4])
 
-        diff_R = max(np.linalg.norm(R0_new - R0), np.linalg.norm(R1_new - R1))
-        diff_D = max(np.linalg.norm(Delta00_new - Delta00_target),
-                     np.linalg.norm(Delta11_new - Delta11_target))
-        diff = max(diff_R, diff_D)
+        # Linear mixer (C++ LinearMixer): substitution during the first
+        # eq_time calls, then mixing with weight `mix`; then clip Delta to [0,1].
+        n_updates += 1
+        a = 1.0 if n_updates <= eq_time else mix
+        next_Delta = [Delta[i] + a * (Delta_new[i] - Delta[i]) for i in range(2)]
+        next_R = [R[i] + a * (R_new[i] - R[i]) for i in range(2)]
+        for i in range(2):
+            d, W = np.linalg.eigh(next_Delta[i])
+            next_Delta[i] = (W * np.clip(d, 0.0, 1.0)) @ W.T
 
-        E_loc = Eloc0 + Eloc1
-        docc = 0.5 * (docc0 + docc1)
-        n_phys = 0.5 * (nphys0 + nphys1)
+        ddelta = sum(np.linalg.norm(prev_Delta[i] - next_Delta[i]) for i in range(2))
+        dR = sum(np.linalg.norm(R[i] - next_R[i]) for i in range(2))
+        dE = E_var - curr_E
 
         if verbose:
-            E_var_now = E_loc - 4.0 * t * (R0 @ Delta01 @ R1)
-            Z0_now, Z1_now = float(np.dot(R0, R0)), float(np.dot(R1, R1))
-            print(f"  it={it:3d}  Z0={Z0_now:.6f}  Z1={Z1_now:.6f}  E_var={E_var_now:.6f}  "
-                  f"docc={docc:.6f}  n_phys={n_phys:.6f}  |dR|={diff_R:.3e}  |dDelta|={diff_D:.3e}  "
-                  f"[fit {t_fit-t_iter0:.2f}s | ED {t_solve-t_fit:.2f}s]", flush=True)
+            print(f"  it={it:3d}  Z0={float(R[0] @ R[0]):.6f}  Z1={float(R[1] @ R[1]):.6f}  "
+                  f"E_var={E_var:.6f}  dE={dE:.3e}  docc={docc:.6f}  n_phys={n_phys:.6f}  "
+                  f"|dDelta|={ddelta:.3e}  |dR|={dR:.3e}  "
+                  f"[qp {t_qp-t_iter0:.2f}s | ED {t_solve-t_qp:.2f}s]", flush=True)
 
-        state = (Delta00, Delta11, Delta01, V0, V1, lam0, lam1, lamc0, lamc1,
-                 Eloc0, Eloc1, docc, n_phys)
-        last = state
+        # Everything reported below belongs to this iteration's (R, lam, V, lamc);
+        # R is the updated one, as the C++ code saves it (final_R).
+        res = dict(Delta=[d.copy() for d in Delta], V=[v.copy() for v in V],
+                   lam=[l.copy() for l in lam], lamc=[l.copy() for l in lamc],
+                   E_var=E_var, docc=docc, n_phys=n_phys)
 
-        # Keep the best (lowest-residual) iterate seen, not just the last
-        # one: this loop can approach the correct fixed point smoothly and
-        # then suddenly jump away into a long chaotic transient that
-        # eventually settles on a DIFFERENT, wrong fixed point (confirmed
-        # empirically -- a discrete numerical instability very close to
-        # convergence, likely another near-degenerate-eigenvalue
-        # sensitivity). Reporting the best point seen is a robust safety
-        # net against that, independent of whatever ultimately happens
-        # over the rest of max_iter. Snapshot R0, R1 as used THIS
-        # iteration, BEFORE the damping update below, so they match the
-        # Delta01/Eloc values already captured in `state`.
-        if diff < best_diff:
-            best_diff = diff
-            best = (state, R0.copy(), R1.copy())
+        prev_Delta = [d.copy() for d in next_Delta]
+        R = next_R
+        Delta = next_Delta
+        curr_E = E_var
 
-        if diff < tol:
+        if abs(dE) < tol_E or (ddelta < tol_mat and dR < tol_mat):
+            converged = True
             break
 
-        # Light damping (see fit_lambda's neighbor docstring for why plain
-        # substitution is only marginally stable here).
-        R0 = R0 + mix * (R0_new - R0)
-        R1 = R1 + mix * (R1_new - R1)
-        Delta00_target = Delta00_target + mix * (Delta00_new - Delta00_target)
-        Delta11_target = Delta11_target + mix * (Delta11_new - Delta11_target)
-        ddelta_prev = diff_D
-
-    (Delta00, Delta11, Delta01, V0, V1, lam0, lam1, lamc0, lamc1,
-     Eloc0, Eloc1, docc, n_phys), R0, R1 = best
-
-    E_kin_total = -4.0 * t * (R0 @ Delta01 @ R1)
-    E_var = Eloc0 + Eloc1 + E_kin_total
-    Z0 = float(np.dot(R0, R0))
-    Z1 = float(np.dot(R1, R1))
+    Z0 = float(np.dot(R[0], R[0]))
+    Z1 = float(np.dot(R[1], R[1]))
 
     return {
-        "Ng": Ng, "U": U, "R0": R0, "R1": R1, "Z0": Z0, "Z1": Z1, "E_var": E_var,
-        "docc": docc, "n_phys": n_phys, "iters": it,
-        "lam0": lam0, "lam1": lam1, "lamc0": lamc0, "lamc1": lamc1, "V0": V0, "V1": V1,
+        "Ng": Ng, "U": U, "R0": R[0], "R1": R[1], "Z0": Z0, "Z1": Z1, "E_var": res["E_var"],
+        "docc": res["docc"], "n_phys": res["n_phys"], "iters": it, "converged": converged,
+        "lam0": res["lam"][0], "lam1": res["lam"][1],
+        "lamc0": res["lamc"][0], "lamc1": res["lamc"][1], "V0": res["V"][0], "V1": res["V"][1],
     }
 
 
@@ -885,6 +492,8 @@ def read_lambda_guess(path):
                       f"(stacked per-atom blocks), got {arr.shape[0]}")
 
 
+
+
 if __name__ == "__main__":
     import argparse
 
@@ -897,10 +506,21 @@ if __name__ == "__main__":
                          help="file with the initial R guess (1 or 2 rows of Neff numbers); read automatically if it exists (default: R.in)")
     parser.add_argument("--lam-file", type=str, default="L.in", metavar="PATH",
                          help="file with the initial lambda guess (Neff or 2*Neff rows of Neff numbers); read automatically if it exists (default: L.in)")
-    parser.add_argument("--max-iter", type=int, default=100, help="maximum outer self-consistency iterations (default: 100)")
-    parser.add_argument("--regularize", action="store_true",
-                         help="turn ON the numerical regularizations (eigenvalue clips and output caps in the V/R fits, "
-                              "Newton trust-region step cap, |lambda| cap); they are OFF by default")
+    parser.add_argument("--max-iter", type=int, default=200, help="maximum outer self-consistency iterations (default: 200)")
+    parser.add_argument("--sqmat-shift", type=float, default=1e-9,
+                         help="shift added to the eigenvalues of Delta(1-Delta) before the square root "
+                              "(C++ gg_sqmat_shift, default: 1e-9)")
+    parser.add_argument("--mix", type=float, default=0.65,
+                         help="linear mixing weight after the equilibration iterations (C++ gg_lin_mix, default: 0.65)")
+    parser.add_argument("--eq-time", type=int, default=10,
+                         help="number of initial iterations with plain substitution, no mixing (C++ gg_eq_time, default: 10)")
+    parser.add_argument("--tol-E", type=float, default=1e-6, help="absolute energy tolerance (C++ gg_abs_tol_E, default: 1e-6)")
+    parser.add_argument("--tol-mat", type=float, default=1e-6,
+                         help="absolute tolerance for Delta and R changes (C++ gg_abs_tol_mat, default: 1e-6)")
+    parser.add_argument("--no-fcidump-rounding", action="store_true",
+                         help="do not emulate the C++ FCIDUMP round trip of V and lambda^c "
+                              "(12 significant digits, elements below 1e-10 dropped); with it OFF, "
+                              "cold-start trajectories are no longer reproducible against the C++ code")
     parser.add_argument("--omega", type=float, default=None,
                          help="max frequency for the spectral function grid, which runs from -omega to +omega; "
                               "requires --eta and --domega, and writes A_omega.txt after convergence")
@@ -912,6 +532,10 @@ if __name__ == "__main__":
 
     if not (args.omega is None) == (args.eta is None) == (args.domega is None):
         parser.error("--omega, --eta and --domega must be given together")
+
+    solver_kw = dict(max_iter=args.max_iter, tol_E=args.tol_E, tol_mat=args.tol_mat, mix=args.mix,
+                     eq_time=args.eq_time, sqmat_shift=args.sqmat_shift,
+                     round_fcidump=not args.no_fcidump_rounding)
 
     if args.U is not None or args.Ng is not None:
         if args.U is None or args.Ng is None:
@@ -936,10 +560,11 @@ if __name__ == "__main__":
         if lamg0 is not None and (lamg0.shape != (Neff, Neff) or lamg1.shape != (Neff, Neff)):
             parser.error(f"{args.lam_file} blocks must be {Neff}x{Neff}")
 
-        res = run_gga(args.Ng, args.U, t=args.t, max_iter=args.max_iter, verbose=not args.quiet,
-                       Rg0=Rg0, Rg1=Rg1, lamg0=lamg0, lamg1=lamg1, regularize=args.regularize)
+        res = run_gga(args.Ng, args.U, t=args.t, verbose=not args.quiet,
+                       Rg0=Rg0, Rg1=Rg1, lamg0=lamg0, lamg1=lamg1, **solver_kw)
         print(f"Ng={res['Ng']}  U/t={res['U']/args.t:.4f}  Z0={res['Z0']:.6f}  Z1={res['Z1']:.6f}  "
-              f"E_var/t={res['E_var']/args.t:.6f}  docc={res['docc']:.6f}  iters={res['iters']}")
+              f"E_var/t={res['E_var']/args.t:.6f}  docc={res['docc']:.6f}  iters={res['iters']}  "
+              f"converged={res['converged']}")
         save_results(res)
 
         if args.omega is not None:
@@ -952,5 +577,5 @@ if __name__ == "__main__":
         print(f"{'Ng':>4}{'U/t':>6}{'Z0':>10}{'Z1':>10}{'E_var/t':>12}{'docc':>10}")
         for Ng in [0, 2, 4]:
             for U in [0.0, 1.0, 2.0, 4.0, 8.0]:
-                res = run_gga(Ng, U, t=t)
+                res = run_gga(Ng, U, t=t, **solver_kw)
                 print(f"{Ng:4d}{U/t:6.2f}{res['Z0']:10.4f}{res['Z1']:10.4f}{res['E_var']/t:12.6f}{res['docc']:10.4f}")

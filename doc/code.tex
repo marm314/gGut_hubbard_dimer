@@ -169,9 +169,9 @@ implementation) is worked out operationally in Section~\ref{sec:selfconsistency}
   \item $\Delta^{II}\in\mathbb R^{\Neff\times\Neff}$: the \emph{shared} target
     one-body density matrix of the $\Neff$ ghost/bath orbitals -- the single
     object that both $|\Psi_{\mathrm{qp}}\rangle$ and $|\Phi^I\rangle$ below
-    are separately constrained to reproduce (this is exactly the
-    \texttt{Delta00\_target}/\texttt{Delta11\_target} variable that the outer
-    loop of Section~\ref{sec:mixing} iterates on);
+    are separately constrained to reproduce (in the code, the
+    fragment-diagonal blocks of the mixed $\Delta$ that the outer loop of
+    Section~\ref{sec:mixing} carries from one iteration to the next);
   \item $R^I\in\mathbb R^{\Neff}$: the renormalization vector entering
     $\Hqp$, Eq.~\eqref{eq:Hqp2};
   \item $|\Phi^I\rangle$: the many-body embedding (impurity) wavefunction --
@@ -254,11 +254,12 @@ reintroduce the sign bug already fixed in $\Himp$ itself.
     also equals the same shared variable $\Delta^{II}$; after extremization,
     $\lambda^I$ becomes exactly the onsite potential entering $\Hqp$,
     Eq.~\eqref{eq:Hqp2}. This is the fifth multiplier: it is easy to miss
-    because, operationally (Section~\ref{sec:lambdafit}), the code solves for
-    $\lambda^I$ \emph{directly} by demanding that $\Hqp(R,\lambda^I)$'s own
-    filled-Fermi-sea 1-RDM equal $\Delta^{II}_{\mathrm{target}}$ -- which is
-    precisely this constraint, just solved for $\lambda^I$ instead of
-    carried as a separate symbol.
+    because, operationally (Section~\ref{sec:lambdafit}), the code never
+    solves this constraint explicitly: $\lambda^I$ is generated from the
+    previous iteration's $\lambda^{I,c}$ through the stationarity condition of
+    Eq.~\eqref{eq:eqlambdac}, and the equality of the quasiparticle block
+    $\Delta^{II}$ (from the ground state of $\Hqp$) and the impurity-derived
+    $\mathbf I-\Delta^{I,\mathrm{bb}}$ then holds only at self-consistency.
 \end{enumerate}
 
 \subsection{Euler--Lagrange equations}
@@ -336,23 +337,35 @@ Every box below names the equation or section where it is defined in full;
 read this section first, then Sections~\ref{sec:two-fragment}--\ref{sec:outer-loop}
 for the details it glosses over.
 
+\paragraph{Relation to the reference C++ code.} The cycle below is, step by
+step, the one executed by the reference C++ implementation
+(\texttt{GhostGutzwiller::Run} with the input flags \texttt{no\_fit\_scf T},
+\texttt{gg\_updater lin} and the \texttt{msite\_ggm} matrix basis). Only the
+impurity problem is solved by a different code (the dense Jordan--Wigner
+exact diagonalization of Section~\ref{sec:impurity}). Every other operation
+-- the regularized matrix square roots, the way $\lambda$ is generated, the
+occupation rule of $\Hqp$, the derivative entering $\lambda^c$, the energy
+formula, the mixing and the convergence test -- is reproduced as in that
+code, and Section~\ref{sec:validation} shows the two codes agree iteration by
+iteration.
+
 \paragraph{Three categories of quantity.} Every symbol that appears anywhere
 in this document falls into exactly one of three categories:
 \begin{enumerate}
   \item \textbf{Fixed inputs} -- set once, from the command line, and never
     changed by the algorithm itself: $U$, $\Ng$ (hence $\Neff=1+\Ng$), $t$,
-    the convergence tolerance $\mathrm{tol}$, the maximum iteration count,
-    and the mixing parameter $\mathrm{mix}$ (Section~\ref{sec:mixing}).
+    the square-root shift $\varepsilon$ (\texttt{-{}-sqmat-shift}), the mixing
+    weight $a_{\mathrm{mix}}$ and the number of substitution iterations
+    $n_{\mathrm{eq}}$ (Section~\ref{sec:mixing}), the tolerances
+    $\mathrm{tol}_E,\mathrm{tol}_{\mathrm{mat}}$ and the maximum iteration
+    count.
   \item \textbf{A guess} -- has a value only because \emph{something} has to
-    start the iteration; it is never computed from a formula that is trusted
-    to be exact on its first use. There is exactly one such object: the pair
+    start the iteration. There is exactly one such object: the pair
     $(R^I,\lambda^I)$ at iteration $0$, coming either from
     \texttt{R.in}/\texttt{L.in} or from the default cold start
-    (Section~\ref{sec:mixing}). Every later ``guess'' used inside the
-    $\lambda$-fit (Section~\ref{sec:lambdafit}) is itself \emph{derived}
-    (Eq.~\eqref{eq:lambdaguess}) from quantities already computed in the
-    \emph{previous} iteration -- it is a good starting point for a local
-    solver, not an independent free parameter.
+    (Section~\ref{sec:cli}). From iteration~$1$ on, $\lambda^I$ is
+    \emph{derived} (Eq.~\eqref{eq:lambda-update}) from quantities of the
+    previous iteration; it is not fitted and not free.
   \item \textbf{Derived quantities} -- everything else ($\Delta^{II}$,
     $\Delta^{IJ}$, $V^I$, $\lambda^{I,c}$, $|\Phi^I\rangle$, $E^I_{\mathrm{loc}}$,
     $D^I$, the updated $R^I,\Delta^{II}$, and finally $E_{\mathrm{var}}$) is
@@ -363,26 +376,26 @@ in this document falls into exactly one of three categories:
 
 \paragraph{Order of computation, one outer iteration.}
 \begin{enumerate}
+  \setcounter{enumi}{-1}
+  \item \emph{Set $\lambda^I$.} At iteration $0$ take the input guess;
+    afterwards $\lambda^I=-\lambda^{I,c}_{\mathrm{prev}}+G(\Delta^{II},V^I_{\mathrm{prev}}R^I)$
+    (Eq.~\eqref{eq:lambda-update}).
   \item Diagonalize the quasiparticle Hamiltonian $\Hqp(R,\lambda)$ and fill
-    its lowest $\Neff$ levels per spin to get $\Delta^{II},\Delta^{IJ}$
+    its lowest $\Neff$ levels to get $\Delta^{II},\Delta^{IJ}$
     (Section~\ref{sec:filling}).
-  \item Fit the hybridization $V^I$ from $R^I,\Delta$ (Eq.~\eqref{eq:eqV}).
+  \item Compute the hybridization $V^I$ from $R^J,\Delta$ (Eq.~\eqref{eq:eqV}).
   \item Compute the bath potential $\lambda^{I,c}$ from $\Delta,R^I,V^I$ and
-    the \emph{current} $\lambda^I$ (Eq.~\eqref{eq:eqlambdac}).
+    the \emph{current} $\lambda^I$ (Eq.~\eqref{eq:lambdac-def}).
   \item Diagonalize the embedding Hamiltonian $\Himp(V,\lambda^c)$ to get
     $|\Phi^I\rangle$, its energy $E^I_{\mathrm{loc}}$, and the 1-RDM blocks
     $D^I,\Delta^{I,\mathrm{bb}}$ (Section~\ref{sec:impurity}).
-  \item Update $\Delta^{II}\gets\mathbf I-\Delta^{I,\mathrm{bb}}$ and refit
-    $R^I$ from $D^I,\Delta^{II}$ (Eq.~\eqref{eq:Rupdate}).
-  \item Compare the updated $(R^I,\Delta^{II})$ against their values at the
-    start of this iteration. If the change is below $\mathrm{tol}$, stop and
-    report $E_{\mathrm{var}}$ (Eq.~\eqref{eq:Evar}) and the other observables
-    of Section~\ref{sec:energy}.
-  \item Otherwise, form a new $\lambda^I$ guess from this iteration's
-    $V^I,\lambda^{I,c}$ (Eq.~\eqref{eq:lambdaguess}), fit $\lambda^I$ against
-    the updated $\Delta$ (Section~\ref{sec:lambdafit}), mix the updated
-    $R^I,\Delta^{II}$ into the running values (Section~\ref{sec:mixing}), and
-    return to step~1.
+  \item Update $\Delta^{II}_{\mathrm{new}}=\mathbf I-\Delta^{I,\mathrm{bb}}$ and
+    $R^I_{\mathrm{new}}$ from $D^I,\Delta^{II}_{\mathrm{new}}$
+    (Eq.~\eqref{eq:Rupdate}); evaluate $E_{\mathrm{var}}$ (Eq.~\eqref{eq:Evar}).
+  \item Mix $(R^I,\Delta^{II})\to(R^I_{\mathrm{next}},\Delta^{II}_{\mathrm{next}})$
+    (Section~\ref{sec:mixing}), evaluate $\lvert\Delta E\rvert$,
+    $\lVert\delta\Delta\rVert$, $\lVert\delta R\rVert$ and test convergence.
+    If not converged, return to step~0 with the mixed quantities.
 \end{enumerate}
 
 %\newpage
@@ -399,19 +412,21 @@ in this document falls into exactly one of three categories:
   outbox/.style={box, fill=green!12},
   arr/.style={-{Latex[length=2mm]}, thick}
 ]
-  \node[fixedbox] (inputs) {\textbf{Fixed inputs}\\ $U,\ \Ng,\ t,\ \mathrm{tol},\ \mathrm{mix}$};
-  \node[guessbox, below=of inputs] (guess) {\textbf{Guess (iteration 0 only)}\\ $R^I,\lambda^I$ from \texttt{R.in}/\texttt{L.in} or cold start (Sec.~\ref{sec:mixing})};
-  \node[box, below=of guess] (qp) {Diagonalize $\Hqp(R,\lambda)$\\ $\to\ \Delta^{II},\Delta^{IJ}$ \ (Sec.~\ref{sec:filling})};
-  \node[box, below=of qp] (vfit) {Fit $V^I$ from $R,\Delta$\ \ (Eq.~\eqref{eq:eqV})};
-  \node[box, below=of vfit] (lamc) {Compute $\lambda^{I,c}$\ \ (Eq.~\eqref{eq:eqlambdac})};
+  \node[fixedbox] (inputs) {\textbf{Fixed inputs}\\ $U,\ \Ng,\ t,\ \varepsilon,\ a_{\mathrm{mix}},\ n_{\mathrm{eq}},\ \mathrm{tol}_E,\ \mathrm{tol}_{\mathrm{mat}}$};
+  \node[guessbox, below=of inputs] (guess) {\textbf{Guess (iteration 0 only)}\\ $R^I,\lambda^I$ from \texttt{R.in}/\texttt{L.in} or cold start (Sec.~\ref{sec:cli})};
+  \node[box, below=of guess] (lam) {Set $\lambda^I$: input guess ($k{=}0$) or\\ $-\lambda^{I,c}_{\mathrm{prev}}+G(\Delta^{II},V^I_{\mathrm{prev}}R^I)$ ($k{\ge}1$)\ \ (Eq.~\eqref{eq:lambda-update})};
+  \node[box, below=of lam] (qp) {Diagonalize $\Hqp(R,\lambda)$, fill lowest $\Neff$ levels\\ $\to\ \Delta^{II},\Delta^{IJ}$ \ (Sec.~\ref{sec:filling})};
+  \node[box, below=of qp] (vfit) {Compute $V^I$\ \ (Eq.~\eqref{eq:eqV})};
+  \node[box, below=of vfit] (lamc) {Compute $\lambda^{I,c}=-\lambda^I+G(\Delta^{II},V^IR^I)$\ \ (Eq.~\eqref{eq:lambdac-def})};
   \node[box, below=of lamc] (imp) {Diagonalize $\Himp(V,\lambda^c)$\\ $\to\ |\Phi^I\rangle,\,E^I_{\mathrm{loc}},\,D^I,\,\Delta^{I,\mathrm{bb}}$\ (Sec.~\ref{sec:impurity})};
-  \node[box, below=of imp] (upd) {Update $\Delta^{II}\!\gets\!\mathbf I-\Delta^{I,\mathrm{bb}}$,\ refit $R^I$\ \ (Eq.~\eqref{eq:Rupdate})};
+  \node[box, below=of imp] (upd) {$\Delta^{II}_{\mathrm{new}}\!=\!\mathbf I-\Delta^{I,\mathrm{bb}}$,\ $R^I_{\mathrm{new}}$\ (Eq.~\eqref{eq:Rupdate}),\ $E_{\mathrm{var}}$};
   \node[decision, below=of upd] (dec) {Converged?};
   \node[outbox, below=16mm of dec] (out) {\textbf{Output}\\ $Z^I,\,E_{\mathrm{var}},\,\mathrm{docc},\,\lambda,\,\lambda^c,\,V$\ (Sec.~\ref{sec:energy})};
-  \node[guessbox, right=28mm of lamc, text width=4.4cm] (newguess) {New $\lambda^I$ guess\ (Eq.~\eqref{eq:lambdaguess}); mix $R^I,\Delta^{II}$\ (Sec.~\ref{sec:mixing})};
+  \node[guessbox, right=28mm of lamc, text width=4.4cm] (newguess) {Mix $R^I,\Delta^{II}$ (substitution, then linear), clip $\Delta$ to $[0,1]$\ (Sec.~\ref{sec:mixing})};
 
   \draw[arr] (inputs) -- (guess);
-  \draw[arr] (guess) -- (qp);
+  \draw[arr] (guess) -- (lam);
+  \draw[arr] (lam) -- (qp);
   \draw[arr] (qp) -- (vfit);
   \draw[arr] (vfit) -- (lamc);
   \draw[arr] (lamc) -- (imp);
@@ -419,15 +434,14 @@ in this document falls into exactly one of three categories:
   \draw[arr] (upd) -- (dec);
   \draw[arr] (dec) -- node[right, font=\small]{yes} (out);
   \draw[arr] (dec.east) -| node[pos=0.2, above, font=\small]{no} (newguess.south);
-  \draw[arr] (newguess) |- (qp.east);
+  \draw[arr] (newguess) |- (lam.east);
 \end{tikzpicture}
 \caption{One outer self-consistency iteration. Gray = fixed for the whole
-run. Orange/dashed = a guess (only ever trusted as a starting point, never
-as an exact value). Blue = quantities derived, in this order, from the
-current guess. Green = converged output. The right-hand loop-back box is
-the \emph{only} place a new $\lambda$ guess is produced; every other
-quantity in the main column is a direct evaluation of the equation named
-inside it.}
+run. Orange/dashed = a guess or the mixing step. Blue = quantities derived,
+in this order. Green = converged output. There is no root-finding step: at
+iterations $k\ge1$ the potential $\lambda^I$ is obtained by evaluating
+Eq.~\eqref{eq:lambda-update} at the mixed $(R,\Delta)$, and $\Delta^{II}$ is
+then \emph{recomputed} from the quasiparticle ground state.}
 \label{fig:workflow}
 \end{figure}
 
@@ -492,51 +506,70 @@ Because there are only two real-space sites, $\Hqp$ is diagonalized directly
 (no Brillouin-zone integral is needed, unlike the periodic-lattice
 formulation this is specialized from).
 
-\emph{Code:} \texttt{qp\_step2(R0, R1, lam0, lam1, t)} builds exactly
-Eq.~\eqref{eq:Hqp2} and diagonalizes it with \texttt{scipy.linalg.eigh}.
-\texttt{qp\_step(R, lam, t)} is the $R^0=R^1$, $\lambda^0=\lambda^1$ special
-case, kept as a separate, faster code path used only in some validation
-scripts; the production self-consistency loop always calls
-\texttt{qp\_step2}.
+\emph{Code:} \texttt{qp\_state(R, lam, t)} builds exactly
+Eq.~\eqref{eq:Hqp2} and diagonalizes it with \texttt{numpy.linalg.eigh};
+it returns $\Hqp$ and the ground-state 1-RDM $\rho^{\mathrm{qp}}$ of
+Section~\ref{sec:filling}.
 
-\subsection{Filling rule (half filling)}
+\subsection{Quasiparticle ground state and occupation rule}
 \label{sec:filling}
 
-$\Hqp$ has $2\Neff$ single-particle levels per spin. Half filling of the
-physical dimer (one electron per spin, summed over the two sites) fixes the
-number of \emph{filled quasiparticle levels per spin} to exactly $\Neff$
-(half of the $2\Neff$ available levels) -- \emph{not} to a fixed chemical
-potential threshold, and \emph{not} simply to $1$ level regardless of
-$\Neff$. Concretely, if $\varepsilon_1\le\varepsilon_2\le
-\dots\le\varepsilon_{2\Neff}$ are the eigenvalues of $\Hqp$ returned by
-\texttt{eigh} in ascending order, with orthonormal eigenvectors $|n\rangle$,
-the one-body density matrix of the filled quasiparticle Fermi sea is
+$\Hqp$ has $2\Neff$ single-particle levels per spin. The quasiparticle
+ground state fills a \emph{fixed number} of them. In the reference code the
+molecular class (\texttt{RSImpMolecule}, used for \texttt{mol\_type
+rsimp\_molecule}) occupies, per spin, the lowest
 \begin{equation}
-  \rho^{\mathrm{qp}} \;=\; \sum_{n=1}^{\Neff} |n\rangle\langle n| .
+  n_{\mathrm{eff}} \;=\; n_{\mathrm{ph}} + \frac{N_{\mathrm{eff,tot}}-N_{\mathrm{phys,tot}}}{2}
+  \;=\; 1+\frac{2\Neff-2}{2} \;=\; \Neff
+\end{equation}
+eigenvectors of $\Hqp$ (\texttt{mol\_nups}$=n_{\mathrm{ph}}=1$; $N_{\mathrm{eff,tot}}=2\Neff$
+quasiparticle orbitals and $N_{\mathrm{phys,tot}}=2$ physical orbitals for the
+two fragments). With eigenvalues $\varepsilon_1\le\dots\le\varepsilon_{2\Neff}$ and orthonormal
+eigenvectors $|n\rangle$,
+\begin{equation}
+  \rho^{\mathrm{qp}} \;=\; \sum_{n=1}^{\Neff} |n\rangle\langle n| ,
   \label{eq:rhoqp}
 \end{equation}
-This is a fixed \emph{level-count} rule, independent of the numerical values
-of the eigenvalues (as long as there is no exact degeneracy straddling the
-$\Neff$-th/$(\Neff{+}1)$-th level, which does not occur for the
-solutions studied here). $\rho^{\mathrm{qp}}$ is a $2\Neff\times2\Neff$
-projector of rank $\Neff$; its four $\Neff\times\Neff$ blocks give the three
-independent quasiparticle 1-RDM blocks needed below:
+a fixed \emph{level-count} rule: it does not look at the signs of the
+$\varepsilon_n$ and there is no adjustable chemical potential.
+The particle-hole symmetric half filling of the physical dimer enters through
+the constant $-\mu=-U/2$ contained in $\Hloc$ (Section~\ref{sec:impurity}).
+
+\paragraph{Caution: the base-class rule is different.} The parent class in
+the reference code (\texttt{RSImpMod}, used by non-molecular impurity models)
+uses instead a zero-temperature Fermi function at chemical potential $0$
+(occupy $\varepsilon_n<0$). The two rules coincide whenever $\Hqp$ has exactly
+$\Neff$ negative eigenvalues, which is the case at the seeds and at the
+converged solutions of the near-converged test cases of
+Section~\ref{sec:validation} (there the spectrum is symmetric about zero, e.g.\
+$\pm0.0197,\pm0.9375,\pm0.9862$ for the symmetric $U/t=2$ solution), so those
+cases cannot tell them apart. Away from self-consistency they do differ: for
+example the cold seed $R=(1,1,1)$, $\lambda\approx0$ has eigenvalues
+$-2.9995,-0.0002,+7\!\times\!10^{-6},\dots$ with only two negative ones, and
+the two rules then give different $\Delta^{11}$. The code follows the
+molecular class, i.e.\ Eq.~\eqref{eq:rhoqp}. (An intermediate revision of the
+code used the sign rule by mistake, from reading the base class; it was found
+by comparing iteration~0 of a cold start with the reference.)
+
+$\rho^{\mathrm{qp}}$ is a $2\Neff\times2\Neff$ matrix; its blocks give the
+three independent quasiparticle 1-RDM blocks needed below:
 \begin{equation}
   \Delta^{00} = \rho^{\mathrm{qp}}_{[0,\Neff)\times[0,\Neff)},\qquad
   \Delta^{11} = \rho^{\mathrm{qp}}_{[\Neff,2\Neff)\times[\Neff,2\Neff)},\qquad
   \Delta^{01} = \rho^{\mathrm{qp}}_{[0,\Neff)\times[\Neff,2\Neff)} .
   \label{eq:Deltablocks}
 \end{equation}
-$\Delta^{00}$ and $\Delta^{11}$ are symmetric (each is a genuine reduced
-density matrix restricted to one fragment); $\Delta^{01}$ is in general
-\emph{not} symmetric, and $\Delta^{10}=(\Delta^{01})^T$.
+$\Delta^{00}$ and $\Delta^{11}$ are symmetric; $\Delta^{01}$ is in general
+\emph{not} symmetric, and $\Delta^{10}=(\Delta^{01})^T$. In the text
+$\Delta^{II}$ denotes the fragment-diagonal blocks $\Delta^{00},\Delta^{11}$
+and $\Delta^{IJ}$ the off-diagonal one.
 
-\emph{Code:} inside \texttt{qp\_step2}, \texttt{occ = np.zeros(2*Neff);
-occ[:Neff] = 1.0} implements exactly the level-count rule of
-Eq.~\eqref{eq:rhoqp} (\texttt{eigh} returns eigenvalues in ascending order, so
-\texttt{occ[:Neff]=1} fills the lowest $\Neff$ levels); \texttt{Delta00},
-\texttt{Delta11}, \texttt{Delta01} are the three blocks of
-Eq.~\eqref{eq:Deltablocks}.
+\emph{Code:} in \texttt{qp\_state}, \texttt{occ = np.zeros(2*Neff); occ[:Neff] = 1}
+implements Eq.~\eqref{eq:rhoqp} (\texttt{eigh} returns ascending eigenvalues), and
+\texttt{rho = (evecs * occ) @ evecs.T}.
+The blocks of Eq.~\eqref{eq:Deltablocks} are slices of \texttt{rho}
+(\texttt{blocks(rho)} in \texttt{run\_gga}, and inside
+\texttt{hybridization\_V}).
 
 \section{Self-consistency equations}
 \label{sec:selfconsistency}
@@ -570,39 +603,50 @@ $R^{J}$) is invisible in the symmetric special case $R^0=R^1$ but produces a
 completely different, wrong answer once the two fragments differ -- this was
 confirmed empirically while developing the code.
 
-The matrix square root in Eq.~\eqref{eq:eqV} is evaluated in the eigenbasis of
-$\Delta^{II}$: if $\Delta^{II}=U\,\mathrm{diag}(n_1,\dots,n_{\Neff})\,U^{T}$,
-Eq.~\eqref{eq:eqV} is solved eigenvalue by eigenvalue,
+The matrix square root in Eq.~\eqref{eq:eqV} is the \emph{shifted} one used by
+the reference code,
 \begin{equation}
-  V^{I} \;=\; U\,\mathrm{diag}\!\left(\frac{1}{\sqrt{n_a(1-n_a)}}\right)U^{T}\,
+  S(\Delta) \;=\; \sqrt{\Delta(\mathbf I-\Delta)+\varepsilon\,\mathbf I},
+  \qquad \varepsilon = 10^{-9}\ \text{(default)},
+  \label{eq:Sshift}
+\end{equation}
+evaluated in the eigenbasis of $\Delta^{II}$: if
+$\Delta^{II}=W\,\mathrm{diag}(n_1,\dots,n_{\Neff})\,W^{T}$, then
+$S(\Delta^{II})=W\,\mathrm{diag}(s_a)\,W^{T}$ with
+$s_a=\sqrt{n_a(1-n_a)+\varepsilon}$, and Eq.~\eqref{eq:eqV} is solved
+eigenvalue by eigenvalue,
+\begin{equation}
+  V^{I} \;=\; W\,\mathrm{diag}\!\left(\frac{1}{s_a}\right)W^{T}\,
     \bigl(-t\,\Delta^{IJ}R^{J}\bigr).
 \end{equation}
 
-\paragraph{Regularization.} As the true self-consistent solution is
-approached, one eigenvalue of $\Delta^{II}$ can smoothly go to exactly $0$ or
-$1$ (a ghost bath orbital becoming completely empty or completely full); this
-was observed explicitly for the $U/t=2$, $\Ng=2$ example, where the smallest
-eigenvalue of $\Delta^{00}$ shrinks from $2.1\times10^{-5}$ to $8\times
-10^{-6}$ to (numerically) $0$ over a few iterations. Exactly at that
-boundary $1/\sqrt{n_a(1-n_a)}$ diverges. The code guards against this in two
-independent ways, both applied in \texttt{fit\_V}:
-\begin{itemize}
-  \item the eigenvalues are clipped, $n_a\to\mathrm{clip}(n_a,\varepsilon,1-\varepsilon)$
-    with $\varepsilon=10^{-10}$ (deliberately \emph{tiny}: a larger
-    $\varepsilon=10^{-4}$ was tried and tames the blow-up, but it also
-    biases the well-conditioned $U/t=10$ solution enough that it converges to
-    the wrong fixed point);
-  \item the \emph{output} components of $V^{I}$ are clipped to
-    $[-V_{\max},V_{\max}]$ with $V_{\max}=10^{2}$, which only engages exactly
-    when a component would actually blow up and otherwise leaves
-    well-conditioned cases untouched.
-\end{itemize}
+\paragraph{The shift $\varepsilon$.} At the self-consistent solutions one or
+more eigenvalues of $\Delta^{II}$ sit at $0$ or $1$ (a ghost bath orbital
+completely empty or completely full). For the symmetric $U/t=2$, $\Ng=2$
+solution the eigenvalues of $\Delta^{00}$ are $0$, $\tfrac12$, $1$ to machine
+precision, so $n_a(1-n_a)$ is $0$ or a rounding-level number (of either
+sign), and the unshifted $1/\sqrt{n_a(1-n_a)}$ is infinite or undefined;
+since the corresponding component of the right-hand side is also numerically
+zero, the raw formula produces $0/0$ and the whole iteration becomes NaN
+(this is what the earlier version of the code did on that case). The
+reference code avoids this by adding the shift $\varepsilon$ (input key
+\texttt{gg\_sqmat\_shift}) to the \emph{eigenvalues} of $\Delta(\mathbf
+I-\Delta)$ before taking the square root (its \texttt{GetMatSqrt(A, regul)}
+returns $\sqrt{\text{eigenvalue}+\text{regul}}$) and then solving the linear
+system with that matrix; $\Delta$ itself is \emph{not} clipped beforehand.
+The code does the same. A component along a direction with $n_a\approx0,1$ is
+then $\text{rhs}/\sqrt\varepsilon\sim3\times10^{4}\,\text{rhs}$ with $\text{rhs}$
+itself vanishingly small, hence finite, and the value agrees with the
+reference. The eigenvalue clip ($10^{-10}$) and the output cap
+($V_{\max}=10^{2}$) of the earlier version have been removed: they are not
+part of the reference algorithm.
 
-\emph{Code:} \texttt{fit\_V(R, Delta, Delta\_off, t, eps=1e-10, max\_V=1e2)}.
-It is called as \texttt{fit\_V(R1, Delta00, Delta01, t)} for fragment $0$ and
-\texttt{fit\_V(R0, Delta11, Delta01.T, t)} for fragment $1$, matching
-Eq.~\eqref{eq:eqV} exactly (note the neighbor's $R$ and the transposed
-off-diagonal block for fragment $1$).
+\emph{Code:} \texttt{hybridization\_V(rho, R, t, shift, i)} forms the
+right-hand side $-t\,\rho_{ij}R^{J}$ from the blocks of $\rho^{\mathrm{qp}}$
+(for fragment $0$: $\Delta^{01}R^1$; for fragment $1$:
+$\Delta^{10}R^0=(\Delta^{01})^TR^0$, matching Eq.~\eqref{eq:eqV} exactly,
+with the neighbor's $R$) and applies $S(\Delta^{II})^{-1}$ through
+\texttt{apply\_S\_inv(Delta, B, shift)}.
 
 \subsection{Bath potential $\lambda^c$ (Eq.~8 of the reference)}
 \label{sec:eqlambdac}
@@ -632,58 +676,63 @@ where $X_{ab}$ denotes the elementary matrix with a $1$ in position $(a,b)$
 and $0$ elsewhere -- denoted $X$ rather than the more common $E$ to avoid any
 visual clash with the energies $E_{\mathrm{qp}}$, $E^{I,c}$, $E_{\mathrm{loc}}$,
 $E_{\mathrm{var}}$ used throughout this document).
-Given $\lambda^{I}$ (whichever value the outer self-consistency loop currently
-holds; see Section~\ref{sec:outer-loop}), Eq.~\eqref{eq:eqlambdac} is used to
-\emph{define}
+Equation~\eqref{eq:eqlambdac} is used to \emph{define} the bath potential
+from the current $\lambda^{I}$:
 \begin{equation}
-  \lambda^{I,c} \;=\; -\lambda^{I} + \mathrm{grad}_{S}\bigl(\Delta^{II},R^{I},V^{I}\bigr),
-  \qquad
-  \mathrm{grad}_{S}(\Delta,R,V)_{ab} \equiv
-  \left.\frac{\partial}{\partial\Delta_{ab}}\Bigl[R\cdot\sqrt{\Delta(\mathbf{I}-\Delta)}\cdot V\Bigr]\right|_{\mathrm{sym}}.
+  \lambda^{I,c} \;=\; -\lambda^{I} + G\bigl(\Delta^{II},\,V^{I}R^{I}\bigr),
   \label{eq:lambdac-def}
 \end{equation}
+where $V^I$ is a column, $R^I$ a row, $M=V^IR^I$ is an $\Neff\times\Neff$
+matrix, and $G(\Delta,M)$ is the symmetric derivative of the scalar
+$S_M(\Delta)=\mathrm{Tr}\bigl[M\,S(\Delta)\bigr]=R\,S(\Delta)\,V$ with respect
+to $\Delta$ (with $R,V$ held fixed), in the convention of the reference
+code. That convention is: expand in an orthonormal basis $\{B_k\}$ of the real
+symmetric $\Neff\times\Neff$ matrices (the generalized Gell-Mann basis,
+\texttt{msite\_ggm}; it contains the identity, so it is complete), take the
+directional derivative $D_k=\mathrm{d}S[B_k]$ of the matrix square root, and
+set
+\begin{equation}
+  G(\Delta,M) \;=\; \sum_k B_k\;\Bigl(\mathrm{Tr}[M D_k]+\mathrm{Tr}[D_k^{T}M^{T}]\Bigr)
+        \;=\; \sum_k B_k\;2\,\mathrm{Tr}[M D_k],
+  \label{eq:Gdef}
+\end{equation}
+(the two traces are equal because $D_k$ is symmetric). Since the basis is
+orthonormal, $G$ is twice the projection of the gradient of $S_M$ onto the
+symmetric matrices; the factor $2$ is the ``diagonal doubling'' that had to
+be found empirically in an earlier version of the code.
 
-\paragraph{Numerical evaluation of $\mathrm{grad}_S$.} $\mathrm{grad}_S$ is
-evaluated by \emph{central finite differences} on the scalar function
-$S(\Delta)\equiv R^{T}\sqrt{\Delta(\mathbf{I}-\Delta)}V$ (a true scalar because
-$\Nphys=1$), with step size $h=10^{-8}$:
-\begin{align}
-  \bigl[\mathrm{grad}_S\bigr]_{aa} &= \frac{S(\Delta+2h\,X_{aa}) - S(\Delta-2h\,X_{aa})}{2h}, \\
-  \bigl[\mathrm{grad}_S\bigr]_{ab} &= \frac{S(\Delta+h(X_{ab}{+}X_{ba})) - S(\Delta-h(X_{ab}{+}X_{ba}))}{2h}, \qquad a\neq b.
-\end{align}
-Perturbing the diagonal entry by $2h$ (rather than $h$) is deliberate: it
-matches the off-diagonal convention, which perturbs \emph{both} symmetric
-partners $\Delta_{ab}$ and $\Delta_{ba}$ simultaneously by $h$ each, and by
-linearity this computes $\partial S/\partial\Delta_{ab}+\partial
-S/\partial\Delta_{ba}=2\,\partial S/\partial\Delta_{ab}$ (using
-$\Delta_{ab}=\Delta_{ba}$ symmetry of the raw partials); the diagonal case has
-only one partner (itself), so it must be perturbed by $2h$ to pick up the
-same overall factor of $2$. This normalization was confirmed two independent
-ways: (i) by deriving it from first principles from the underlying
-Lagrangian's constraint bookkeeping (the constraint sum $\sum_{ab}$ runs over
-\emph{all} ordered pairs, and the matrix-basis normalization used in an
-independent reference implementation's derivative class divides off-diagonal
-basis directions by their Frobenius norm-squared, which is exactly the
-factor-of-two bookkeeping reproduced here), and (ii) empirically: with the
-$1\times$ (undoubled) diagonal convention, $\lambda^{I,c}$'s diagonal entries
-came out identically zero for a reference case where they should equal
-$\lambda^{I}$'s diagonal entries; with the $2\times$ convention they match to
-5--6 significant figures.
+\paragraph{Analytic evaluation of $G$.} The derivative of the shifted square
+root is available in closed form in the eigenbasis of $\Delta$. Let
+$\Delta=W\,\mathrm{diag}(n_a)\,W^T$, $s_a=\sqrt{n_a(1-n_a)+\varepsilon}$,
+and use a tilde for quantities in this eigenbasis, $\tilde X=W^TXW$. For a
+symmetric perturbation $B$, the derivative of $P=\Delta(\mathbf I-\Delta)$ is
+$\mathrm{d}P=B-B\Delta-\Delta B$, i.e.\ $\widetilde{\mathrm{d}P}_{ab}=
+\tilde B_{ab}\,(1-n_a-n_b)$. Differentiating $S^2=P+\varepsilon\mathbf I$ gives
+the Sylvester equation $S\,\mathrm{d}S+\mathrm{d}S\,S=\mathrm{d}P$, which is
+diagonal in this basis:
+\begin{equation}
+  \widetilde{\mathrm{d}S}_{ab} \;=\; w_{ab}\,\tilde B_{ab},
+  \qquad
+  w_{ab} \;=\; \frac{1-n_a-n_b}{s_a+s_b}.
+\end{equation}
+Then $\mathrm{Tr}[M\,\mathrm{d}S[B]]=\sum_{ab}\tilde M_{ba}\,w_{ab}\,\tilde B_{ab}$, and
+Eq.~\eqref{eq:Gdef} collapses (summing over the complete orthonormal basis
+gives the symmetric part of the coefficient matrix) to
+\begin{equation}
+  \boxed{\; G(\Delta,M) \;=\; W\Bigl[\bigl(\tilde M+\tilde M^{T}\bigr)\circ w\Bigr]W^{T} \;}
+  \label{eq:Gclosed}
+\end{equation}
+where $\circ$ is the elementwise product. This is exact: it replaces the
+central finite-difference evaluation of the earlier version (step
+$h=10^{-8}$ on $\sqrt{\Delta(\mathbf I-\Delta)}$ through
+\texttt{scipy.linalg.sqrtm}), which is unreliable precisely where it matters,
+namely when $\Delta$ has eigenvalues at $0$ or $1$ and $S$ is not
+differentiable in the unshifted problem. With the shift, $w_{ab}$ stays
+finite for all $a,b$.
 
-\paragraph{Regularization of the step size.} The naive choice $h=10^{-5}$ is
-numerically unstable exactly when $\Delta$ has an eigenvalue very close to
-$0$ or $1$: the matrix square root $\sqrt{\Delta(\mathbf{I}-\Delta)}$ is then
-sharply peaked/non-smooth there, and a $10^{-5}$ perturbation over- or
-under-shoots the region where the linear (derivative) approximation is valid,
-giving wrong derivatives by tens of percent. Reducing $h$ to $10^{-8}$ (the
-code's default) removes this instability while remaining far above the
-floating-point roundoff floor (verified explicitly: at $h=10^{-9}$ the
-computed derivative is unchanged from $h=10^{-8}$ to the precision shown,
-confirming convergence, not accidental cancellation).
-
-\emph{Code:} \texttt{grad\_S(Delta, R, V, h=1e-8)}; \texttt{\_S(Delta, R, V)}
-implements $S(\Delta)=R^{T}\sqrt{\Delta(\mathbf{I}-\Delta)}V$ using
-\texttt{scipy.linalg.sqrtm}.
+\emph{Code:} \texttt{grad\_S(Delta, M, shift)} implements
+Eq.~\eqref{eq:Gclosed}; \texttt{embedding\_lambda\_c(Delta, lam, V, R, shift)}
+returns $-\lambda+G(\Delta,VR)$, i.e.\ Eq.~\eqref{eq:lambdac-def}.
 
 \subsection{Impurity (embedding) Hamiltonian}
 \label{sec:impurity}
@@ -770,8 +819,44 @@ $\Neff^2$ dense operator products of size $\dim\times\dim$ every iteration) to
 $O(\dim^3)$ (one diagonalization), where $\dim=4^{1+\Neff}$; it was the
 dominant bottleneck before being fixed.
 
+\paragraph{Ground-state sector.} The reference solver (\texttt{CMZEDsolver})
+does not search the whole Fock space. For an even number of impurity orbitals
+per spin, $1+\Neff=2+\Ng$ (this is why $\Ng$ must be even), it diagonalizes
+$\Himp$ only in the half-filled, spin-balanced sector
+$N_\uparrow=N_\downarrow=(1+\Neff)/2$, of dimension
+$\binom{1+\Neff}{(1+\Neff)/2}^2$ ($36$ for $\Ng=2$, instead of $256$). The code
+does the same: \texttt{build\_impurity\_ops} stores the index set
+\texttt{sector} of basis states with these occupations (mode $j$ is occupied
+in basis state $i$ iff bit $n_{\mathrm{modes}}-1-j$ of $i$ is set, for the
+Jordan--Wigner ordering above) and \texttt{impurity\_solve} diagonalizes
+$\Himp[\texttt{sector},\texttt{sector}]$, then embeds the lowest eigenvector back
+into the full space so that all expectation values below are unchanged.
+This matters far from self-consistency: with the $\lambda^{I,c}$ of an early
+cold-start iteration the \emph{global} lowest state of $\Himp$ can lie in
+another sector (a triplet, or a different particle number), with a gap to the
+half-filled singlet of only $\sim10^{-3}$, and the two solvers then return
+different $\Delta^{I,\mathrm{bb}}$ and $D^{I}$. Near convergence the global
+ground state is in the sector and the restriction changes nothing.
+
+\paragraph{Hand-over through an FCIDUMP text file.} The reference code does
+not pass $V^{I}$ and $\lambda^{I,c}$ to its solver directly: it writes the
+embedding Hamiltonian to a text \texttt{FCIDUMP} file
+(\texttt{WriteImpFCIDUMP}), each element printed with
+\texttt{std::scientific} at precision $12$ (i.e.\ \texttt{\%.12e}), and
+\emph{omits} every element with $\lvert x\rvert<10^{-10}$. The solver therefore
+sees $V^I$ and $\lambda^{I,c}$ quantized this way. The code reproduces the
+quantization (function \texttt{fcidump\_round}, applied to $V^I$ and
+$\lambda^{I,c}$ before \texttt{impurity\_solve}; disable with
+\texttt{-{}-no-fcidump-rounding}). It is not cosmetic. The $R$ update
+$R=S(\Delta_{\mathrm{new}})^{-1}D$ divides by $s_a=\sqrt{n_a(1-n_a)+\varepsilon}$, and at
+the cold seeds $\Delta_{\mathrm{new}}$ has eigenvalues within $10^{-8}$--$10^{-16}$
+of $1$, so noise well below $10^{-10}$ is amplified into $O(1)$ changes of
+$R$. Without the quantization, perturbing a seed by $10^{-12}$ flips the run
+between two different fixed points (Section~\ref{sec:validation}); with it the
+trajectory is a deterministic function of the seed, as it is in the reference.
+
 \paragraph{Observables.} Given the impurity ground state $|\psi\rangle$
-(lowest eigenvector of $\Himp$), all needed expectation values are computed
+(lowest eigenvector of $\Himp$ in the sector above), all needed expectation values are computed
 via matrix--vector products only (never forming $O(\dim\times\dim)$ operator
 products explicitly, for the same performance reason):
 \begin{align}
@@ -833,10 +918,11 @@ each fragment's target quasiparticle quantities are updated as
   \sqrt{\Delta^{II,\mathrm{new}}\bigl(\mathbf{I}-\Delta^{II,\mathrm{new}}\bigr)}\;R^{I,\mathrm{new}} &= D^{I}. \label{eq:Rupdate}
 \end{align}
 Equation~\eqref{eq:Rupdate} is solved exactly as Eq.~\eqref{eq:eqV}, in the
-eigenbasis of $\Delta^{II,\mathrm{new}}$, with the identical regularization
-(eigenvalue clip $\varepsilon=10^{-10}$ plus output clip $R_{\max}=10^{2}$).
+eigenbasis of $\Delta^{II,\mathrm{new}}$, with the same shifted square root
+$S(\Delta^{II,\mathrm{new}})$ of Eq.~\eqref{eq:Sshift}, i.e.
+$R^{I,\mathrm{new}}=S(\Delta^{II,\mathrm{new}})^{-1}D^{I}$.
 
-\emph{Code:} \texttt{fit\_R(Delta\_new, D, eps=1e-10, max\_R=1e2)}.
+\emph{Code:} \texttt{apply\_S\_inv(Delta\_new, D, shift)}.
 
 \paragraph{Where Eq.~\eqref{eq:Rupdate} comes from.} Equation~\eqref{eq:Rupdate}
 is not a new, independent equation -- it is the mirror image of the $V$-fit,
@@ -870,8 +956,8 @@ direction: an orbital that is essentially empty ($\Delta_{aa}\to0$) or
 essentially full ($\Delta_{aa}\to1$) has no partial occupation left to
 fluctuate coherently with the physical orbital, so the factor vanishes and
 that direction cannot support any $R$ component no matter how large $D_a$
-is -- exactly the singular case the eigenvalue clip and output cap in
-\texttt{fit\_R} are guarding against. A half-filled orbital
+is -- exactly the singular case handled by the shift $\varepsilon$ of
+Eq.~\eqref{eq:Sshift}. A half-filled orbital
 ($\Delta_{aa}=0.5$) has the maximal factor $0.5$ and can carry the most
 weight. Eq.~\eqref{eq:Rupdate} is thus best read as: the updated
 renormalization amplitude $R^{I}$ is the mixed density $D^I$, rescaled
@@ -912,362 +998,264 @@ feeds into it.
 \label{sec:outer-loop}
 
 Sections~\ref{sec:eqV}--\ref{sec:update} define, for a \emph{given}
-$(\lambda^0,\lambda^1)$, how to compute $\Delta^{00},\Delta^{11},\Delta^{01}$
-(Section~\ref{sec:two-fragment}), $V^0,V^1$ (Section~\ref{sec:eqV}),
-$\lambda^{0,c},\lambda^{1,c}$ (Section~\ref{sec:eqlambdac}), the impurity
-solve (Section~\ref{sec:impurity}), and updated $R^{0,\mathrm{new}},
-R^{1,\mathrm{new}},\Delta^{00,\mathrm{new}},\Delta^{11,\mathrm{new}}$
-(Section~\ref{sec:update}). What remains is: (a) how $(\lambda^0,\lambda^1)$
-itself is determined at each outer iteration, and (b) how the outer iteration
-over $(R^0,R^1,\Delta^{00}_{\mathrm{target}},\Delta^{11}_{\mathrm{target}})$
-is driven to a fixed point. This section describes both, together with every
-numerical safeguard that was found necessary and why.
+$(R^0,R^1,\lambda^0,\lambda^1)$, how to compute
+$\Delta^{00},\Delta^{11},\Delta^{01}$ (Section~\ref{sec:two-fragment}),
+$V^0,V^1$ (Section~\ref{sec:eqV}), $\lambda^{0,c},\lambda^{1,c}$
+(Section~\ref{sec:eqlambdac}), the impurity solve
+(Section~\ref{sec:impurity}), and the updated
+$R^{I}_{\mathrm{new}},\Delta^{II}_{\mathrm{new}}$
+(Section~\ref{sec:update}). What remains is (a) how $\lambda^I$ is produced at
+each outer iteration, and (b) how the iteration over $(R,\Delta)$ is driven to
+a fixed point. As stated in Section~\ref{sec:workflow}, both follow the
+reference C++ code exactly.
 
-\subsection{Determining $\lambda^0,\lambda^1$: a coupled, non-unique root-finding problem}
+\subsection{Where $\lambda^I$ comes from: no fit, just Eq.~\eqref{eq:eqlambdac}}
 \label{sec:lambdafit}
 
-Equation~\eqref{eq:Hqp2} shows that fragment $0$'s and fragment $1$'s
-quasiparticle problems are coupled through a single $2\Neff\times2\Neff$
-matrix; consequently, $(\lambda^0,\lambda^1)$ cannot be fit to reproduce a
-target $(\Delta^{00}_{\mathrm{target}},\Delta^{11}_{\mathrm{target}})$
-independently, fragment by fragment. Instead, the code solves the
-\emph{joint} nonlinear system, over the $2\times\tfrac12\Neff(\Neff{+}1)$
-independent symmetric-matrix parameters of $(\lambda^0,\lambda^1)$,
+At iteration $0$, $\lambda^I$ is the input guess and $\Delta^{II}$ is simply
+the block of the quasiparticle ground state $\rho^{\mathrm{qp}}(R,\lambda)$
+built from it. At every later iteration $k\ge1$, $\lambda^I$ is obtained by
+solving the stationarity condition Eq.~\eqref{eq:eqlambdac} for $\lambda^I$,
+using the previous iteration's bath potential and hybridization and the
+current (mixed) $R^I$ and $\Delta^{II}$:
 \begin{equation}
-  \mathrm{qp\_step2}(R^0,R^1,\lambda^0,\lambda^1)\Big|_{00,11}
-  \;=\;\bigl(\Delta^{00}_{\mathrm{target}},\ \Delta^{11}_{\mathrm{target}}\bigr).
-  \label{eq:lambdafit-system}
+  \lambda^{I}_{k} \;=\; -\lambda^{I,c}_{k-1} \;+\; G\bigl(\Delta^{II}_{k},\,V^{I}_{k-1}R^{I}_{k}\bigr).
+  \label{eq:lambda-update}
 \end{equation}
+Then $\Hqp(R_k,\lambda_k)$ is diagonalized and $\Delta^{II}_k,\Delta^{IJ}_k$ are
+\emph{recomputed} from its ground state, Eq.~\eqref{eq:rhoqp}; $V^I_k$
+(Eq.~\eqref{eq:eqV}) and $\lambda^{I,c}_k$ (Eq.~\eqref{eq:lambdac-def}) follow
+from these. Note the consequences:
+\begin{itemize}
+  \item the mixed $\Delta^{II}$ carried between iterations enters only through
+    $G$ in Eq.~\eqref{eq:lambda-update}; the $\Delta^{II}$ used for $V$,
+    $\lambda^c$ and the energy is the one produced by $\Hqp$, so the equality
+    of the quasiparticle and impurity density matrices,
+    $\Delta^{II}_{\mathrm{qp}}=\Delta^{II}_{\mathrm{new}}$, holds only at
+    self-consistency (this is the constraint of the $\lambda^I$-term of the
+    Lagrangian, Section~\ref{sec:lagrangian});
+  \item nothing is solved iteratively inside an outer iteration: each step is
+    a closed-form evaluation plus two diagonalizations of small matrices and
+    two impurity solves, so there is no branch ambiguity to control.
+\end{itemize}
 
-\paragraph{This system is badly non-unique.} It was found empirically (and is
-an unavoidable feature of the projector $\rho^{\mathrm{qp}}$'s highly
-nonlinear dependence on $\lambda$) that Eq.~\eqref{eq:lambdafit-system} has
-\emph{many} solutions with equally small residual, differing from each other
-by large amounts. Concretely: starting an off-the-shelf solver
-(\texttt{scipy.optimize.root}, method \texttt{hybr}) from an already
-near-exact guess (residual $\sim10^{-4}$--$10^{-7}$), the solver was observed
-to converge to a \emph{different} $(\lambda^0,\lambda^1)$ with entries an
-order of magnitude larger (e.g.\ diagonal entries jumping from $\approx2$ to
-$\approx20$--$40$), while still formally satisfying
-Eq.~\eqref{eq:lambdafit-system} to a tiny residual ($<10^{-6}$). Naively
-calling a generic root-finder on Eq.~\eqref{eq:lambdafit-system} each outer
-iteration is therefore \emph{not} safe: it silently jumps between physically
-inequivalent branches, which manifested as the outer self-consistency loop
-either drifting slowly away from the correct fixed point over tens of
-iterations, or oscillating in a stable limit cycle without ever reaching a
-fixed point.
-
-\paragraph{A continuity-preserving analytic guess.} To keep the solver on the
-physically continuous branch, the starting guess for
-$(\lambda^0,\lambda^1)$ each outer iteration is not the raw previous value,
-but is computed \emph{analytically} from Eq.~\eqref{eq:lambdac-def}
-solved in the other direction, using the \emph{previous} iteration's
-$V^{0},V^{1},\lambda^{0,c},\lambda^{1,c}$ together with the \emph{current}
-target $\Delta$:
-\begin{equation}
-  \lambda^{I,\mathrm{guess}} \;=\; \mathrm{grad}_S\bigl(\Delta^{II}_{\mathrm{target}},R^{I},V^{I}_{\mathrm{prev}}\bigr) - \lambda^{I,c}_{\mathrm{prev}} .
-  \label{eq:lambdaguess}
-\end{equation}
-This guess was verified, at a point close to a converged solution, to match
-the eventual fitted $\lambda^I$ to 4--5 significant figures \emph{before} any
-root-finding is performed -- i.e.\ Eq.~\eqref{eq:lambdaguess} is already an
-excellent approximate solution of Eq.~\eqref{eq:lambdafit-system}, and the
-role of the subsequent numerical solve (below) is only to \emph{locally
-refine} it, never to search globally.
-
-\paragraph{Switching rule.} Early in the outer iteration (far from
-convergence), $\lambda^{I,\mathrm{guess}}$ of Eq.~\eqref{eq:lambdaguess} is
-used as the starting point $x_0$ for the fit below. Once the previous
-iteration's residual $\lVert\Delta^{\mathrm{new}}-\Delta_{\mathrm{target}}
-\rVert$ has fallen below $1$ (an empirical, generous threshold, essentially
-distinguishing ``still far from converged'' from ``in the local basin''),
-the starting point is instead taken as the previous iteration's actual
-$(\lambda^0,\lambda^1)$. This mirrors the corresponding switching logic in
-the reference implementation.
-
-\paragraph{Damped, local Newton solve with an analytic Jacobian.} Rather
-than calling a generic (global) root-finder on
-Eq.~\eqref{eq:lambdafit-system} from the guess of
-Eq.~\eqref{eq:lambdaguess}, the code performs its own \emph{damped, local}
-Newton iteration, which by construction cannot leave the guess's basin of
-attraction (each accepted step strictly decreases the residual norm; no step
-is ever taken if none of the tried step sizes improves the residual):
-\begin{enumerate}[label=(\roman*)]
-  \item Compute the residual $f(x)=\bigl[(\Delta^{00}(x)-\Delta^{00}_{\mathrm{target}})_{\mathrm{tri}},\,
-        (\Delta^{11}(x)-\Delta^{11}_{\mathrm{target}})_{\mathrm{tri}}\bigr]$, where
-        $x=[\lambda^{0}_{\mathrm{tri}},\lambda^{1}_{\mathrm{tri}}]$ packs the
-        upper-triangular (independent) entries of the two symmetric
-        matrices, and $\mathrm{tri}(\cdot)$ denotes this packing.
-  \item Compute the analytic Jacobian $J=\partial f/\partial x$
-        (Section~\ref{sec:jacobian}).
-  \item Solve $J\,\delta x = -f(x)$ by least squares (\texttt{numpy.linalg.lstsq}).
-  \item \textbf{Trust-region step cap:} if $\lVert\delta x\rVert>1$, rescale
-        $\delta x\to\delta x/\lVert\delta x\rVert$ (i.e.\ cap the step's
-        \emph{magnitude} at $1$, keeping its direction). This is discussed
-        further below.
-  \item \textbf{Backtracking line search:} try $x+\delta x$; if
-        $\lVert f(x+\delta x)\rVert<\lVert f(x)\rVert$, accept it; otherwise
-        halve the step ($x+\delta x/2$, $x+\delta x/4$, \dots, up to $30$
-        halvings) until the residual decreases, or give up (leave $x$
-        unchanged) if no halving helps.
-  \item Repeat (i)--(v) for up to $30$ Newton iterations or until
-        $\lVert f(x)\rVert<10^{-11}$.
-\end{enumerate}
-If the final $(\lambda^0,\lambda^1)$ is non-finite or has an entry larger
-than $\lambda_{\max}=10^{3}$ in absolute value, the fit is rejected and the
-original guess $(\lambda^{0,\mathrm{guess}},\lambda^{1,\mathrm{guess}})$ is
-returned unchanged instead.
-
-\paragraph{Why the trust-region cap in step (iv) is necessary.} Even with the
-damped/backtracking scheme (v), a \emph{single} raw Newton step can still be
-enormous if $J$ is ill-conditioned, and a backtracking line search can
-``accept'' a step that is still very large (just smaller than the raw one)
-simply because it happens to reduce the residual by some tiny amount --
-while being a qualitatively wrong, discontinuous jump. This was observed
-concretely: as the outer iteration approaches the true solution and one
-eigenvalue of $\Delta^{00}$ approaches $0$ (the same near-degeneracy
-discussed in Section~\ref{sec:eqV}), the corresponding quasiparticle level
-crosses very close to the Fermi surface, and $J$'s divided-difference
-structure (Section~\ref{sec:jacobian}) develops a near-zero energy
-denominator; the resulting raw Newton step can be tens to hundreds of times
-larger than $x$ itself, and $\lambda^0$'s diagonal was observed to jump from
-$\approx2$ to $\approx-40$ over a single outer iteration as a direct result,
-even though $V^0,V^1,R^0,R^1$ all remained modest at that same iteration
-(ruling out a genuine physical divergence). Two alternative fixes were tried
-and both failed: (a) clipping the eigenvalues that enter $\mathrm{fit\_V}$
-more aggressively, and (b) Lorentzian-regularizing $J$'s energy denominator
-directly (replacing $1/\Delta\varepsilon$ by
-$\Delta\varepsilon/(\Delta\varepsilon^2+\eta^2)$ for a broadening $\eta$). Both
-did stabilize the problematic $U/t=2$ case, but at the cost of silently
-biasing the well-conditioned $U/t=10$ case enough that it converged, cleanly
-and without complaint, to a different, wrong fixed point -- for \emph{every}
-value of $\eta$ tried, down to $\eta=10^{-6}$. Capping the raw step's
-\emph{magnitude} directly, leaving $J$ itself untouched, was the only fix
-found that stabilizes the $U/t=2$ case while leaving the $U/t=10$ case
-completely unaffected (its converged energy did not change at all, to 6
-significant figures, with or without the cap, because the cap simply never
-engages when $J$ is well-conditioned).
-
-\emph{Code:} \texttt{fit\_lambda2(R0, R1, t, Delta00\_target, Delta11\_target,
-lam0\_guess, lam1\_guess, max\_lam=1e3, max\_newton=30, tol=1e-11)}. The
-single-fragment analogue \texttt{fit\_lambda} (used only by validation
-scripts, not by the production loop) is the same algorithm restricted to
-$R^0=R^1=R$, $\lambda^0=\lambda^1=\lambda$.
-
-\subsection{Analytic Jacobian of the quasiparticle projector}
-\label{sec:jacobian}
-
-The Jacobian $J=\partial[\Delta^{00}_{\mathrm{tri}};\Delta^{11}_{\mathrm{tri}}]
-/\partial[\lambda^0_{\mathrm{tri}};\lambda^1_{\mathrm{tri}}]$ used in
-Section~\ref{sec:lambdafit} is computed \emph{exactly} (to numerical
-precision), not by finite differences, via first-order (Hellmann--Feynman /
-Daletskii--Krein divided-difference) perturbation theory of the rank-$\Neff$
-projector $\rho^{\mathrm{qp}}$ of Eq.~\eqref{eq:rhoqp}. For a Hermitian
-matrix $\Hqp$ with eigenpairs $(\varepsilon_n,|n\rangle)$ and a fixed
-occupation vector $\mathrm{occ}_n\in\{0,1\}$, and a perturbation
-$\Hqp\to\Hqp+\delta\Hqp$, the projector $\rho=\sum_n\mathrm{occ}_n|n\rangle
-\langle n|$ changes to first order as
-\begin{equation}
-  \delta\rho \;=\; \sum_{n,m} F_{nm}\,\langle n|\delta\Hqp|m\rangle\,|n\rangle\langle m|,
-  \qquad
-  F_{nm} \;=\; \frac{\mathrm{occ}_n-\mathrm{occ}_m}{\varepsilon_n-\varepsilon_m}
-  \ \ (\to 0 \text{ if } \varepsilon_n=\varepsilon_m).
-  \label{eq:daletskii}
-\end{equation}
-For each independent parameter $x_k$ (one entry of $\mathrm{tri}(\lambda^0)$
-or $\mathrm{tri}(\lambda^1)$), $\delta\Hqp/\delta x_k$ is exactly $-1$ (times
-the same symmetric-basis-matrix convention as Section~\ref{sec:eqlambdac})
-in the corresponding diagonal block of $\Hqp$ (top-left for $\lambda^0$,
-bottom-right for $\lambda^1$), and zero elsewhere. Equation
-\eqref{eq:daletskii} is evaluated in the eigenbasis of the \emph{current}
-$\Hqp(R^0,R^1,\lambda^0,\lambda^1)$ (i.e.\ the Jacobian is recomputed at
-every Newton iteration, at the current $x$, exactly as required for Newton's
-method), and the two relevant $\Neff\times\Neff$ diagonal blocks of $\delta
-\rho$ give the corresponding columns of $J$.
-
-\paragraph{Validation.} This analytic Jacobian was checked against a direct
-central-finite-difference computation of the same quantity (step
-$h=10^{-6}$) and found to agree to within $9\times10^{-9}$ (consistent with
-$O(h^2)$ truncation error), confirming both the formula and its
-implementation independently of the analytic derivation.
-
-\paragraph{On the energy-denominator regularization in $F_{nm}$.} As noted in
-Section~\ref{sec:lambdafit}, $F_{nm}$ is left \emph{unregularized} beyond the
-strict step-function rule $F_{nm}=0$ when $|\varepsilon_n-\varepsilon_m|<
-10^{-10}$ (i.e.\ exact numerical degeneracy only); any attempt to broaden
-this rule (Lorentzian or otherwise) to tame the $U/t=2$ near-degeneracy was
-found to break the $U/t=10$ case. The trust-region step cap of
-Section~\ref{sec:lambdafit} is the mechanism that actually controls the
-consequences of a transiently large $F_{nm}$.
-
-\emph{Code:} \texttt{analytic\_jacobian2(R0, R1, lam0, lam1, t)} (two
-fragments); \texttt{analytic\_jacobian1(R, lam, t)} (single, shared fragment;
-used only with \texttt{fit\_lambda}).
+\paragraph{What this replaces.} An earlier version of the code instead
+\emph{fitted} $(\lambda^0,\lambda^1)$ at every iteration by a damped Newton
+solve (analytic Jacobian of the projector $\rho^{\mathrm{qp}}$, trust-region
+step cap, line search) so that the qp density matrix
+reproduced a target $\Delta$, the mixed impurity result. That is the
+reference code's \emph{other} branch (\texttt{no\_fit\_scf F}, routine
+\texttt{OptLambd}); it is a different algorithm from the one the reference
+runs used here (\texttt{no\_fit\_scf T}), and on the reference seeds it
+diverged: the target $\Delta$ coming from the impurity is generally not
+reachable by the qp problem at fixed $R$, so the fit walked away from the
+physical branch (e.g.\ the physical filling drifted to
+$n_{\mathrm{phys}}\approx1.02$ and then $1.28$ within three iterations on the
+$U/t=2$ seed). The fit machinery, the DIIS mixer, the ``best iterate''
+safety net and the gauge-fixing routine were all removed together with this;
+the fit branch is not implemented.
 
 \subsection{Outer loop: mixing and convergence}
 \label{sec:mixing}
 
-With $(\lambda^0,\lambda^1)$ determined as in Section~\ref{sec:lambdafit},
-one full outer iteration proceeds as follows (see also the pseudocode in
-Section~\ref{sec:mixing-algo}):
-\begin{enumerate}
-  \item Form the guess $\lambda^{I,\mathrm{guess}}$, Eq.~\eqref{eq:lambdaguess}, for each fragment.
-  \item Fit $(\lambda^0,\lambda^1)$, Section~\ref{sec:lambdafit}, obtaining also the
-    corresponding $\Delta^{00},\Delta^{11},\Delta^{01}$.
-  \item Fit $V^0,V^1$, Section~\ref{sec:eqV}.
-  \item Compute $\lambda^{0,c},\lambda^{1,c}$, Eq.~\eqref{eq:lambdac-def} (needed
-    both for the impurity Hamiltonian now, and to seed the \emph{next}
-    iteration's guess, Eq.~\eqref{eq:lambdaguess}).
-  \item Solve the two impurity problems, Section~\ref{sec:impurity}.
-  \item Update $\Delta^{00,\mathrm{new}},\Delta^{11,\mathrm{new}},R^{0,\mathrm{new}},
-    R^{1,\mathrm{new}}$, Section~\ref{sec:update}.
-  \item Compute the residual $\mathrm{diff}=\max(\mathrm{diff}_R,\mathrm{diff}_\Delta)$,
-    with $\mathrm{diff}_R=\max\bigl(\lVert R^{0,\mathrm{new}}-R^0\rVert,
-    \lVert R^{1,\mathrm{new}}-R^1\rVert\bigr)$ and similarly for
-    $\mathrm{diff}_\Delta$ against the current targets.
-  \item \textbf{Update the best-seen state} (see below).
-  \item If $\mathrm{diff}<\mathrm{tol}=10^{-8}$, stop.
-  \item Otherwise, mix: $R^{I}\leftarrow R^{I}+\mathrm{mix}\cdot(R^{I,\mathrm{new}}-R^{I})$,
-    $\Delta^{II}_{\mathrm{target}}\leftarrow\Delta^{II}_{\mathrm{target}}
-    +\mathrm{mix}\cdot(\Delta^{II,\mathrm{new}}-\Delta^{II}_{\mathrm{target}})$,
-    and continue to the next iteration (up to \texttt{max\_iter}, default
-    $100$).
-\end{enumerate}
+After the impurity solves one has, per fragment, $\Delta^{II}$ and $R^I$
+(current) and $\Delta^{II}_{\mathrm{new}}$, $R^I_{\mathrm{new}}$
+(Section~\ref{sec:update}). The reference \texttt{lin} updater then forms
+\begin{equation}
+  X_{\mathrm{next}} \;=\; X + a_k\,\bigl(X_{\mathrm{new}}-X\bigr),\qquad
+  X\in\{R^0,R^1,\Delta^{00},\Delta^{11}\},
+  \qquad
+  a_k=\begin{cases}1 & k_{\mathrm{upd}}\le n_{\mathrm{eq}}\\
+                    a_{\mathrm{mix}} & k_{\mathrm{upd}}>n_{\mathrm{eq}}\end{cases}
+  \label{eq:linmix}
+\end{equation}
+where $k_{\mathrm{upd}}=1,2,\dots$ counts the calls of the mixer. That is,
+\emph{plain substitution} during the first $n_{\mathrm{eq}}$ iterations
+(\texttt{gg\_eq\_time}, default $10$), then linear mixing with weight
+$a_{\mathrm{mix}}$ (\texttt{gg\_lin\_mix}, default $0.65$). The eigenvalues of
+each $\Delta^{II}_{\mathrm{next}}$ are then clipped to $[0,1]$ (the reference
+\texttt{reg\_mat} step; the clip is applied to the mixed matrix, not to the
+$\Delta$ that enters $S$).
 
-\paragraph{Mixing parameter.} The default is $\mathrm{mix}=1.0$, i.e.\
-\emph{plain substitution} (no damping) -- matching the reference
-implementation's default updater. Two more conservative options exist and
-were both tried and abandoned as the \emph{default}: (a) a Pulay/DIIS mixer
-(class \texttt{DIIS} in the code, unused by \texttt{run\_gga} but kept for
-reference/experimentation) and (b) linear under-relaxation with
-$\mathrm{mix}<1$. Both were originally introduced to fix an instability
-observed \emph{before} the trust-region cap of Section~\ref{sec:lambdafit}
-existed; with that cap in place, plain substitution ($\mathrm{mix}=1$) was
-found to reproduce both reference examples (Table~\ref{tab:examples})
-correctly, while $\mathrm{mix}<1$ was, in one case, found to \emph{actively
-prevent} convergence to the correct answer (the damping fought the Newton
-solve's own, already-appropriate, convergence rate). $\mathrm{mix}$ remains
-an adjustable keyword argument of \texttt{run\_gga} for experimentation.
+\paragraph{Convergence test.} With $E^{(k)}_{\mathrm{var}}$ the variational
+energy of iteration $k$ (Eq.~\eqref{eq:Evar}), define
+\begin{align}
+  \delta E_k &= E^{(k)}_{\mathrm{var}}-E^{(k-1)}_{\mathrm{var}}
+     \quad(E^{(-1)}_{\mathrm{var}}\equiv100),\\
+  \delta\Delta_k &= \sum_{I}\bigl\lVert\Delta^{II}_{\mathrm{next},k-1}-\Delta^{II}_{\mathrm{next},k}\bigr\rVert_F
+     \quad(\Delta_{\mathrm{next},-1}\equiv\text{the qp block at iteration }0),\\
+  \delta R_k &= \sum_{I}\bigl\lVert R^{I}_{k}-R^{I}_{\mathrm{next},k}\bigr\rVert ,
+\end{align}
+the sum running over the two fragments. The loop stops when
+$\lvert\delta E_k\rvert<\mathrm{tol}_E$ \emph{or}
+($\delta\Delta_k<\mathrm{tol}_{\mathrm{mat}}$ \emph{and}
+$\delta R_k<\mathrm{tol}_{\mathrm{mat}}$); the defaults are
+$\mathrm{tol}_E=\mathrm{tol}_{\mathrm{mat}}=10^{-6}$, the reference values
+(\texttt{gg\_abs\_tol\_E}, \texttt{gg\_abs\_tol\_mat}). The maximum number of
+iterations defaults to $200$. Nothing is returned other than the last
+iteration (there is no ``best iterate'' selection).
 
-\paragraph{Best-seen-state safety net.} The loop does not simply return
-whatever state exists when it stops (either by hitting \texttt{tol} or by
-exhausting \texttt{max\_iter}); instead, at every iteration it records the
-iterate with the \emph{smallest} $\mathrm{diff}$ seen so far
-(\texttt{best\_diff}, \texttt{best} in the code), and returns \emph{that}
-one. This guards against a specific failure mode that was observed and
-partially, but not completely, cured by the trust-region cap: the outer
-loop can approach the correct fixed point smoothly for several tens of
-iterations (with $\mathrm{diff}$ shrinking steadily) and then, right as an
-eigenvalue of $\Delta^{00}$ crosses very close to $0$, take one bad step into
-a long chaotic transient that eventually resettles into a \emph{different},
-incorrect fixed point with an even smaller final residual than the correct
-transient ever reached. In that situation, ``keep the lowest-residual
-iterate'' does not, by itself, guarantee correctness (the wrong fixed point
-can converge more tightly than the right one's transient), but it does
-provide a reproducible, well-defined selection rule, and it was the
-combination of this safety net \emph{together with} the trust-region cap
-that ultimately reproduced both reference examples of
-Table~\ref{tab:examples} correctly and stably.
+\paragraph{Reported state.} At return, $R^I$ is the \emph{updated} $R$ after the
+last mixing step (the C++ \texttt{final\_R}), $\lambda^I$, $\lambda^{I,c}$,
+$V^I$, $E_{\mathrm{var}}$, $\mathrm{docc}$ and $n_{\mathrm{phys}}$ are those of
+the last iteration.
 
-\emph{Code:} the loop described here is \texttt{run\_gga(Ng, U, t=1.0,
-max\_iter=100, tol=1e-8, mix=1.0, verbose=False, Rg0=None, Rg1=None,
-lamg0=None, lamg1=None)}, with \texttt{Rg1}/\texttt{lamg1} defaulting to
-\texttt{Rg0}/\texttt{lamg0} (a symmetric starting guess) when not given
-explicitly, and \texttt{Rg0}/\texttt{lamg0} defaulting, if nothing is given
-at all, to $R^0=(0.9,\,0.05,\,0.05\cdot1.3,\,0.05\cdot1.6,\dots)$ (a value
-distinct from a repeated constant in the ghost components, chosen to break
-the exact ghost-orbital exchange symmetry that would otherwise trap the
-iteration on a degenerate manifold) and $\lambda^0=0$.
+\emph{Code:} \texttt{run\_gga(Ng, U, t=1.0, max\_iter=200, tol\_E=1e-6,
+tol\_mat=1e-6, mix=0.65, eq\_time=10, sqmat\_shift=1e-9, verbose=False,
+Rg0=None, Rg1=None, lamg0=None, lamg1=None)}. \texttt{Rg1}/\texttt{lamg1}
+default to \texttt{Rg0}/\texttt{lamg0} when not given; if nothing is given at
+all, $R^0=(0.9,\,0.05,\,0.05\cdot1.3,\,0.05\cdot1.6,\dots)$ (distinct ghost
+components, to break the exact ghost-exchange symmetry) and $\lambda^0=0$
+(the C++ default is $R=(1,\dots,1)$, $\lambda=0$).
 
 \subsection{The main self-consistency loop, in pseudocode}
 \label{sec:mixing-algo}
 
 \begin{lstlisting}[language=Python]
-def run_gga(Ng, U, t=1.0, max_iter=100, tol=1e-8, mix=1.0,
+def run_gga(Ng, U, t=1.0, max_iter=200, tol_E=1e-6, tol_mat=1e-6,
+            mix=0.65, eq_time=10, sqmat_shift=1e-9,
             Rg0=None, Rg1=None, lamg0=None, lamg1=None):
     Neff = 1 + Ng
-    mu = U / 2.0
-    ops = build_impurity_ops(Neff, U, mu)          # Sec. 3.4, precomputed once
-
-    R0, R1     = seed_or_default(Rg0, Rg1)          # Sec. 4.2
-    lam0, lam1 = seed_or_default(lamg0, lamg1)
-
-    Delta00_target, Delta11_target, Delta01 = qp_step2(R0, R1, lam0, lam1, t)  # Eq. (3)-(5)
-    V0 = fit_V(R1, Delta00_target, Delta01, t)      # Eq. (7)
-    V1 = fit_V(R0, Delta11_target, Delta01.T, t)
-    lamc0 = grad_S(Delta00_target, R0, V0) - lam0   # Eq. (10)
-    lamc1 = grad_S(Delta11_target, R1, V1) - lam1
-    ddelta_prev = 10.0
+    ops = build_impurity_ops(Neff, U, U / 2.0)      # precomputed once
+    R, lam = seeds(Rg0, Rg1, lamg0, lamg1)          # lists [frag0, frag1]
+    lamc = [0, 0]; V = [0, 0]; curr_E = 100.0; n_upd = 0
 
     for it in range(max_iter):
-        guess0 = grad_S(Delta00_target, R0, V0) - lamc0        # Eq. (14)
-        guess1 = grad_S(Delta11_target, R1, V1) - lamc1
-        x0 = (guess0, guess1) if ddelta_prev > 1.0 else (lam0, lam1)
+        if it == 0:
+            Hqp, rho = qp_state(R, lam, t)          # lam = input guess
+            Delta = blocks(rho); prev_Delta = Delta
+        else:                                       # Eq. (lambda-update)
+            lam = [-lamc[i] + grad_S(Delta[i], outer(V[i], R[i]), eps)
+                   for i in (0, 1)]
+            Hqp, rho = qp_state(R, lam, t)
+            Delta = blocks(rho)                     # recomputed from Hqp
 
-        lam0, lam1, Delta00, Delta11, Delta01 = \
-            fit_lambda2(R0, R1, t, Delta00_target, Delta11_target, *x0)  # Sec. 4.1
+        V    = [hybridization_V(rho, R, t, eps, i) for i in (0, 1)]   # Eq. (V)
+        lamc = [-lam[i] + grad_S(Delta[i], outer(V[i], R[i]), eps)
+                for i in (0, 1)]                                       # Eq. (lamc)
 
-        V0 = fit_V(R1, Delta00, Delta01, t)
-        V1 = fit_V(R0, Delta11, Delta01.T, t)
-        lamc0 = grad_S(Delta00, R0, V0) - lam0
-        lamc1 = grad_S(Delta11, R1, V1) - lam1
+        imp = [impurity_solve(V[i], lamc[i], ops) for i in (0, 1)]   # ED
+        Delta_new = [I - imp[i].Delta_bb for i in (0, 1)]             # Eq. (Delta)
+        R_new     = [S_inv(Delta_new[i]) @ imp[i].D for i in (0, 1)]  # Eq. (R)
 
-        Delta00_bb, D0, Eloc0, docc0, nphys0 = impurity_solve(V0, lamc0, ops)  # Sec. 3.4
-        Delta11_bb, D1, Eloc1, docc1, nphys1 = impurity_solve(V1, lamc1, ops)
+        E_var = 2*trace(rho @ (Hqp + blockdiag(lam))) + Eloc0 + Eloc1 # Eq. (Evar)
 
-        Delta00_new = I - Delta00_bb                # Eq. (11)
-        Delta11_new = I - Delta11_bb
-        R0_new = fit_R(Delta00_new, D0)              # Eq. (12)
-        R1_new = fit_R(Delta11_new, D1)
+        n_upd += 1;  a = 1.0 if n_upd <= eq_time else mix             # Eq. (linmix)
+        Delta_next = [Delta[i] + a*(Delta_new[i] - Delta[i]) for i in (0, 1)]
+        R_next     = [R[i]     + a*(R_new[i]     - R[i])     for i in (0, 1)]
+        Delta_next = [clip_eigenvalues(D, 0, 1) for D in Delta_next]
 
-        diff_R = max(|R0_new-R0|, |R1_new-R1|)
-        diff_D = max(|Delta00_new-Delta00_target|, |Delta11_new-Delta11_target|)
-        diff   = max(diff_R, diff_D)
-
-        record_if_best(diff, current_state)          # Sec. 4.3
-        if diff < tol: break
-
-        R0 += mix * (R0_new - R0)                     # Sec. 4.3, mix=1.0 by default
-        R1 += mix * (R1_new - R1)
-        Delta00_target += mix * (Delta00_new - Delta00_target)
-        Delta11_target += mix * (Delta11_new - Delta11_target)
-        ddelta_prev = diff_D
-
-    return best_state   # E_var via Eq. (13), Z0=|R0|^2, Z1=|R1|^2, docc, n_phys
+        dD = sum(norm(prev_Delta[i] - Delta_next[i]) for i in (0, 1))
+        dR = sum(norm(R[i] - R_next[i])              for i in (0, 1))
+        dE = E_var - curr_E
+        prev_Delta, R, Delta, curr_E = Delta_next, R_next, Delta_next, E_var
+        if abs(dE) < tol_E or (dD < tol_mat and dR < tol_mat):
+            break
+    return R, lam, lamc, V, E_var, ...              # last iteration
 \end{lstlisting}
 
-\subsection{An abandoned fix: gauge-fixing}
-\label{sec:gaugefixing-note}
+\subsection{Validation against the reference C++ code, iteration by iteration}
+\label{sec:validation}
 
-The code contains a function \texttt{fix\_gauge(R, lam, Delta)} implementing
-a genuine, exact gauge freedom of the single-fragment formulation: any
-orthogonal $\Neff\times\Neff$ rotation $Q$ of one fragment's ghost-orbital
-basis, applied as $R\to RQ$, $\lambda\to Q^{T}\lambda Q$, $\Delta\to
-Q^{T}\Delta Q$, leaves every physical prediction (energies, $\Delta$,
-impurity solve) exactly invariant, since $\Hqp$ only depends on $R$ through
-$R\otimes R$ and on $\lambda$ only through its role inside the same rotated
-basis. \texttt{fix\_gauge} pins this freedom down via a Householder
-reflection rotating $R$ onto the canonical direction $R\to(\lvert R\rvert,0,
-\dots,0)$, mirroring the reference implementation's SVD-based
-\texttt{FixGauge} (which is itself \emph{disabled by default} in that
-implementation, \texttt{gg\_fix\_gauge=false}).
+The reference code writes, for every iteration, the intermediate quantities
+(\texttt{curr\_deltas}, \texttt{curr\_Vs}, \texttt{curr\_lambdcs},
+\texttt{imp\_1rdms}, \texttt{new\_Rs}, $E_{\mathrm{var}}$, $\delta\Delta$,
+$\delta R$) to \texttt{gg.out}. Two $U/t=2$, $\Ng=2$ test cases, differing only
+in the seed $(R,\lambda)$ read from the reference \texttt{guess\_*.dat}
+files, were run with both codes: \texttt{backward} (a generic, asymmetric seed
+with $\Delta$-eigenvalues $3.5\times10^{-5},\tfrac12,0.99996$) and
+\texttt{forward} (the symmetric-solution seed with $\Delta$-eigenvalues
+exactly $0,\tfrac12,1$, the one that produced NaN before the shift was
+introduced). The results agree at every step:
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{crrrrrr}
+\toprule
+ & \multicolumn{2}{c}{$E_{\mathrm{var}}/t$} & \multicolumn{2}{c}{$\delta\Delta$} & \multicolumn{2}{c}{$\delta R$} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+$k$ & this code & C++ & this code & C++ & this code & C++ \\
+\midrule
+0 & $-3.113524$ & $-3.11352$ & $3.998\!\times\!10^{-4}$ & $3.998\!\times\!10^{-4}$ & $2.396\!\times\!10^{-2}$ & $2.396\!\times\!10^{-2}$ \\
+1 & $-3.124827$ & $-3.12483$ & $4.121\!\times\!10^{-4}$ & $4.121\!\times\!10^{-4}$ & $1.665\!\times\!10^{-3}$ & $1.665\!\times\!10^{-3}$ \\
+2 & $-3.125596$ & $-3.12560$ & $3.098\!\times\!10^{-5}$ & $3.098\!\times\!10^{-5}$ & $1.270\!\times\!10^{-4}$ & $1.270\!\times\!10^{-4}$ \\
+3 & $-3.125656$ & $-3.12566$ & $2.458\!\times\!10^{-6}$ & $2.458\!\times\!10^{-6}$ & $1.009\!\times\!10^{-5}$ & $1.009\!\times\!10^{-5}$ \\
+4 & $-3.125661$ & $-3.12566$ & $1.964\!\times\!10^{-7}$ & $1.964\!\times\!10^{-7}$ & $8.063\!\times\!10^{-7}$ & $8.063\!\times\!10^{-7}$ \\
+\bottomrule
+\end{tabular}
+\caption{Iteration-by-iteration comparison, \texttt{backward} case
+($U/t=2$, $\Ng=2$). The C++ $E_{\mathrm{var}}$ is printed with six
+significant figures in its log.}
+\label{tab:cppcompare}
+\end{table}
 
-This function is \textbf{not called} by the production loop
-(\texttt{run\_gga}). It was introduced to cure a persistent, small-amplitude
-oscillation of $R$ (while $\Delta$ and the energy converged cleanly) observed
-with an earlier, buggier version of \texttt{fit\_lambda2}, and it did cure
-that oscillation for the symmetric $U/t=10$ case. However, once
-\texttt{fit\_lambda2} was fixed to use the damped, local Newton solve of
-Section~\ref{sec:lambdafit} (which, unlike the earlier buggy version, stays
-in the guess's basin by construction and has no reason to drift in gauge
-space), applying \texttt{fix\_gauge} was found to be actively \emph{harmful}:
-for the identical $U/t=2$ seed that otherwise converges correctly to
-$E_{\mathrm{var}}=-3.1257$ (Table~\ref{tab:examples}), enabling
-\texttt{fix\_gauge} made the loop converge cleanly and stably to a
-\emph{different}, unphysical fixed point ($E_{\mathrm{var}}\approx-2.04$, a
-fully decoupled/trivial solution). \texttt{fix\_gauge} is kept in the code,
-documented, and available for experimentation, but is not part of the
-default algorithm.
+For \texttt{forward}, $E_{\mathrm{var}}$ goes $-3.136429,\,-3.125710,\,
+-3.125044,\,-3.125003,\,-3.125000$ (C++: $-3.13643,\,-3.12571,\,-3.12504,\,
+-3.12500,\,-3.12500$) and $\delta R$ goes $5.892\!\times\!10^{-3},\,
+3.665\!\times\!10^{-4},\,2.290\!\times\!10^{-5},\,1.431\!\times\!10^{-6},\,
+8.950\!\times\!10^{-8}$ (C++: the same to the printed digits); in this case
+$\delta\Delta$ is at the rounding level ($\sim10^{-9}$--$10^{-10}$) in both
+codes after the first iteration, so only its order of magnitude is
+meaningful. The final quasiparticle weight is $Z=0.9375$ ($=$ the
+eigenvalue of $R^\dagger R$ printed by the C++ code). In both cases the
+final $R$ and $\lambda$ written by \texttt{save\_results} agree with the C++
+\texttt{final\_R\_*.dat} and \texttt{final\_lambda\_*.dat} to
+$\lesssim10^{-9}$ in every entry, and both runs converge in $5$
+iterations, as in the reference.
+
+\paragraph{Cold starts.} The reference code has no built-in initial guess:
+it reads $R$ and $\lambda$ from files. To test cold starts, the same seed files
+were given to both codes: $R=(1,1,1)$ (``ones''), the code's default
+$R=(0.9,0.05,0.065)$ (``pydef''), and a random $R\in[0.05,1]^3$
+(``rand1''), each with $\lambda=0$, plus ``onesN'' and ``pydefN'' which add the
+same small symmetric random $\lambda$ ($\sim10^{-3}$) to break the exact
+degeneracy of $\Hqp$ at $\lambda=0$; $U/t\in\{2,4,8,10\}$, $\Ng=2$. Result:
+\emph{all $20$ runs converge with both codes, and the iteration counts and
+final $Z$ are identical in all $20$} (energies agree to the digits the C++ log
+prints):
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+seed & $U/t=2$ & $U/t=4$ & $U/t=8$ & $U/t=10$ \\
+\midrule
+ones   & $-3.1250$ (8)  & $-4.5000$ (12) & $-8.0001$ (189) & $-10.0000$ (35) \\
+pydef  & $-3.1250$ (7)  & $-4.5000$ (11) & $-8.0001$ (187) & $-10.0000$ (34) \\
+rand1  & $-3.1250$ (7)  & $-4.5000$ (11) & $-8.0001$ (188) & $-10.0000$ (34) \\
+onesN  & $-3.1257$ (7)  & $-4.5111$ (15) & $-8.1276$ (33)  & $-10.1013$ (16) \\
+pydefN & $-3.1257$ (7)  & $-4.5111$ (12) & $-8.1276$ (23)  & $-10.1013$ (15) \\
+\bottomrule
+\end{tabular}
+\caption{Final $E_{\mathrm{var}}/t$ (number of iterations) from cold seeds,
+$\Ng=2$; the C++ code gives the same numbers. Exact energies: $-3.2361$,
+$-4.8284$, $-8.4721$, $-10.3852$.}
+\label{tab:cold}
+\end{table}
+
+\paragraph{Reading Table~\ref{tab:cold}.} The fixed-point map has several
+solutions (as in any mean-field-like variational theory), and which one a cold
+start reaches depends on the seed, in the \emph{same} way for both codes. With
+$\lambda=0$ the seed sits on an exactly symmetric manifold and the run
+falls onto the plain-Gutzwiller branch: $Z=0.75$, $E=-4.5$ at $U/t=4$, and
+$Z\approx5\!\times\!10^{-6}$, $E=-10$ at $U/t=10$, i.e.\ the ghost orbitals stay
+unused ($\Ng=0$ gives the same values). With a tiny $\lambda$ noise the run
+finds the ghost-assisted solution ($E=-4.5111$, $-8.1276$, $-10.1013$, the same
+as the seeded examples), which is lower in energy and closer to the exact
+values, so a cold start does \emph{not} guarantee the best solution: at
+$\lambda=0$ both codes converge, but to a higher-energy branch. Seeding
+\texttt{R.in}/\texttt{L.in} from a good solution, or a small random $\lambda$,
+is the reliable way to reach the lower branch.
+
+\paragraph{Sensitivity, and why the FCIDUMP quantization is emulated.} At
+$U/t=10$ the reference code's $\lambda=0$ run ends on the localized branch
+($E=-10$), whereas the code without the FCIDUMP quantization
+of Section~\ref{sec:impurity}, with seed perturbations of only $10^{-12}$, lands
+on either branch depending on the perturbation ($E=-10.1013$ for some, $-10.0000$
+for others), while the reference code gives $E=-10$ for all six perturbed
+seeds. With the quantization emulated the code gives $E=-10.0000$ in all six, in
+$34$ iterations like the reference (and $188$ iterations, $Z=0.007935$ at
+$U/t=8$, again as the reference).
 
 \section{Observables reported by the code}
 
@@ -1279,8 +1267,10 @@ default algorithm.
     the fragment-averaged impurity double occupancy (Section~\ref{sec:impurity}),
     directly comparable to \texttt{exact\_dimer.py}'s \texttt{docc/site} column.
   \item \textbf{Physical filling} $n_{\mathrm{phys}}=\tfrac12(n^0_{\mathrm{phys}}+n^1_{\mathrm{phys}})$.
-  \item \textbf{Converged parameters} $R^0,R^1,\lambda^0,\lambda^1,\lambda^{0,c},
-    \lambda^{1,c},V^0,V^1$, all returned in the result dictionary and, from
+  \item \textbf{Final parameters} $R^0,R^1,\lambda^0,\lambda^1,\lambda^{0,c},
+    \lambda^{1,c},V^0,V^1$ of the last iteration ($R$ after the last mixing
+    step, as in the reference), all returned in the result dictionary
+    (together with a \texttt{converged} flag) and, from
     the command line, written to \texttt{<prefix>\_R.dat},
     \texttt{<prefix>\_lambda.dat}, \texttt{<prefix>\_lambda\_c.dat} (one
     row-block per fragment: atom~0 then atom~1).
@@ -1369,16 +1359,26 @@ round-off) evaluating Eqs.~\eqref{eq:Gqp}--\eqref{eq:Aomega} at each point;
 \begin{lstlisting}[language=bash]
 python3 gga_dimer.py --U <U/t> --Ng <even integer>
                       [--t <hopping, default 1.0>]
-                      [--max-iter <default 100>]
+                      [--max-iter <default 200>]
+                      [--sqmat-shift <default 1e-9>]
+                      [--no-fcidump-rounding]
+                      [--mix <default 0.65>] [--eq-time <default 10>]
+                      [--tol-E <default 1e-6>] [--tol-mat <default 1e-6>]
                       [--quiet]
                       [--R-file <path, default R.in>]
                       [--lam-file <path, default L.in>]
                       [--omega <omega_max> --eta <eta> --domega <step>]
 \end{lstlisting}
-Called with no \texttt{-{}-U}/\texttt{-{}-Ng}, the script instead prints a
-default sweep over $\Ng\in\{0,2,4\}$ and $U/t\in\{0,1,2,4,8\}$, using the
-default cold-start seed for every point (no external guess files are read in
-this mode).
+The last five numerical options correspond one to one to the reference input
+keys \texttt{gg\_sqmat\_shift}, \texttt{gg\_lin\_mix}, \texttt{gg\_eq\_time},
+\texttt{gg\_abs\_tol\_E} and \texttt{gg\_abs\_tol\_mat} (and \texttt{-{}-max-iter}
+to \texttt{gg\_maxits}); \texttt{-{}-no-fcidump-rounding} switches off the
+emulation of the reference FCIDUMP hand-over of Section~\ref{sec:impurity}. The option \texttt{-{}-regularize} of the earlier
+version no longer exists (the clips and caps it switched on are not part of
+the reference algorithm). Called with no \texttt{-{}-U}/\texttt{-{}-Ng}, the
+script instead prints a default sweep over $\Ng\in\{0,2,4\}$ and
+$U/t\in\{0,1,2,4,8\}$, using the default cold-start seed for every point (no
+external guess files are read in this mode).
 
 \paragraph{\texttt{-{}-omega}, \texttt{-{}-eta}, \texttt{-{}-domega}.} Optional,
 and only meaningful together with \texttt{-{}-U}/\texttt{-{}-Ng}; the three
@@ -1400,22 +1400,28 @@ whitespace- or comma-separated.
 \paragraph{\texttt{L.in}.} Either $\Neff$ rows of $\Neff$ numbers (one
 symmetric matrix, used for both fragments) or $2\Neff$ rows of $\Neff$
 numbers (fragment $0$'s $\Neff\times\Neff$ block, stacked on top of fragment
-$1$'s block), free-format.
+$1$'s block), free-format. To seed a run from the reference C++ code's
+\texttt{guess\_L1.dat}, \texttt{guess\_L2.dat} (one $\Neff\times\Neff$ matrix per
+fragment) and \texttt{guess\_R1.dat}, \texttt{guess\_R2.dat} (one row per
+fragment), simply concatenate them: $\texttt{L.in}=\texttt{guess\_L1.dat}$ then
+$\texttt{guess\_L2.dat}$, and likewise for \texttt{R.in}.
 
 Both files are read automatically if present in the working directory (or at
 the path given by \texttt{-{}-R-file}/\texttt{-{}-lam-file}); if absent, the
-default cold-start seed of Section~\ref{sec:mixing} is used. Every run,
-successful or not, writes its final $(R,\lambda,\lambda^c)$ back out in
-exactly this stacked, two-row-block format (\texttt{save\_results}), so a
-converged run's output can be fed back in directly as the next run's guess.
+default cold-start seed of Section~\ref{sec:mixing} is used. Every run
+writes its final $(R,\lambda,\lambda^c)$ back out in exactly this stacked,
+two-row-block format (\texttt{save\_results}), so a converged run's output
+can be fed back in directly as the next run's guess.
 
 \section{Worked examples and current validation status}
 \label{sec:examples}
 
-Two examples, seeded directly from an independent reference implementation's
-own converged (or near-converged) iterates, are kept under
-\texttt{examples/} and are the primary validation of everything in this
-document:
+Two examples, seeded from an independent reference implementation's own
+iterates, are kept under \texttt{examples/}. In addition, the two
+reference test cases of Section~\ref{sec:validation} (\texttt{forward} and
+\texttt{backward}, with the reference code's complete \texttt{gg.out} logs)
+are the primary, iteration-by-iteration validation of everything in this
+document.
 
 \begin{table}[h]
 \centering
@@ -1423,31 +1429,16 @@ document:
 \toprule
 Example & $\Ng$ & $U/t$ & seed type & this code's $E_{\mathrm{var}}/t$ & reference $E_{\mathrm{var}}/t$ \\
 \midrule
-\texttt{examples/Ng2\_U10} & 2 & 10 & symmetric ($R^0{=}R^1$) & $-10.101314$ & $-10.1013$ \\
-\texttt{examples/Ng2\_U2}  & 2 & 2  & asymmetric ($R^0{\neq}R^1$) & $-3.125656$ & $-3.12566$ \\
+\texttt{examples/Ng2\_U10} & 2 & 10 & symmetric ($R^0{=}R^1$) & $-10.101314$ & $-10.101316$ \\
+\texttt{examples/Ng2\_U2}  & 2 & 2  & asymmetric ($R^0{\neq}R^1$) & $-3.125661$ & $-3.12566$ \\
+\texttt{forward} (Sec.~\ref{sec:validation})  & 2 & 2  & symmetric-solution seed & $-3.125000$ & $-3.125$ \\
 \bottomrule
 \end{tabular}
-\caption{The two seeded reference examples and the agreement obtained with
-the algorithm of Section~\ref{sec:outer-loop}, matching the independent
-reference implementation to 5--6 significant figures in both cases.}
+\caption{Seeded reference examples and the agreement obtained with the
+algorithm of Section~\ref{sec:outer-loop} (the \texttt{backward} case is
+the same physical solution as \texttt{examples/Ng2\_U2}, Table~\ref{tab:cppcompare}).}
 \label{tab:examples}
 \end{table}
-
-\paragraph{Known open limitation: cold-start reliability.} The
-fixed-point map defined by Sections~\ref{sec:selfconsistency}--\ref{sec:outer-loop}
-has, at fixed $(\Ng,U)$, more than one solution (an expected feature of a
-mean-field-like variational theory, directly analogous to a Hartree--Fock
-calculation having multiple self-consistent solutions of which only one is
-the true minimum). Starting from the default, generic cold-start seed
-(Section~\ref{sec:mixing}) does \emph{not} reliably converge to the
-lowest-energy, physically correct solution for every $(\Ng,U)$; it can land
-on trivial (decoupled, $R\to$ small) or otherwise spurious branches. Both
-examples in Table~\ref{tab:examples} required seeding \texttt{R.in}/\texttt{L.in}
-directly from the reference implementation's own trajectory to reliably
-reproduce the correct answer. Making the cold start itself robust (e.g.\ via
-a systematic multi-start strategy, or continuation in $U$ from the exactly
-solvable $U=0$ point) is identified as future work and is not yet
-implemented.
 
 \section{References}
 \label{sec:refs}
@@ -1475,12 +1466,16 @@ implemented.
     Hamiltonian's exact operator ordering, Eq.~\eqref{eq:Himp} (its Eq.~30),
     including the sign subtlety of Eq.~\eqref{eq:sign-fix}.
   \item Independent reference implementation (C++, \texttt{gGut} package):
-    used throughout as ground truth for validating every equation and
-    numerical convention in this document, via full iteration-by-iteration
-    logs at $U/t=2$ and $U/t=10$ (files \texttt{2.0.out}, \texttt{10.0.out})
-    and via direct inspection of the relevant source files
-    (\texttt{ggutzwiller.c++}, \texttt{lambd\_opt.c++},
-    \texttt{delta\_derivative.c++}).
+    used throughout as ground truth: the whole self-consistency cycle of
+    Sections~\ref{sec:workflow}--\ref{sec:outer-loop} is a step-by-step
+    port of \texttt{GhostGutzwiller::Run} (\texttt{ggutzwiller.c++}), with the
+    helper routines \texttt{GetMatSqrt} (\texttt{utils.c++}),
+    \texttt{eigspaceOneRDMDerivator} (\texttt{delta\_derivative.c++}),
+    \texttt{RSImpMod::GetGSlocX} / \texttt{GetQpGSloc1RDM\_full}
+    (\texttt{rsimp\_mod.c++}), \texttt{LinearMixer} (\texttt{scf\_updater.c++})
+    and the termination tracker (\texttt{ggtermtrack.c++}); validated against
+    its \texttt{gg.out} iteration logs (Section~\ref{sec:validation}) and its
+    \texttt{2.0.out}, \texttt{10.0.out} logs.
 \end{enumerate}
 
 \end{document}

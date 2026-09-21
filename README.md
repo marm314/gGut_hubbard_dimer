@@ -8,8 +8,11 @@ reference (C++) implementation.
 ## Contents
 
 - `gga_dimer.py` -- the gGA self-consistency solver (two independent
-  fragments, analytic-Jacobian Newton solve for lambda, quasiparticle
-  Green's function / spectral function post-processing). Run
+  fragments; the self-consistency cycle mirrors the reference C++ code
+  step by step -- lambda from lambda^c, shifted matrix square roots,
+  analytic lambda^c derivative, linear mixing -- with our own impurity
+  solver; quasiparticle Green's function / spectral function
+  post-processing). Run
   `python3 gga_dimer.py --help` for CLI options.
 - `exact_dimer.py` -- exact diagonalization of the 2-site Hubbard dimer,
   used as ground truth.

@@ -12,7 +12,7 @@ python3 ../../gga_dimer.py --U 10.0 --Ng 2
 Expected result (matches the reference to 6 significant figures):
 
 ```
-Ng=2  U/t=10.0000  Z=R^2=0.991895  E_var/t=-10.101316  docc=0.005204
+Ng=2  U/t=10.0000  Z0=0.991894  Z1=0.991894  E_var/t=-10.101314  docc=0.005204
 ```
 
 ## Spectral function (optional)

@@ -12,9 +12,10 @@ python3 ../../gga_dimer.py --U 2.0 --Ng 2
 
 Reference converged value (from 2.0.out, iteration 4): `Evar = -3.12566`.
 
-Status: converges to `E_var/t = -3.125656`, matching the reference to
-5-6 significant figures, with the genuinely asymmetric fixed point
-(atom 0 and atom 1 keep distinct R/lambda; Z0=0.999912, Z1=0.999913).
+Status: converges in 5 iterations to `E_var/t = -3.125661` (Z0 = Z1 =
+0.999911), reproducing the reference iteration by iteration (E_var, |dDelta|,
+|dR|) and its final R and lambda to ~1e-9. Atom 0 and atom 1 keep distinct
+R/lambda.
 
 ## Spectral function (optional)
 
