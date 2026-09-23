@@ -403,16 +403,16 @@ def run_gga(Ng, U, t=1.0, max_iter=200, tol_E=1e-6, tol_mat=1e-6, mix=0.65, eq_t
         # the same matrix -- see doc/code.tex, "Are the converged points solutions?" for why
         # this can happen (inert ghost orbitals, n=0 or n=1) and what it means.
         print("\n[check] Delta_qp (quasiparticle 1-RDM) vs Delta_new (impurity-derived 1 - Delta_bb), "
-              "final iteration:")
+              "final iteration:\n")
         for i in range(2):
             eig_qp = np.linalg.eigvalsh(res["Delta"][i])
             eig_new = np.linalg.eigvalsh(Delta_new[i])
             diff = np.abs(res["Delta"][i] - Delta_new[i]).max()
-            print(f"  fragment {i}: eig(Delta_qp)  = {eig_qp}")
-            print(f"  fragment {i}: eig(Delta_new) = {eig_new}")
-            print(f"  fragment {i}: max|Delta_qp - Delta_new| = {diff:.3e}")
             print(f"  fragment {i}: Delta_qp =\n{res['Delta'][i]}")
+            print(f"  fragment {i}: eig(Delta_qp)  = {eig_qp}\n")
             print(f"  fragment {i}: Delta_new =\n{Delta_new[i]}")
+            print(f"  fragment {i}: eig(Delta_new) = {eig_new}\n")
+            print(f"  fragment {i}: max|Delta_qp - Delta_new| = {diff:.3e}\n")
         print()
 
     return {
