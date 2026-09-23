@@ -1,0 +1,53 @@
+[setup] Ng=2  Neff=3  impurity orbitals/spin=4  Fock dim=256  (sparse operators)
+[setup] built impurity operators in 0.01s; ground state searched in the N_up=N_dn sector of dim 36
+  it=  0  Z0=0.510001  Z1=0.510001  E_var=-5.882934  dE=-1.059e+02  docc=0.073427  n_phys=1.000000  |dDelta|=2.828e+00  |dR|=1.245e-02  [qp 0.00s | ED 0.00s]
+  it=  1  Z0=0.501152  Z1=0.501152  E_var=-5.874045  dE=8.889e-03  docc=0.072654  n_phys=1.000000  |dDelta|=3.279e-08  |dR|=6.195e-03  [qp 0.00s | ED 0.00s]
+  it=  2  Z0=0.496776  Z1=0.496776  E_var=-5.869692  dE=4.353e-03  docc=0.072268  n_phys=1.000000  |dDelta|=5.678e-09  |dR|=3.114e-03  [qp 0.00s | ED 0.00s]
+  it=  3  Z0=0.494584  Z1=0.494584  E_var=-5.867522  dE=2.170e-03  docc=0.072074  n_phys=1.000000  |dDelta|=7.943e-09  |dR|=1.573e-03  [qp 0.00s | ED 0.00s]
+  it=  4  Z0=0.493479  Z1=0.493479  E_var=-5.866431  dE=1.091e-03  docc=0.071976  n_phys=1.000000  |dDelta|=4.718e-09  |dR|=7.965e-04  [qp 0.00s | ED 0.00s]
+  it=  5  Z0=0.492919  Z1=0.492919  E_var=-5.865879  dE=5.515e-04  docc=0.071926  n_phys=1.000000  |dDelta|=1.049e-08  |dR|=4.038e-04  [qp 0.00s | ED 0.00s]
+  it=  6  Z0=0.492636  Z1=0.492636  E_var=-5.865600  dE=2.793e-04  docc=0.071901  n_phys=1.000000  |dDelta|=2.763e-08  |dR|=2.049e-04  [qp 0.00s | ED 0.00s]
+  it=  7  Z0=0.492492  Z1=0.492492  E_var=-5.865458  dE=1.416e-04  docc=0.071888  n_phys=1.000000  |dDelta|=9.612e-10  |dR|=1.040e-04  [qp 0.00s | ED 0.00s]
+  it=  8  Z0=0.492419  Z1=0.492419  E_var=-5.865387  dE=7.185e-05  docc=0.071882  n_phys=1.000000  |dDelta|=8.225e-09  |dR|=5.277e-05  [qp 0.00s | ED 0.00s]
+  it=  9  Z0=0.492382  Z1=0.492382  E_var=-5.865350  dE=3.647e-05  docc=0.071878  n_phys=1.000000  |dDelta|=1.838e-08  |dR|=2.679e-05  [qp 0.00s | ED 0.00s]
+  it= 10  Z0=0.492363  Z1=0.492363  E_var=-5.865332  dE=1.851e-05  docc=0.071877  n_phys=1.000000  |dDelta|=9.899e-01  |dR|=8.839e-06  [qp 0.00s | ED 0.00s]
+  it= 11  Z0=0.492357  Z1=0.492357  E_var=-5.865325  dE=6.107e-06  docc=0.071876  n_phys=1.000000  |dDelta|=6.415e-10  |dR|=6.010e-06  [qp 0.00s | ED 0.00s]
+  it= 12  Z0=0.492353  Z1=0.492353  E_var=-5.865321  dE=4.153e-06  docc=0.071876  n_phys=1.000000  |dDelta|=3.868e-09  |dR|=4.087e-06  [qp 0.00s | ED 0.00s]
+  it= 13  Z0=0.492350  Z1=0.492350  E_var=-5.865318  dE=2.824e-06  docc=0.071876  n_phys=1.000000  |dDelta|=5.060e-10  |dR|=2.779e-06  [qp 0.00s | ED 0.00s]
+  it= 14  Z0=0.492348  Z1=0.492348  E_var=-5.865317  dE=1.920e-06  docc=0.071875  n_phys=1.000000  |dDelta|=1.902e-09  |dR|=1.890e-06  [qp 0.00s | ED 0.00s]
+  it= 15  Z0=0.492347  Z1=0.492347  E_var=-5.865315  dE=1.306e-06  docc=0.071875  n_phys=1.000000  |dDelta|=2.267e-09  |dR|=1.285e-06  [qp 0.00s | ED 0.00s]
+  it= 16  Z0=0.492346  Z1=0.492346  E_var=-5.865314  dE=8.877e-07  docc=0.071875  n_phys=1.000000  |dDelta|=2.884e-09  |dR|=8.737e-07  [qp 0.00s | ED 0.00s]
+
+[check] Delta_qp (quasiparticle 1-RDM) vs Delta_new (impurity-derived 1 - Delta_bb), final iteration:
+
+  fragment 0: Delta_qp =
+[[ 0.50559589 -0.0537381  -0.02747287]
+ [-0.0537381   0.9801311   0.11451423]
+ [-0.02747287  0.11451423  0.01427301]]
+  fragment 0: eig(Delta_qp)  = [2.45504449e-18 5.00000000e-01 1.00000000e+00]
+
+  fragment 0: Delta_new =
+[[ 0.49440411  0.0537381   0.02747287]
+ [ 0.0537381   0.0198689  -0.11451423]
+ [ 0.02747287 -0.11451423  0.98572699]]
+  fragment 0: eig(Delta_new) = [-2.22044605e-16  5.00000000e-01  1.00000000e+00]
+
+  fragment 0: max|Delta_qp - Delta_new| = 9.715e-01
+
+  fragment 1: Delta_qp =
+[[ 0.01986884  0.05373785 -0.11451423]
+ [ 0.05373785  0.49440416  0.0274728 ]
+ [-0.11451423  0.0274728   0.985727  ]]
+  fragment 1: eig(Delta_qp)  = [-2.20627749e-17  5.00000000e-01  1.00000000e+00]
+
+  fragment 1: Delta_new =
+[[ 0.98013116 -0.05373785  0.11451423]
+ [-0.05373785  0.50559584 -0.0274728 ]
+ [ 0.11451423 -0.0274728   0.014273  ]]
+  fragment 1: eig(Delta_new) = [-1.90819582e-16  5.00000000e-01  1.00000000e+00]
+
+  fragment 1: max|Delta_qp - Delta_new| = 9.715e-01
+
+
+
+Ng=2  U/t=5.7000  Z0=0.492345  Z1=0.492345  E_var/t=-5.865314  docc=0.071875  converged=True  iters=16

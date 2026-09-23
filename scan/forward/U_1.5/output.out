@@ -1,0 +1,40 @@
+[setup] Ng=2  Neff=3  impurity orbitals/spin=4  Fock dim=256  (sparse operators)
+[setup] built impurity operators in 0.01s; ground state searched in the N_up=N_dn sector of dim 36
+  it=  0  Z0=0.969375  Z1=0.969375  E_var=-2.829057  dE=-1.028e+02  docc=0.203231  n_phys=1.000000  |dDelta|=2.828e+00  |dR|=4.446e-03  [qp 0.00s | ED 0.00s]
+  it=  1  Z0=0.965002  Z1=0.965002  E_var=-2.820619  dE=8.439e-03  docc=0.203129  n_phys=1.000000  |dDelta|=2.770e-09  |dR|=1.558e-04  [qp 0.00s | ED 0.00s]
+  it=  2  Z0=0.964849  Z1=0.964849  E_var=-2.820323  dE=2.953e-04  docc=0.203125  n_phys=1.000000  |dDelta|=5.082e-10  |dR|=5.475e-06  [qp 0.00s | ED 0.00s]
+  it=  3  Z0=0.964844  Z1=0.964844  E_var=-2.820313  dE=1.038e-05  docc=0.203125  n_phys=1.000000  |dDelta|=4.787e-10  |dR|=1.925e-07  [qp 0.00s | ED 0.00s]
+
+[check] Delta_qp (quasiparticle 1-RDM) vs Delta_new (impurity-derived 1 - Delta_bb), final iteration:
+
+  fragment 0: Delta_qp =
+[[ 0.5055959  -0.05373811 -0.02747285]
+ [-0.05373811  0.9801311   0.11451423]
+ [-0.02747285  0.11451423  0.01427301]]
+  fragment 0: eig(Delta_qp)  = [5.52614773e-18 5.00000000e-01 1.00000000e+00]
+
+  fragment 0: Delta_new =
+[[ 0.4944041   0.05373811  0.02747285]
+ [ 0.05373811  0.0198689  -0.11451423]
+ [ 0.02747285 -0.11451423  0.98572699]]
+  fragment 0: eig(Delta_new) = [2.08166817e-16 5.00000000e-01 1.00000000e+00]
+
+  fragment 0: max|Delta_qp - Delta_new| = 9.715e-01
+
+  fragment 1: Delta_qp =
+[[ 0.01986885  0.05373787 -0.11451424]
+ [ 0.05373787  0.49440415  0.02747271]
+ [-0.11451424  0.02747271  0.985727  ]]
+  fragment 1: eig(Delta_qp)  = [2.73328084e-18 5.00000000e-01 1.00000000e+00]
+
+  fragment 1: Delta_new =
+[[ 0.98013115 -0.05373787  0.11451424]
+ [-0.05373787  0.50559585 -0.02747271]
+ [ 0.11451424 -0.02747271  0.014273  ]]
+  fragment 1: eig(Delta_new) = [2.87964097e-16 5.00000000e-01 1.00000000e+00]
+
+  fragment 1: max|Delta_qp - Delta_new| = 9.715e-01
+
+
+
+Ng=2  U/t=1.5000  Z0=0.964844  Z1=0.964844  E_var/t=-2.820313  docc=0.203125  converged=True  iters=3

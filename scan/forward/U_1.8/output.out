@@ -1,0 +1,40 @@
+[setup] Ng=2  Neff=3  impurity orbitals/spin=4  Fock dim=256  (sparse operators)
+[setup] built impurity operators in 0.01s; ground state searched in the N_up=N_dn sector of dim 36
+  it=  0  Z0=0.954844  Z1=0.954844  E_var=-3.011636  dE=-1.030e+02  docc=0.193903  n_phys=1.000000  |dDelta|=2.828e+00  |dR|=5.322e-03  [qp 0.00s | ED 0.00s]
+  it=  1  Z0=0.949650  Z1=0.949650  E_var=-3.001773  dE=9.863e-03  docc=0.193758  n_phys=1.000000  |dDelta|=4.262e-09  |dR|=2.683e-04  [qp 0.00s | ED 0.00s]
+  it=  2  Z0=0.949389  Z1=0.949389  E_var=-3.001276  dE=4.964e-04  docc=0.193750  n_phys=1.000000  |dDelta|=1.851e-09  |dR|=1.358e-05  [qp 0.00s | ED 0.00s]
+  it=  3  Z0=0.949376  Z1=0.949376  E_var=-3.001251  dE=2.512e-05  docc=0.193750  n_phys=1.000000  |dDelta|=1.168e-10  |dR|=6.874e-07  [qp 0.00s | ED 0.00s]
+
+[check] Delta_qp (quasiparticle 1-RDM) vs Delta_new (impurity-derived 1 - Delta_bb), final iteration:
+
+  fragment 0: Delta_qp =
+[[ 0.5055959  -0.05373811 -0.02747285]
+ [-0.05373811  0.9801311   0.11451423]
+ [-0.02747285  0.11451423  0.01427301]]
+  fragment 0: eig(Delta_qp)  = [-3.93506504e-17  5.00000000e-01  1.00000000e+00]
+
+  fragment 0: Delta_new =
+[[ 0.4944041   0.05373811  0.02747285]
+ [ 0.05373811  0.0198689  -0.11451423]
+ [ 0.02747285 -0.11451423  0.98572699]]
+  fragment 0: eig(Delta_new) = [4.16333634e-17 5.00000000e-01 1.00000000e+00]
+
+  fragment 0: max|Delta_qp - Delta_new| = 9.715e-01
+
+  fragment 1: Delta_qp =
+[[ 0.01986885  0.05373787 -0.11451424]
+ [ 0.05373787  0.49440415  0.02747271]
+ [-0.11451424  0.02747271  0.985727  ]]
+  fragment 1: eig(Delta_qp)  = [3.74748368e-18 5.00000000e-01 1.00000000e+00]
+
+  fragment 1: Delta_new =
+[[ 0.98013115 -0.05373787  0.11451424]
+ [-0.05373787  0.50559585 -0.02747271]
+ [ 0.11451424 -0.02747271  0.014273  ]]
+  fragment 1: eig(Delta_new) = [-5.10008702e-16  5.00000000e-01  1.00000000e+00]
+
+  fragment 1: max|Delta_qp - Delta_new| = 9.715e-01
+
+
+
+Ng=2  U/t=1.8000  Z0=0.949375  Z1=0.949375  E_var/t=-3.001251  docc=0.193750  converged=True  iters=3

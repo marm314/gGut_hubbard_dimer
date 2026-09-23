@@ -1,0 +1,48 @@
+[setup] Ng=2  Neff=3  impurity orbitals/spin=4  Fock dim=256  (sparse operators)
+[setup] built impurity operators in 0.01s; ground state searched in the N_up=N_dn sector of dim 36
+  it=  0  Z0=0.593594  Z1=0.593594  E_var=-5.463751  dE=-1.055e+02  docc=0.088792  n_phys=1.000000  |dDelta|=2.828e+00  |dR|=1.225e-02  [qp 0.00s | ED 0.00s]
+  it=  1  Z0=0.584192  Z1=0.584192  E_var=-5.452758  dE=1.099e-02  docc=0.088041  n_phys=1.000000  |dDelta|=2.928e-08  |dR|=5.089e-03  [qp 0.00s | ED 0.00s]
+  it=  2  Z0=0.580309  Z1=0.580309  E_var=-5.448249  dE=4.509e-03  docc=0.087728  n_phys=1.000000  |dDelta|=4.128e-09  |dR|=2.135e-03  [qp 0.00s | ED 0.00s]
+  it=  3  Z0=0.578683  Z1=0.578683  E_var=-5.446368  dE=1.881e-03  docc=0.087596  n_phys=1.000000  |dDelta|=1.317e-08  |dR|=8.994e-04  [qp 0.00s | ED 0.00s]
+  it=  4  Z0=0.577999  Z1=0.577999  E_var=-5.445577  dE=7.907e-04  docc=0.087541  n_phys=1.000000  |dDelta|=3.277e-08  |dR|=3.795e-04  [qp 0.00s | ED 0.00s]
+  it=  5  Z0=0.577711  Z1=0.577711  E_var=-5.445244  dE=3.333e-04  docc=0.087517  n_phys=1.000000  |dDelta|=2.358e-08  |dR|=1.603e-04  [qp 0.00s | ED 0.00s]
+  it=  6  Z0=0.577589  Z1=0.577589  E_var=-5.445103  dE=1.407e-04  docc=0.087507  n_phys=1.000000  |dDelta|=7.722e-09  |dR|=6.769e-05  [qp 0.00s | ED 0.00s]
+  it=  7  Z0=0.577538  Z1=0.577538  E_var=-5.445043  dE=5.942e-05  docc=0.087503  n_phys=1.000000  |dDelta|=9.749e-09  |dR|=2.860e-05  [qp 0.00s | ED 0.00s]
+  it=  8  Z0=0.577516  Z1=0.577516  E_var=-5.445018  dE=2.510e-05  docc=0.087501  n_phys=1.000000  |dDelta|=4.418e-09  |dR|=1.208e-05  [qp 0.00s | ED 0.00s]
+  it=  9  Z0=0.577507  Z1=0.577507  E_var=-5.445008  dE=1.060e-05  docc=0.087501  n_phys=1.000000  |dDelta|=1.785e-08  |dR|=5.105e-06  [qp 0.00s | ED 0.00s]
+  it= 10  Z0=0.577503  Z1=0.577503  E_var=-5.445003  dE=4.480e-06  docc=0.087500  n_phys=1.000000  |dDelta|=9.899e-01  |dR|=1.402e-06  [qp 0.00s | ED 0.00s]
+  it= 11  Z0=0.577502  Z1=0.577502  E_var=-5.445002  dE=1.230e-06  docc=0.087500  n_phys=1.000000  |dDelta|=1.613e-09  |dR|=8.756e-07  [qp 0.00s | ED 0.00s]
+
+[check] Delta_qp (quasiparticle 1-RDM) vs Delta_new (impurity-derived 1 - Delta_bb), final iteration:
+
+  fragment 0: Delta_qp =
+[[ 0.5055959  -0.05373811 -0.02747288]
+ [-0.05373811  0.9801311   0.11451423]
+ [-0.02747288  0.11451423  0.01427301]]
+  fragment 0: eig(Delta_qp)  = [-2.53391339e-18  5.00000000e-01  1.00000000e+00]
+
+  fragment 0: Delta_new =
+[[ 0.4944041   0.05373811  0.02747288]
+ [ 0.05373811  0.0198689  -0.11451423]
+ [ 0.02747288 -0.11451423  0.98572699]]
+  fragment 0: eig(Delta_new) = [-1.11022302e-16  5.00000000e-01  1.00000000e+00]
+
+  fragment 0: max|Delta_qp - Delta_new| = 9.715e-01
+
+  fragment 1: Delta_qp =
+[[ 0.01986884  0.05373785 -0.11451423]
+ [ 0.05373785  0.49440416  0.0274728 ]
+ [-0.11451423  0.0274728   0.985727  ]]
+  fragment 1: eig(Delta_qp)  = [6.12095323e-20 5.00000000e-01 1.00000000e+00]
+
+  fragment 1: Delta_new =
+[[ 0.98013116 -0.05373785  0.11451423]
+ [-0.05373785  0.50559584 -0.0274728 ]
+ [ 0.11451423 -0.0274728   0.014273  ]]
+  fragment 1: eig(Delta_new) = [1.38777878e-17 5.00000000e-01 1.00000000e+00]
+
+  fragment 1: max|Delta_qp - Delta_new| = 9.715e-01
+
+
+
+Ng=2  U/t=5.2000  Z0=0.577501  Z1=0.577501  E_var/t=-5.445002  docc=0.087500  converged=True  iters=11

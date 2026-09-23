@@ -1,0 +1,39 @@
+[setup] Ng=2  Neff=3  impurity orbitals/spin=4  Fock dim=256  (sparse operators)
+[setup] built impurity operators in 0.02s; ground state searched in the N_up=N_dn sector of dim 36
+  it=  0  Z0=0.999974  Z1=0.999974  E_var=-2.254387  dE=-1.023e+02  docc=0.234347  n_phys=1.000000  |dDelta|=3.078e-05  |dR|=2.500e-02  [qp 0.00s | ED 0.00s]
+  it=  1  Z0=0.999974  Z1=0.999974  E_var=-2.257800  dE=-3.413e-03  docc=0.234365  n_phys=1.000000  |dDelta|=2.573e-05  |dR|=2.853e-04  [qp 0.00s | ED 0.00s]
+  it=  2  Z0=0.999964  Z1=0.999964  E_var=-2.257815  dE=-1.444e-05  docc=0.234365  n_phys=1.000000  |dDelta|=1.211e-07  |dR|=9.802e-07  [qp 0.00s | ED 0.00s]
+
+[check] Delta_qp (quasiparticle 1-RDM) vs Delta_new (impurity-derived 1 - Delta_bb), final iteration:
+
+  fragment 0: Delta_qp =
+[[ 9.55197112e-01 -6.44999654e-07 -1.46279623e-01]
+ [-6.44999654e-07  4.48036584e-02  1.46280906e-01]
+ [-1.46279623e-01  1.46280906e-01  4.99999229e-01]]
+  fragment 0: eig(Delta_qp)  = [1.08261154e-07 5.00000000e-01 9.99999892e-01]
+
+  fragment 0: Delta_new =
+[[ 9.55197112e-01 -6.44999654e-07 -1.46279623e-01]
+ [-6.44999654e-07  4.48036585e-02  1.46280906e-01]
+ [-1.46279623e-01  1.46280906e-01  4.99999229e-01]]
+  fragment 0: eig(Delta_new) = [1.08256576e-07 5.00000000e-01 9.99999892e-01]
+
+  fragment 0: max|Delta_qp - Delta_new| = 1.828e-10
+
+  fragment 1: Delta_qp =
+[[ 8.72442238e-01 -3.93942196e-07  2.35888461e-01]
+ [-3.93942196e-07  1.27558959e-01 -2.35889277e-01]
+ [ 2.35888461e-01 -2.35889277e-01  4.99998803e-01]]
+  fragment 1: eig(Delta_qp)  = [1.08261154e-07 5.00000000e-01 9.99999892e-01]
+
+  fragment 1: Delta_new =
+[[ 8.72442238e-01 -3.93942228e-07  2.35888461e-01]
+ [-3.93942228e-07  1.27558959e-01 -2.35889277e-01]
+ [ 2.35888461e-01 -2.35889277e-01  4.99998803e-01]]
+  fragment 1: eig(Delta_new) = [1.08256575e-07 5.00000000e-01 9.99999892e-01]
+
+  fragment 1: max|Delta_qp - Delta_new| = 1.847e-10
+
+
+
+Ng=2  U/t=0.5000  Z0=0.999964  Z1=0.999964  E_var/t=-2.257815  docc=0.234365  converged=True  iters=2
