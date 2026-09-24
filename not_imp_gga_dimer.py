@@ -369,7 +369,7 @@ def check_gradients(Ng=2, U=2.0, seed=1, h=1e-6):
     rng = np.random.default_rng(seed)
     z = model.random_start(rng)
     E, gE = model.energy(z)
-    idx = rng.choice(model.nz, size=25, replace=False)
+    idx = rng.choice(model.nz, size=min(25, model.nz), replace=False)
     err = 0.0
     for i in idx:
         zp, zm = z.copy(), z.copy()
