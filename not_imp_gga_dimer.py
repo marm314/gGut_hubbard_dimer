@@ -298,7 +298,11 @@ class NotImpDimer:
         bp = (K @ rho - rho @ K).ravel()
         A_all = np.vstack(blocks + [Ap])
         b_all = np.concatenate(rhs + [bp])
-        sol = np.linalg.lstsq(A_all, b_all, rcond=1e-10)[0]
+        # rcond = 1e-6 (relative to the largest singular value): for U >~ 7 the joint system has one
+        # nearly free direction (smallest singular value ~1e-7 against ~0.15 for the next one); with a
+        # much smaller cutoff its component is set by rounding noise and the two quasiparticle levels of
+        # the nearly decoupled orbital wander erratically, while the residual is unchanged.
+        sol = np.linalg.lstsq(A_all, b_all, rcond=1e-6)[0]
         kkt_phi = max(np.abs(blocks[I] @ sol - rhs[I]).max() for I in range(2))
         lam = []
         for I in range(2):

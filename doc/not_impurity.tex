@@ -387,9 +387,10 @@ Hessian: negative / zero / positive & $0\,/\,17\,/\,61$ & $0\,/\,20\,/\,58$ \\
 smallest positive eigenvalue & $2.90$ & $0.0060$ \\
 \bottomrule
 \end{tabular}
-\caption{Solutions of the direct minimization at $U/t=2$, $\Ng=2$, started from the
-$(R,\lambda)$ seeds of \texttt{examples/U2\_backward} and \texttt{examples/U2\_forward} (forward:
-converged copy). The energies agree with \texttt{gga\_dimer.py}.}
+\caption{Solutions of the direct minimization at $U/t=2$, $\Ng=2$. Backward: started from the
+$(R,\lambda)$ seed of \texttt{examples/U2\_backward}. Forward: converged from a random start (the
+seed of \texttt{examples/U2\_forward} leads to the backward solution, see below). The energies agree with
+\texttt{gga\_dimer.py}.}
 \label{tab:ni}
 \end{table}
 
@@ -408,10 +409,15 @@ converged copy). The energies agree with \texttt{gga\_dimer.py}.}
     these extra flat directions was not investigated. An independent empirical test (random
     displacements projected back on the constraints, $4000$ of them, steps $10^{-3}$--$0.1$)
     finds only energy increases growing as $s^2$ with coefficient $\approx7\times10^{-3}$.
-  \item \textbf{Convergence caveat.} With the default tolerance a run started from the
-    forward seed can stop before convergence ($E=-3.12499887$, projected gradient
-    $4\times10^{-3}$, descent directions with $\Delta E\simeq-8\times10^{-5}$ exist); it relaxes
-    to $-3.1249999925$ with more iterations.
+  \item \textbf{The forward seed does not stay on the forward minimum.} A single SLSQP pass
+    started from the forward seed stops early ($E=-3.12499887$, projected gradient
+    $4\times10^{-3}$, descent directions with $\Delta E\simeq-8\times10^{-5}$ exist). A second
+    pass continues downhill, \emph{not} to the forward minimum $-3.1249999925$ but to the lower
+    ghost-assisted (backward) solution $-3.1256614043$, and further passes stay there. The forward
+    minimum listed in Table~\ref{tab:ni} was reached from a random start; it is a local minimum with
+    a small basin, and the seed lies outside it. Consequently the ``forward'' U-scan of
+    \texttt{scan\_not\_imp\_U.py}, seeded from that point, converges to the ghost-assisted branch
+    at $U/t=2$ (it stays on the plain-Gutzwiller branch only for $U/t\lesssim0.8$).
 \end{itemize}
 
 \paragraph{Limitation: random starts.} From random starts the minimization always reaches the
@@ -516,7 +522,7 @@ where $g^{(I)}_\phi$ is the gradient of $E$ with respect to $\phi^I$ at fixed $\
 the norm multiplier $\mu_I$ of Eq.~\eqref{eq:kktphi}. The first two block rows are the
 $\phi^{I}$ conditions, the last block row is $[\Xi,\rho]$-form of Eq.~\eqref{eq:kktpsi}
 ($[K-\Lambda,\rho]=0\Leftrightarrow[\Lambda,\rho]=[K,\rho]$). The system is solved in the
-least-squares sense (\texttt{numpy.linalg.lstsq}, \texttt{rcond}$=10^{-10}$, minimum-norm
+least-squares sense (\texttt{numpy.linalg.lstsq}, \texttt{rcond}$=10^{-6}$, minimum-norm
 solution), and $\lambda^I$ is the symmetric matrix built from the $n_s$ entries of $w$ belonging
 to fragment $I$.
 \begin{itemize}
@@ -525,6 +531,18 @@ to fragment $I$.
     is not unique and need not satisfy $[\,K-\Lambda,\rho\,]=0$; this happened for the forward
     solution ($[\Hqp,\rho]\approx0.16$). With the $C$ block included the system has rank
     $2n_s=12$ for $\Ng=2$ at the backward and forward solutions examined.
+  \item \emph{Nearly free direction.} For $U/t\gtrsim7$ ($\Ng=2$) the smallest singular value of
+    the system is $\sim10^{-7}$, while the next one is $\sim0.15$: one direction of $\lambda$
+    is almost undetermined by the stationarity conditions (it belongs to the nearly decoupled
+    bath orbital, whose quasiparticle level is barely constrained). With a cutoff as small as
+    $10^{-10}$ that direction is fixed by rounding noise, the residual is unchanged, and the two
+    middle quasiparticle levels jump erratically with $U$ (values between $-3$ and $+4$ were
+    seen). The cutoff $\texttt{rcond}=10^{-6}$ (relative to the largest singular value) removes
+    it, i.e.\ takes the minimum-norm $\lambda$; results are identical for $10^{-6}$ and
+    $10^{-4}$, and the two levels then vary smoothly and stay at $\approx10^{-3}$ (at the Fermi
+    level, as expected for a decoupled bath) with the residual $\lesssim8\times10^{-7}$. The
+    position of those two levels is therefore a \emph{choice} of the minimum-norm solution
+    rather than something determined by $(x,X)$ alone.
   \item \emph{Quality check.} If $(x,X)$ is a stationary point, the residual of
     Eq.~\eqref{eq:linsys} vanishes: it is reported as ``KKT: $\phi$ stationarity''
     (the $A$ rows) and ``KKT: $[\Hqp,\rho]$'' (the $C$ rows, recomputed with the final
