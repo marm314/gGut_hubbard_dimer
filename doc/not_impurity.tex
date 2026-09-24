@@ -1,0 +1,468 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{float}
+
+\newcommand{\dg}{^{\dagger}}
+\newcommand{\Neff}{N_{\mathrm{eff}}}
+\newcommand{\Nphys}{N_{\mathrm{phys}}}
+\newcommand{\Ng}{N_{g}}
+\newcommand{\Hqp}{H_{\mathrm{qp}}}
+\newcommand{\Himp}{H_{\mathrm{imp}}}
+\newcommand{\Hloc}{H_{\mathrm{loc}}}
+\newcommand{\Ybb}{\Delta^{I,\mathrm{bb}}}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  numbers=none,
+  language=Python,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray}
+}
+
+\title{Ghost Gutzwiller for the Half-Filled Hubbard Dimer\\
+by Direct Minimization (No Impurity Problem):\\
+Equations and Implementation of \texttt{not\_imp\_gga\_dimer.py}}
+\author{gGut\_mau project}
+\date{\today}
+
+\begin{document}
+\sloppy
+\maketitle
+\tableofcontents
+
+\bigskip
+\noindent\textbf{Purpose of this note.} \texttt{gga\_dimer.py} solves the ghost
+Gutzwiller (gGA) equations of the Hubbard dimer by the iterative embedding cycle of
+\texttt{code.tex}: an impurity Hamiltonian $\Himp(V,\lambda^{c})$ is diagonalized at
+every iteration. \texttt{not\_imp\_gga\_dimer.py} is an \emph{alternative} solver for
+\emph{the same problem}: no impurity Hamiltonian, no $V^I$, no $\lambda^{I,c}$ and no
+fixed-point loop appear. Following Tagliente, Pasqua and Fabrizio
+(arXiv:2607.27156, \texttt{NotImpurity.pdf}, Eqs.~7 and~9--12), the variational energy
+functional is minimized \emph{directly} over the impurity wavefunctions
+$|\phi^I\rangle$ and the quasiparticle Slater determinant, subject to the density
+constraints. The notation is that of \texttt{code.tex} ($\Neff=1+\Ng$, $R^I$, $\Delta^{II}$,
+$D^I$, $\Delta^{I,\mathrm{bb}}$, $\rho$, $\lambda^I$, $S(\Delta)$, $\mathbf I$, $X_{ab}$,
+\dots); equations of \texttt{code.tex} are cited by name, not by number.
+
+\section{The problem}
+\label{sec:problem}
+
+\paragraph{Model.} Exactly as in \texttt{code.tex}: the half-filled two-site Hubbard
+dimer with hopping $-t$ and local Hamiltonian
+$\Hloc = U\,n_{\uparrow}n_{\downarrow}-\mu\,(n_{\uparrow}+n_{\downarrow})$, $\mu=U/2$
+(it differs from the $\tfrac U2(n-1)^2$ of the reference paper by the constant $U/2$
+per site, which is kept so that energies are directly comparable with
+\texttt{gga\_dimer.py}). $\Nphys=1$ physical orbital per fragment, $\Neff=1+\Ng$
+quasiparticle (bath) orbitals per fragment and spin; \emph{$\Ng$ is even}, so $\Neff$ is odd.
+
+\paragraph{Symmetry class.} As in \texttt{gga\_dimer.py}: paramagnetic (spin-restricted),
+the two fragments $I=0,1$ \emph{not} assumed equal.
+\begin{itemize}
+  \item The impurity wavefunction $|\phi^I\rangle$ is a \emph{real} vector in the
+    half-filled, spin-balanced sector $N_\uparrow=N_\downarrow=(1+\Neff)/2$ of the
+    embedding Fock space (dimension $4^{1+\Neff}$), a sector of dimension
+    \begin{equation}
+      m \;=\; \binom{1+\Neff}{(1+\Neff)/2}^{2}
+      \qquad(m=36\ \text{for }\Ng=2).
+    \end{equation}
+    All operators entering below conserve $N_\uparrow$ and $N_\downarrow$ separately, so
+    their restriction to this sector is exact (no leakage).
+  \item The quasiparticle Slater determinant $|\psi_*\rangle$ has one 1-RDM
+    $\rho\in\mathbb R^{2\Neff\times2\Neff}$ (per spin, the same for both), a rank-$\Neff$
+    projector: half filling, i.e.\ $\Neff$ of the $2\Neff$ levels are occupied
+    (the filling rule of \texttt{code.tex}).
+\end{itemize}
+Blocks of $\rho$ are written $\rho^{IJ}$ ($\rho^{II}$ is $\Delta^{II}_{\mathrm{qp}}$ of
+\texttt{code.tex}).
+
+\section{The variational functional}
+\label{sec:functional}
+
+\paragraph{Energy (Eq.~11 of the reference).} Specialized to the dimer and summed over
+spin and over the two bonds,
+\begin{equation}
+  \boxed{\;
+  E\bigl(\rho,\phi^{0},\phi^{1}\bigr)
+  \;=\; -4t\,\bigl(R^{0}\bigr)^{T}\rho^{01}R^{1}
+        \;+\;\sum_{I=0,1}\langle\phi^{I}|\Hloc|\phi^{I}\rangle .\;}
+  \label{eq:Eni}
+\end{equation}
+The factor $4$ is $2$ (spin) $\times$ $2$ (the two ordered fragment pairs), the same factor
+as in the variational energy of \texttt{code.tex}. Here $R^{I}$ is \emph{not} an
+independent variable: it is the function $R(\phi^{I})$ of Eqs.~9--10 of the reference,
+\begin{equation}
+  R^{I} \;=\; S\bigl(\Delta^{I}\bigr)^{-1}D^{I},\qquad
+  \Delta^{I}\;\equiv\;\mathbf I-\Ybb,\qquad
+  S(\Delta)=\sqrt{\Delta(\mathbf I-\Delta)+\varepsilon\,\mathbf I},
+  \label{eq:Rphi}
+\end{equation}
+with the two expectation values over the impurity state (spin averages)
+\begin{equation}
+  \Ybb_{ab}=\tfrac12\bigl(\langle d^{\dagger}_{a\uparrow}d_{b\uparrow}\rangle
+     +\langle d^{\dagger}_{a\downarrow}d_{b\downarrow}\rangle\bigr)_{\phi^I},\qquad
+  D^{I}_{a}=\tfrac12\bigl(\langle d^{\dagger}_{a\uparrow}c_{\uparrow}\rangle
+     +\langle d^{\dagger}_{a\downarrow}c_{\downarrow}\rangle\bigr)_{\phi^I}.
+  \label{eq:DbbD}
+\end{equation}
+These are the same $\Delta^{I,\mathrm{bb}}$ and $D^I$ as in the impurity section of
+\texttt{code.tex}; $S(\Delta)$ is the shifted square root of \texttt{code.tex}
+($\varepsilon=10^{-9}$ by default, added to the eigenvalues of $\Delta(\mathbf I-\Delta)$).
+Since $\Delta\mapsto\mathbf I-\Delta$ leaves $\Delta(\mathbf I-\Delta)$ unchanged,
+$S(\mathbf I-\Ybb)=S(\Ybb)$, i.e.\ Eq.~\eqref{eq:Rphi} is the reference's
+$R=Q\,S^{-1}$ with $S^2=\Delta_\phi(\mathbf I-\Delta_\phi)$, $\Delta_\phi=\Ybb$, $Q=D$.
+
+\paragraph{Constraints (Eq.~7 of the reference).}
+\begin{equation}
+  \langle\phi^{I}|\phi^{I}\rangle=1,\qquad
+  \rho^{II}\;=\;\mathbf I-\Ybb\bigl(\phi^{I}\bigr)\qquad(I=0,1),
+  \label{eq:constraints}
+\end{equation}
+the second being the requirement that the local density matrix of the Slater determinant
+equal the particle--hole transform of the bath density matrix of the impurity state.
+
+\paragraph{The functional $F$ (Eq.~12) and the Lagrangian actually used.} Eq.~12 of the
+reference is $F=E-E_*\langle\psi_*|\psi_*\rangle-E_\phi\langle\phi|\phi\rangle
++\mathrm{Tr}\{\hat\lambda[\mathbf I-\hat\Delta_\phi-\hat\Delta_*]\}$: energy, two
+normalizations, and a single matrix multiplier $\hat\lambda$ for the density constraint.
+With our spin factors and eliminating the two normalizations (see below), the saddle point
+of $F$ is the stationary point of
+\begin{equation}
+  \mathcal L\;=\;E(\rho,\phi^0,\phi^1)\;+\;\sum_{I}2\,\mathrm{Tr}\Bigl[\lambda^{I}
+      \bigl(\mathbf I-\Ybb(\phi^{I})-\rho^{II}\bigr)\Bigr],
+  \label{eq:Lni}
+\end{equation}
+where $\lambda^I$ is the same $\lambda^I$ as in the quasiparticle Hamiltonian
+$\Hqp=\bigl[\begin{smallmatrix}-\lambda^0&-tR^0R^{1T}\\-tR^1R^{0T}&-\lambda^1\end{smallmatrix}\bigr]$
+of \texttt{code.tex}. Compared with the Lagrangian of \texttt{code.tex} (which also carries
+$V^I$, $\lambda^{I,c}$ and the independent variables $R^I,\Delta^I$), the constraints
+associated with $V^I$ ($D^I=S(\Delta^I)R^I$) and with $\lambda^{I,c}$
+($\Delta^I+\Ybb=\mathbf I$) have been \emph{substituted}: $R^I=R(\phi^I)$ and
+$\Delta^I=\mathbf I-\Ybb$. This is the simplification of the direct approach.
+
+\section{Variables and parametrization}
+\label{sec:variables}
+
+\paragraph{Unknowns.} The unconstrained (redundant) variables are
+\begin{equation}
+  z=\bigl(x^{0},x^{1},X\bigr),\qquad
+  x^{I}\in\mathbb R^{m},\quad X\in\mathbb R^{2\Neff\times\Neff},
+\end{equation}
+with the two parametrizations
+\begin{equation}
+  \phi^{I}=\frac{x^{I}}{\lVert x^{I}\rVert},\qquad
+  \rho \;=\; X\,(X^{T}X)^{-1}X^{T}.
+  \label{eq:param}
+\end{equation}
+The first automatically enforces $\langle\phi^I|\phi^I\rangle=1$ (so the norm multipliers
+$E_\phi$ never appear); the second is the orthogonal projector on the column space of $X$,
+a rank-$\Neff$ projector for any full-rank $X$ (so $|\psi_*\rangle$ is automatically a
+half-filled Slater determinant and $E_*$ never appears). The redundancy is a gauge:
+$x^I\to c\,x^I$ and $X\to XA$ ($A\in GL(\Neff)$) leave everything invariant. The number of
+variables is $n_z=2m+2\Neff^2$ ($=90$ for $\Ng=2$).
+
+\paragraph{Operator matrices (precomputed once).} From the sparse Jordan--Wigner operators
+of \texttt{gga\_dimer.py} (\texttt{build\_impurity\_ops}, mode order $c_\uparrow,c_\downarrow,
+d_{0\uparrow},d_{0\downarrow},\dots$) the following $m\times m$ real matrices are built by
+restriction to the sector:
+\begin{align}
+  H_{\mathrm{loc}}^{s}&=\text{sector}(\Hloc),\notag\\
+  \mathcal Y_{a}&=\text{sector}\bigl(d^{\dagger}_{a\uparrow}c_{\uparrow}+c^{\dagger}_{\uparrow}d_{a\uparrow}
+        +d^{\dagger}_{a\downarrow}c_{\downarrow}+c^{\dagger}_{\downarrow}d_{a\downarrow}\bigr),\notag\\
+  B_{ab}&=\tfrac12\,\text{sector}\bigl(d^{\dagger}_{a\uparrow}d_{b\uparrow}
+        +d^{\dagger}_{a\downarrow}d_{b\downarrow}\bigr)\ \ \text{symmetrized in }(a,b),
+  \label{eq:opmats}
+\end{align}
+together with $n_\uparrow n_\downarrow$ and $n_\uparrow+n_\downarrow$ for the observables.
+For a real $\phi$ (so $\langle d^\dagger c\rangle=\langle c^\dagger d\rangle$) the
+expectation values of Eqs.~\eqref{eq:DbbD} become plain quadratic forms:
+\begin{equation}
+  \Ybb_{ab}=\phi^{T}B_{ab}\,\phi,\qquad
+  D^{I}_{a}=\tfrac14\,\phi^{T}\mathcal Y_{a}\,\phi,\qquad
+  E^{I}_{\mathrm{loc}}=\phi^{T}H^{s}_{\mathrm{loc}}\,\phi .
+  \label{eq:quadforms}
+\end{equation}
+(The $\tfrac14$ is $\tfrac12$ from the spin average times $\tfrac12$ from $\mathcal Y_a$
+containing both $d^\dagger c$ and its transpose, for each spin.) This is the same
+evaluation as in \texttt{impurity\_solve} of \texttt{gga\_dimer.py}, except that the state
+$\phi$ is now a \emph{variable} instead of the ground state of $\Himp$.
+
+\section{Objective, constraints and analytic gradients}
+\label{sec:gradients}
+
+Everything is differentiated analytically (checked against central finite differences by
+\texttt{-{}-check-gradients}: agreement $\sim2\times10^{-10}$ for both $E$ and the constraints).
+
+\paragraph{Evaluation of $E$ (\texttt{energy}).} For each fragment: $\phi^I,\Ybb,D^I$ from
+Eqs.~\eqref{eq:param}, \eqref{eq:quadforms}; diagonalize $\Delta^I=\mathbf I-\Ybb=W\,\mathrm{diag}(d_i)W^{T}$;
+$m_i=d_i(1-d_i)+\varepsilon$, $f_i=m_i^{-1/2}$;
+$R^{I}=W\bigl[f\circ(W^{T}D^{I})\bigr]$; then Eq.~\eqref{eq:Eni}. (A valid 1-RDM has all
+$d_i\in[0,1]$, so up to rounding $m_i>0$; the shift $\varepsilon$ covers rounding of $d_i$ to slightly negative values.)
+
+\paragraph{Gradient with respect to $\rho$ and $X$.}
+\begin{equation}
+  dE=\mathrm{Tr}[G_\rho\,d\rho]+\dots,\qquad
+  G_\rho=\begin{pmatrix}0&-2t\,R^{0}R^{1T}\\-2t\,R^{1}R^{0T}&0\end{pmatrix},
+\end{equation}
+and, from $d\rho=P_\perp\,dX\,YX^{T}+XY\,dX^{T}P_\perp$ with $Y=(X^TX)^{-1}$, $P_\perp=\mathbf I-\rho$,
+\begin{equation}
+  \frac{\partial E}{\partial X}=2\,P_\perp\,G_\rho\,X\,Y .
+  \label{eq:gX}
+\end{equation}
+
+\paragraph{Gradient with respect to $R^I$ and through $R(\phi^I)$.} The partial
+derivatives with respect to the (dependent) vectors $R^I$ are
+\begin{equation}
+  g_{R^{0}}=-4t\,\rho^{01}R^{1},\qquad g_{R^{1}}=-4t\,(\rho^{01})^{T}R^{0}.
+\end{equation}
+Write $R=f(M)D$ with $M=\Delta(\mathbf I-\Delta)+\varepsilon\mathbf I$ and $f(m)=m^{-1/2}$.
+In the eigenbasis of $\Delta$, $\tilde u=W^Tg_R$, $\tilde v=W^TD$, the Daletskii--Krein
+derivative of $f(M)$ is the divided-difference matrix
+\begin{equation}
+  \mathcal F_{ij}=\frac{f(m_i)-f(m_j)}{m_i-m_j}
+  =-\frac{1}{s_is_j(s_i+s_j)},\qquad s_i=\sqrt{m_i},
+  \label{eq:Fdiv}
+\end{equation}
+which is written in the cancellation-free form on the right (valid also for $m_i=m_j$).
+Since $dM_{ij}=(1-d_i-d_j)\,d\Delta_{ij}$ in this basis and $d\Delta=-d\Ybb$,
+\begin{align}
+  g_{D}&=f(M)\,g_R=W\,(f\circ\tilde u),\notag\\
+  \Gamma&=\mathrm{sym}\bigl[(\tilde u\tilde v^{T})\circ\mathcal F\bigr],\qquad
+  g_{\mathrm{bb}}=-\,W\bigl[\Gamma\circ(1-d_i-d_j)\bigr]W^{T}.
+\end{align}
+(This is the same structure as the function $\mathrm{grad}_S$ of \texttt{code.tex},
+here applied as an adjoint.) Collecting the three routes by which $\phi^I$ enters
+(through $\Ybb$, through $D^I$, and through $E_{\mathrm{loc}}$),
+\begin{equation}
+  g_{\phi}=2\sum_{ab}(g_{\mathrm{bb}})_{ab}\,B_{ab}\phi
+      +\tfrac12\sum_{a}(g_{D})_{a}\,\mathcal Y_{a}\phi
+      +2\,H^{s}_{\mathrm{loc}}\phi,
+  \qquad
+  \frac{\partial E}{\partial x^{I}}=\frac{1}{\lVert x^{I}\rVert}\bigl(g_\phi-(\phi\!\cdot\! g_\phi)\phi\bigr),
+  \label{eq:gphi}
+\end{equation}
+the last step being the projection through $\phi=x/\lVert x\rVert$.
+
+\paragraph{Constraints and Jacobian (\texttt{constraints}, \texttt{constraint\_jac}).} The
+independent entries ($a\le b$) of the two symmetric matrix equations of
+Eq.~\eqref{eq:constraints},
+\begin{equation}
+  c^{I}_{ab}(z)=\bigl(\rho^{II}+\Ybb-\mathbf I\bigr)_{ab}=0,
+  \qquad a\le b,\ I=0,1
+\end{equation}
+give $n_c=\Neff(\Neff+1)$ equations ($=12$ for $\Ng=2$). Their gradients are
+\begin{equation}
+  \frac{\partial c^{I}_{ab}}{\partial x^{I}}=\frac{1}{\lVert x^I\rVert}
+    \bigl(\mathbf 1-\phi\phi^{T}\bigr)\,2B_{ab}\phi,\qquad
+  \frac{\partial c^{I}_{ab}}{\partial X}=2\,P_\perp\,G^{(I,ab)}\,X\,Y,
+\end{equation}
+where $G^{(I,ab)}$ is the symmetric matrix that has $\tfrac12$ at positions $(a,b),(b,a)$
+(or $1$ at $(a,a)$ if $a=b$) inside the $I$-th diagonal block and zero elsewhere.
+(For $\Ng=2$ the constraint Jacobian has full rank $12$ at the solutions examined, backward and forward.)
+
+\section{Minimization}
+\label{sec:minimization}
+
+\paragraph{Algorithm.} The constrained problem
+\begin{equation}
+  \min_{z}\;E(z)\quad\text{subject to}\quad c(z)=0
+\end{equation}
+is solved by sequential quadratic programming (\texttt{scipy.optimize.minimize},
+\texttt{method="SLSQP"}, \texttt{ftol}$=10^{-13}$, up to 1000 iterations), passing the
+analytic gradient of $E$ and the analytic Jacobian of $c$. A run is accepted as
+\emph{feasible} if $\max|c|<10^{-8}$; among several starts the lowest-energy feasible
+result is kept. No impurity Hamiltonian is ever diagonalized in the minimization.
+
+\paragraph{Starting points.}
+\begin{enumerate}
+  \item \emph{Random start} (\texttt{random\_start}): $x^{I}$ with independent Gaussian
+    components; $X$ = the occupied orbitals of $\Hqp$ built from the default cold-start
+    $R^0=R^1=(0.9,0.05,0.065,\dots)$, $\lambda=0$ of \texttt{gga\_dimer.py}, plus
+    $0.05\times$ Gaussian noise.
+  \item \emph{From an $(R,\lambda)$ guess} (\texttt{start\_from\_R\_lambda}; files
+    \texttt{R.in}, \texttt{L.in} in the format of \texttt{gga\_dimer.py}): $X$ = the
+    $\Neff$ lowest eigenvectors of $\Hqp(R,\lambda)$; $\Delta^{II}=\rho^{II}$, $V^I$
+    from the Eq.~7 of \texttt{code.tex} and $\lambda^{I,c}$ from its Eq.~8; then the
+    lowest $16$ eigenstates of the sector matrix
+    $H^{s}_{\mathrm{loc}}+\sum_aV^I_a\mathcal Y_a+\sum_{ab}\lambda^{I,c}_{ab}\,2B_{ab}$
+    are examined and the one whose bath density best satisfies
+    $\Ybb=\mathbf I-\Delta^{II}$ is taken as $x^I$. (This single diagonalization is used
+    \emph{only} to construct the starting $\phi^I$; choosing among the low-lying
+    eigenstates matters for the ``forward'' seed, whose impurity ground state has swapped
+    ghost occupations and would otherwise violate the constraints by $\approx0.97$, after
+    which SLSQP restores feasibility far away, at $E\approx-0.80$.)
+\end{enumerate}
+
+\section{Recovery of the multipliers and consistency checks}
+\label{sec:kkt}
+
+At a solution the multipliers of Eq.~\eqref{eq:Lni} are recovered, and the point is
+checked against the equations of the embedding approach of \texttt{code.tex}
+(\texttt{analyse}).
+
+\paragraph{Stationarity conditions.} $\partial\mathcal L/\partial\rho=0$ on the manifold of
+projectors and $\partial\mathcal L/\partial\phi^I=0$ on the unit sphere give, with
+$K=\bigl[\begin{smallmatrix}0&-tR^0R^{1T}\\-tR^1R^{0T}&0\end{smallmatrix}\bigr]$ the hopping
+part of $\Hqp$ and $\Lambda=\mathrm{diag}(\lambda^0,\lambda^1)$,
+\begin{align}
+  [\,K-\Lambda,\ \rho\,]&=0 &&(\text{i.e. }\Hqp=K-\Lambda,\ \rho\text{ an eigenprojector}),
+  \label{eq:kktpsi}\\
+  \nabla_{\phi}E-4\sum_{ab}\lambda^{I}_{ab}\,B_{ab}\phi^{I}&=\mu_I\,\phi^{I}
+  &&(I=0,1).
+  \label{eq:kktphi}
+\end{align}
+Both are \emph{linear} in the $2\,\Neff(\Neff+1)/2$ independent entries of $\lambda^0,\lambda^1$.
+They are solved \emph{jointly} by linear least squares. (Using Eq.~\eqref{eq:kktphi} alone is
+not sufficient: when a ghost is inert the vectors $B_{ab}\phi$ are linearly dependent, its
+minimum-norm solution is not unique and need not make $\rho$ an eigenprojector of
+$\Hqp$; with the joint system the rank is $12/12$ for $\Ng=2$.) The residuals of the
+joint system are reported as ``KKT: $\phi$ stationarity'' and ``KKT: $[\Hqp,\rho]$''.
+
+\paragraph{Quasiparticle energies.} With the recovered $\lambda^I$, $\Hqp(R,\lambda)$ is
+built and diagonalized; its $2\Neff$ eigenvalues are the quasiparticle energies
+\texttt{eqp} of the scans of \texttt{code.tex}.
+
+\paragraph{Check against the embedding equations.} With $R^I=R(\phi^I)$ and the recovered
+$\lambda^I$, $V^I$ and $\lambda^{I,c}$ are computed from Eqs.~7 and~8 of \texttt{code.tex}, and
+the residual
+\begin{equation}
+  \bigl\lVert\bigl(\Himp^{s}-\langle\phi^I|\Himp^{s}|\phi^I\rangle\bigr)\phi^{I}\bigr\rVert_\infty,
+  \qquad
+  \Himp^{s}=H^{s}_{\mathrm{loc}}+\sum_aV^I_a\mathcal Y_a+\sum_{ab}\lambda^{I,c}_{ab}\,2B_{ab},
+\end{equation}
+is reported (``$\Himp\phi=E\phi$''). A small value shows that $\phi^I$ is an eigenstate of
+the embedding Hamiltonian of \texttt{code.tex} built from the solution, i.e.\ that the
+solution of the direct minimization also solves the embedding equations. The observables
+$Z^I=R^{I\,T}R^I$, double occupancy and $n_{\mathrm{phys}}$ are evaluated from
+Eqs.~\eqref{eq:quadforms}.
+
+\section{Second-order test}
+\label{sec:hessian}
+
+For a stationary point with full-rank constraints, a strict local minimum of the
+constrained energy requires the Hessian of the Lagrangian to be positive definite on the
+tangent space of the constraints. \texttt{hessian\_analysis} computes it as follows.
+\begin{enumerate}
+  \item Multipliers $\mu$ of the constraints from $\nabla E+J^{T}\mu=0$ (least squares),
+    $J=\partial c/\partial z$; residual reported.
+  \item Hessian $H$ of $E+\mu\!\cdot\!c$ with respect to all $n_z$ variables by central
+    differences (step $h=10^{-6}$) of the analytic gradient $\nabla E+J(z)^T\mu$, symmetrized.
+  \item Tangent space $=$ null space of $J$ (dimension $n_z-n_c=78$ for $\Ng=2$);
+    eigenvalues of the reduced Hessian $Z_t^{T}HZ_t$.
+\end{enumerate}
+The redundancies of the parametrization give exact zero modes: $2$ (norms of $x^I$)
+$+\Neff^2$ ($X\to XA$) $+\Neff(\Neff-1)$ (rotations of the ghost basis of the two
+fragments), i.e.\ $17$ for $\Ng=2$. A strict minimum has all other $61$ eigenvalues positive.
+
+\section{Results ($U/t=2$, $\Ng=2$) and status}
+\label{sec:results}
+
+The two $U/t=2$ solutions discussed in \texttt{code.tex} (``backward'' and ``forward'', seeds
+in \texttt{examples/}) are used as tests.
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+ & backward & forward \\
+\midrule
+$E_{\mathrm{var}}/t$ (this code) & $-3.1256614043$ & $-3.1249999925$ \\
+$E_{\mathrm{var}}/t$ (\texttt{gga\_dimer.py}) & $-3.1256614043$ & $-3.1250000$ \\
+$Z^0=Z^1$ & $0.99991$ & $0.9375$ \\
+$\max|c|$ & $6\times10^{-15}$ & $8\times10^{-15}$ \\
+KKT: $\phi$ / $[\Hqp,\rho]$ / $\Himp\phi=E\phi$ & $3\!\times\!10^{-7}$ / $8\!\times\!10^{-9}$ / $1\!\times\!10^{-7}$ &
+   $6\!\times\!10^{-7}$ / $6\!\times\!10^{-8}$ / $3\!\times\!10^{-7}$ \\
+Hessian: negative / zero / positive & $0\,/\,17\,/\,61$ & $0\,/\,20\,/\,58$ \\
+smallest positive eigenvalue & $2.90$ & $0.0060$ \\
+\bottomrule
+\end{tabular}
+\caption{Solutions of the direct minimization at $U/t=2$, $\Ng=2$, started from the
+$(R,\lambda)$ seeds of \texttt{examples/U2\_backward} and \texttt{examples/U2\_forward} (forward:
+converged copy). The energies agree with \texttt{gga\_dimer.py}.}
+\label{tab:ni}
+\end{table}
+
+\begin{itemize}
+  \item \textbf{Backward} is reproduced to $10^{-12}$ and is a strict local minimum (the
+    $61$ positive eigenvalues are all the non-gauge ones; the softest is $2.90$).
+  \item \textbf{Forward}: unlike the fixed point of \texttt{gga\_dimer.py} (where
+    $\rho^{II}$ and $\mathbf I-\Ybb$ differ by $\approx0.97$ with swapped ghost occupations),
+    here $\rho^{II}$ and $\mathbf I-\Ybb$ coincide entry by entry ($10^{-12}$), both with
+    eigenvalues $\{0,\tfrac12,1\}$: the constraints of Eq.~\eqref{eq:constraints} hold. Multipliers
+    exist (KKT residuals $\lesssim10^{-6}$). The reduced Hessian has no negative eigenvalue but
+    $3$ zero modes in addition to the $17$ gauge ones, and its positive eigenvalues are
+    small ($0.0060$ smallest). Along all $20$ zero-mode directions, followed on feasible
+    curves, $E$ never decreases and grows as $s^4$ (about $3\times10^{-6}$ at $s=0.2$); thus
+    the second-order test is \emph{inconclusive along those $3$ directions}. The origin of
+    these extra flat directions was not investigated. An independent empirical test (random
+    displacements projected back on the constraints, $4000$ of them, steps $10^{-3}$--$0.1$)
+    finds only energy increases growing as $s^2$ with coefficient $\approx7\times10^{-3}$.
+  \item \textbf{Convergence caveat.} With the default tolerance a run started from the
+    forward seed can stop before convergence ($E=-3.12499887$, projected gradient
+    $4\times10^{-3}$, descent directions with $\Delta E\simeq-8\times10^{-5}$ exist); it relaxes
+    to $-3.1249999925$ with more iterations.
+\end{itemize}
+
+\paragraph{Limitation: random starts.} From random starts the minimization always reaches the
+\emph{higher} boundary minima with inert ghosts, never the ghost-assisted solutions:
+$120/120$ starts give $E=-3.125$ at $U/t=2$ (versus $-3.125661$), $30/30$ give $-10.0$ at
+$U/t=10$ (versus $-10.101314$ from \texttt{gga\_dimer.py}), $30/30$ give $-6.0$ at $U/t=6$;
+at $U/t=4$ the minima are $-4.5$ and $-4.0$. Perturbing the boundary minimum by up to $0.3$
+in the variables and re-minimizing also returns to it. The ghost-assisted solutions are
+reached only from a seed close to them (as with the backward seed above). Making the direct
+minimization find them without a seed (for example by continuation in $U$, warm-starting
+$(x^I,X)$ from the previous $U$) has \emph{not} been done.
+
+\section{Usage and correspondence with \texttt{gga\_dimer.py}}
+\label{sec:usage}
+
+\begin{lstlisting}[language=bash]
+python3 not_imp_gga_dimer.py --U <U/t> --Ng <even>   [--t 1.0] [--nstarts 10] [--seed 0]
+                             [--R-file R.in --lam-file L.in]   # seeded start (else random)
+                             [--max-iter 1000] [--shift 1e-9] [--quiet]
+python3 not_imp_gga_dimer.py --check-gradients [--Ng 2 --U 2]  # analytic vs finite diff.
+\end{lstlisting}
+It prints $Z^I$, $E_{\mathrm{var}}/t$, the double occupancy, the constraint violation, the three
+KKT residuals and \texttt{eqp}, and writes \texttt{not\_imp\_Ng*\_U*\_\{R,lambda,lambda\_c\}.dat}
+in the layout of \texttt{gga\_dimer.py}'s \texttt{save\_results}.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{p{4.6cm}p{5.1cm}p{5.1cm}}
+\toprule
+ & \texttt{gga\_dimer.py} (embedding) & \texttt{not\_imp\_gga\_dimer.py} (direct) \\
+\midrule
+unknowns & $R^I,\lambda^I$ (and $V^I,\lambda^{I,c},\Delta^{II}$ derived) & $x^I$ ($\phi^I$), $X$ ($\rho$) \\
+$R^I$ & output of the impurity solve, $S(\Delta^{\mathrm{new}})^{-1}D$ & function of $\phi^I$, Eq.~\eqref{eq:Rphi} \\
+$V^I$, $\lambda^{I,c}$ & Eqs.~7, 8 of \texttt{code.tex}, needed in every iteration & not used; only in the a-posteriori check \\
+impurity ground state & diagonalized every iteration & never (only for a seeded start) \\
+constraint $\rho^{II}=\mathbf I-\Ybb$ & \emph{not enforced} by the convergence test & enforced ($\max|c|\sim10^{-14}$) \\
+solver & damped fixed-point iteration & SLSQP on $E$ with equality constraints \\
+result type & fixed point of the iteration & constrained local minimum (checked) \\
+\bottomrule
+\end{tabular}
+\caption{Correspondence between the two solvers.}
+\end{table}
+
+\begin{thebibliography}{9}
+\bibitem{tpf} A.~M.~Tagliente, I.~Pasqua and M.~Fabrizio, \emph{Direct minimization versus
+  iterative embedding in the ghost-Gutzwiller method: a comparative study of magnetism in
+  Mott insulators}, arXiv:2607.27156 (\texttt{NotImpurity.pdf}); Eqs.~7 and 9--12 are the
+  basis of this note.
+\bibitem{code} \texttt{doc/code.tex}: notation and equations of the embedding solver
+  \texttt{gga\_dimer.py}, used throughout.
+\end{thebibliography}
+
+\end{document}

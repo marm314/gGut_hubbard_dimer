@@ -1,11 +1,11 @@
 """U-continuation scan (Ng=2, "forward" branch) from U/t=0.1 up to U/t=10.0
 in steps of +0.1.
 
-The "forward" branch (see examples/forward/, doc/code.tex "Are the converged
-points solutions?") is only validated at U/t=2 (examples/forward/R.in, L.in).
+The "forward" branch (see examples/U2_forward/, doc/code.tex "Are the converged
+points solutions?") is only validated at U/t=2 (examples/U2_forward/R.in, L.in).
 To reach U/t=0.1 on THIS branch (rather than accidentally seeding the
 "backward" branch, see scan_U_backward.py), this script first PRIMES silently: it
-continues examples/forward's seed down from U=2 to U=0.1 in steps of -0.1,
+continues examples/U2_forward's seed down from U=2 to U=0.1 in steps of -0.1,
 without saving anything, using gga_dimer.run_gga (the actual solver,
 unmodified) at each step. Only then does the requested ascending scan,
 U=0.1 -> 10.0 step +0.1, run and save its output.
@@ -44,8 +44,8 @@ os.makedirs(SCAN_DIR, exist_ok=True)
 # silently (not saved), so the ascending scan below starts from the correct
 # branch instead of an unvalidated guess at U=0.1.
 # ---------------------------------------------------------------------------
-R0, R1 = g.read_R_guess(os.path.join("examples", "forward", "R.in"))
-lam0, lam1 = g.read_lambda_guess(os.path.join("examples", "forward", "L.in"))
+R0, R1 = g.read_R_guess(os.path.join("examples", "U2_forward", "R.in"))
+lam0, lam1 = g.read_lambda_guess(os.path.join("examples", "U2_forward", "L.in"))
 
 Us_prime = [round(u, 1) for u in np.arange(2.0, 0.09, -0.1)]
 for U in Us_prime:
