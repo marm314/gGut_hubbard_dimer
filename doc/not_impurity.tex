@@ -437,11 +437,25 @@ $(x^I,X)$ from the previous $U$) has \emph{not} been done.
 python3 not_imp_gga_dimer.py --U <U/t> --Ng <even>   [--t 1.0] [--nstarts 10] [--seed 0]
                              [--R-file R.in --lam-file L.in]   # seeded start (else random)
                              [--max-iter 1000] [--shift 1e-9] [--quiet]
+                             [--omega <w_max> --eta <eta> --domega <step>]   # spectral function
 python3 not_imp_gga_dimer.py --check-gradients [--Ng 2 --U 2]  # analytic vs finite diff.
 \end{lstlisting}
 It prints $Z^I$, $E_{\mathrm{var}}/t$, the double occupancy, the constraint violation, the three
 KKT residuals and \texttt{eqp}, and writes \texttt{not\_imp\_Ng*\_U*\_\{R,lambda,lambda\_c\}.dat}
 in the layout of \texttt{gga\_dimer.py}'s \texttt{save\_results}.
+
+\paragraph{Spectral function.} If \texttt{-{}-omega}, \texttt{-{}-eta} and \texttt{-{}-domega} are all
+given (any subset is an error), the spectral function of the solution is computed exactly as in the
+post-processing section of \texttt{code.tex}: $G(\omega)=[(\omega+i\eta)\mathbf I-\Hqp]^{-1}$ with the
+$\Hqp$ of the reconstructed $(R,\lambda)$ (Section~\ref{sec:reconstruction}), then
+$G_{\mathrm{phys}}=R_{\mathrm{mat}}^{T}G\,R_{\mathrm{mat}}$ with $R_{\mathrm{mat}}=\mathrm{diag}(R^0,R^1)$ and
+$A(\omega)=-\tfrac2\pi\,\mathrm{Im\,Tr}\,G_{\mathrm{phys}}(\omega)$ on the grid $-\omega_{\max},\dots,\omega_{\max}$
+in steps of $d\omega$, written to \texttt{A\_omega.txt}; the routine is the one of \texttt{gga\_dimer.py}
+(\texttt{compute\_spectral\_function}), and the sum rule $\int A\,d\omega\to4$ is printed.
+The only input from the minimization is $(R,\lambda)$, so $A(\omega)$ inherits the ambiguity of the
+nearly free direction of $\lambda$ described in Section~\ref{sec:reconstruction}; at $U/t=10$ (the
+\texttt{examples/U10} seed, $\omega_{\max}=15$, $\eta=d\omega=0.05$) it gives $\int A\,d\omega=3.9615$ and agrees with the
+$A(\omega)$ of \texttt{gga\_dimer.py} for the same case to $6\times10^{-5}$ (maximum of $A$: $6.48$).
 
 \begin{table}[H]
 \centering

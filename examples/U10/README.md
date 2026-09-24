@@ -33,6 +33,20 @@ PYTHONPATH=../.. python3 ../../not_imp_gga_dimer.py --U 10 --Ng 2
 
 Expected: `E_var/t = -10.10131406`, constraints satisfied to ~5e-15, KKT
 residuals ~1e-7 or smaller, quasiparticle energies
-`eqp = [-5.286, -4.294, 0.0076, 0.0076, 4.294, 5.286]`. Note that from random
+`eqp = [-5.286, -4.294, ~0, ~0, 4.294, 5.286]` (the middle pair is degenerate at
+the Fermi level; its exact value, ~1e-11 here, depends on the minimum-norm choice for lambda). Note that from random
 starts (no `R.in`/`L.in`) that code only reaches the higher inert-ghost
 solution `E_var/t = -10.0`; the seed is what selects the lower solution.
+
+## Spectral function (optional)
+
+Both codes accept `--omega`, `--eta`, `--domega` (all three, or none) and then write
+`A_omega.txt` (columns `omega`, `A(omega)`):
+
+```
+python3 ../../gga_dimer.py --U 10.0 --Ng 2 --omega 15 --eta 0.05 --domega 0.05
+PYTHONPATH=../.. python3 ../../not_imp_gga_dimer.py --U 10 --Ng 2 --omega 15 --eta 0.05 --domega 0.05
+```
+
+For this seed both give `integral A d(omega) = 3.96` (sum rule 4 = 2 sites x 2 spins) and the
+two `A(omega)` agree to ~6e-5.

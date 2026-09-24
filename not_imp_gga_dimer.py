@@ -400,9 +400,17 @@ def main():
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--max-iter", type=int, default=1000)
     p.add_argument("--shift", type=float, default=1e-9, help="shift in S = sqrt(D(1-D)+shift)")
+    p.add_argument("--omega", type=float, default=None,
+                   help="max frequency of the spectral-function grid (-omega .. +omega); requires --eta and "
+                        "--domega; writes A_omega.txt")
+    p.add_argument("--eta", type=float, default=None, help="broadening eta of (omega + i eta); requires --omega, --domega")
+    p.add_argument("--domega", type=float, default=None, help="frequency step; requires --omega and --eta")
     p.add_argument("--check-gradients", action="store_true", help="compare analytic and finite-difference gradients")
     p.add_argument("--quiet", action="store_true")
     a = p.parse_args()
+
+    if not (a.omega is None) == (a.eta is None) == (a.domega is None):
+        p.error("--omega, --eta and --domega must be given together")
 
     if a.check_gradients:
         check_gradients(a.Ng if a.Ng is not None else 2, a.U if a.U is not None else 2.0)
@@ -425,6 +433,15 @@ def main():
     print(f"  KKT: H_imp phi = E phi    = {r['kkt_imp']:.2e}   (V, lambda^c from Eqs. 7-8)")
     print(f"  eqp = {r['eqp']}")
     g.save_results(r, prefix=f"not_imp_Ng{r['Ng']}_U{r['U']:g}")
+
+    if a.omega is not None:
+        # G(omega) = [(omega + i eta) 1 - H_qp]^-1 with the H_qp of the reconstructed (R, lambda),
+        # transformed with R_mat = diag(R0, R1) and traced: same routine as gga_dimer.py
+        omega_grid, A = g.compute_spectral_function(r["R0"], r["R1"], r["lam0"], r["lam1"], a.t,
+                                                    a.omega, a.eta, a.domega)
+        g.save_spectral_function(omega_grid, A)
+        print(f"  spectral function: int A d(omega) = {np.trapezoid(A, omega_grid):.4f} over "
+              f"[{omega_grid[0]:.2f}, {omega_grid[-1]:.2f}]  (sum rule 4 = 2 sites x 2 spins)")
 
 
 if __name__ == "__main__":
