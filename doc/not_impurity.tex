@@ -456,6 +456,98 @@ result type & fixed point of the iteration & constrained local minimum (checked)
 \caption{Correspondence between the two solvers.}
 \end{table}
 
+\section{Reconstruction of $R$ and $\lambda$ from $x$ and $X$}
+\label{sec:reconstruction}
+
+The unknowns of the direct minimization are only $z=(x^0,x^1,X)$; neither $R^I$ nor
+$\lambda^I$ is a variable. Both are reconstructed from a solution in the function
+\texttt{analyse}, in the following order. Let $n_s=\Neff(\Neff+1)/2$ (the number of independent
+entries of a symmetric $\Neff\times\Neff$ matrix; $n_s=6$ for $\Ng=2$).
+
+\paragraph{Step 1: the states.}
+\begin{equation}
+  \phi^{I}=\frac{x^{I}}{\lVert x^{I}\rVert},\qquad
+  \rho=X\,(X^{T}X)^{-1}X^{T},\qquad
+  \rho^{IJ}=\rho_{[I\Neff:(I+1)\Neff,\;J\Neff:(J+1)\Neff]} .
+\end{equation}
+
+\paragraph{Step 2: $R^{I}$ (explicit).} $R^I$ is a function of $\phi^I$ alone,
+Eqs.~\eqref{eq:Rphi} and~\eqref{eq:quadforms}:
+\begin{align}
+  \Ybb_{ab}&=\phi^{I\,T}B_{ab}\phi^{I},\qquad
+  D^{I}_{a}=\tfrac14\,\phi^{I\,T}\mathcal Y_{a}\phi^{I},\qquad
+  \mathbf I-\Ybb=W\,\mathrm{diag}(d_i)\,W^{T},\notag\\
+  R^{I}&=W\Bigl[\bigl(d_i(1-d_i)+\varepsilon\bigr)^{-1/2}\circ\bigl(W^{T}D^{I}\bigr)\Bigr].
+\end{align}
+The matrix $\rho$ plays no role here. $Z^I=R^{I\,T}R^{I}$.
+
+\paragraph{Step 3: $\lambda^{I}$ (by linear least squares).} The multiplier $\lambda^I$ is not
+determined by $(x,X)$ through a formula but by the two stationarity conditions of
+Eq.~\eqref{eq:Lni}, Eqs.~\eqref{eq:kktpsi} and~\eqref{eq:kktphi}, which are \emph{linear} in
+the entries of $\lambda^0,\lambda^1$. Collect them in the unknown vector
+\begin{equation}
+  w=\bigl(\lambda^{0}_{ab},\ \lambda^{1}_{ab}\bigr)_{a\le b}\in\mathbb R^{2n_s}.
+\end{equation}
+Let $\kappa_{ab}=1$ for $a=b$ and $\kappa_{ab}=2$ for $a<b$ (because
+$\sum_{ab}\lambda_{ab}B_{ab}=\sum_{a\le b}\kappa_{ab}\lambda_{ab}B_{ab}$), $P_I=\mathbf 1-\phi^I\phi^{I\,T}$,
+$K=\bigl[\begin{smallmatrix}0&-tR^0R^{1T}\\-tR^1R^{0T}&0\end{smallmatrix}\bigr]$ (with the $R^I$ of Step~2),
+and let $\Xi^{(I,ab)}$ be the $2\Neff\times2\Neff$ symmetric matrix with $1$ at positions
+$(I\Neff+a,\,I\Neff+b)$ and $(I\Neff+b,\,I\Neff+a)$ (a single $1$ if $a=b$) and zero elsewhere. The linear
+system is
+\begin{equation}
+  \begin{pmatrix}
+    A^{(0)} & 0\\
+    0 & A^{(1)}\\
+    C^{(0)} & C^{(1)}
+  \end{pmatrix}\,w
+  \;=\;
+  \begin{pmatrix} b^{(0)}\\ b^{(1)}\\ \mathrm{vec}\,[K,\rho]\end{pmatrix},
+  \label{eq:linsys}
+\end{equation}
+a system of $2m+4\Neff^{2}$ equations for the $2n_s$ unknowns, with
+\begin{align}
+  A^{(I)}_{\,\cdot,(ab)}&=4\,\kappa_{ab}\,P_I\bigl(B_{ab}\,\phi^{I}\bigr)\in\mathbb R^{m},
+  & b^{(I)}&=P_I\,g_\phi^{(I)},\notag\\
+  C^{(I)}_{\,\cdot,(ab)}&=\mathrm{vec}\bigl[\Xi^{(I,ab)},\rho\bigr]\in\mathbb R^{4\Neff^{2}},
+  \label{eq:linsysblocks}
+\end{align}
+where $g^{(I)}_\phi$ is the gradient of $E$ with respect to $\phi^I$ at fixed $\rho$
+(Eq.~\eqref{eq:gphi}, including the dependence through $R(\phi^I)$), and the projector $P_I$ removes
+the norm multiplier $\mu_I$ of Eq.~\eqref{eq:kktphi}. The first two block rows are the
+$\phi^{I}$ conditions, the last block row is $[\Xi,\rho]$-form of Eq.~\eqref{eq:kktpsi}
+($[K-\Lambda,\rho]=0\Leftrightarrow[\Lambda,\rho]=[K,\rho]$). The system is solved in the
+least-squares sense (\texttt{numpy.linalg.lstsq}, \texttt{rcond}$=10^{-10}$, minimum-norm
+solution), and $\lambda^I$ is the symmetric matrix built from the $n_s$ entries of $w$ belonging
+to fragment $I$.
+\begin{itemize}
+  \item \emph{Why jointly.} The $\phi$ block alone is rank deficient whenever a ghost is inert
+    (then the vectors $P_I B_{ab}\phi^I$ are linearly dependent), so its minimum-norm solution
+    is not unique and need not satisfy $[\,K-\Lambda,\rho\,]=0$; this happened for the forward
+    solution ($[\Hqp,\rho]\approx0.16$). With the $C$ block included the system has rank
+    $2n_s=12$ for $\Ng=2$ at the backward and forward solutions examined.
+  \item \emph{Quality check.} If $(x,X)$ is a stationary point, the residual of
+    Eq.~\eqref{eq:linsys} vanishes: it is reported as ``KKT: $\phi$ stationarity''
+    (the $A$ rows) and ``KKT: $[\Hqp,\rho]$'' (the $C$ rows, recomputed with the final
+    $\Hqp$). Values found: $\lesssim6\times10^{-7}$ and $\lesssim6\times10^{-8}$
+    (Table~\ref{tab:ni}). A large residual means that $(x,X)$ is \emph{not} a stationary
+    point of $\mathcal L$, and the $\lambda$ obtained is then only the best least-squares one.
+\end{itemize}
+
+\paragraph{Step 4: what follows.}
+$\Hqp=K-\mathrm{diag}(\lambda^0,\lambda^1)$ is built as in \texttt{code.tex}, giving the
+quasiparticle energies \texttt{eqp}; $V^I$ and $\lambda^{I,c}$ follow from Eqs.~7 and~8 of
+\texttt{code.tex} with $\rho$, $R^I$, $\Delta^I=\mathbf I-\Ybb$ and $\lambda^I$. The arrays
+$R^I$, $\lambda^I$, $\lambda^{I,c}$ are written by \texttt{save\_results} in the layout used by
+\texttt{gga\_dimer.py} (two rows of $\Neff$ numbers for $R$; two stacked $\Neff\times\Neff$
+blocks for each matrix), so the files have the format of \texttt{R.in}/\texttt{L.in}.
+
+\paragraph{Gauge.} $R^I$ and $\lambda^I$ are obtained in the basis defined by $x^I$ (the
+ghost-orbital basis of the impurity state) and $X$; no gauge fixing is applied. Solutions
+related by a rotation $Q_I\in O(\Neff)$ of the ghost basis of fragment $I$ have
+$R^I\to Q_IR^I$ and $\lambda^I\to Q_I\lambda^IQ_I^{T}$, while $E$, $Z^I$ and the quasiparticle
+energies are invariant. (The inverse map, from $(R,\lambda)$ to a starting $(x,X)$, is the
+seeded start described in Section~\ref{sec:minimization}.)
+
 \begin{thebibliography}{9}
 \bibitem{tpf} A.~M.~Tagliente, I.~Pasqua and M.~Fabrizio, \emph{Direct minimization versus
   iterative embedding in the ghost-Gutzwiller method: a comparative study of magnetism in
