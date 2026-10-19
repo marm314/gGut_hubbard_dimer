@@ -584,82 +584,66 @@ seeded start described in Section~\ref{sec:minimization}.)
 \label{sec:niDeltaV}
 
 As in \texttt{gga\_dimer.py} (\texttt{doc/code.tex}, Section ``Generalization: a
-site-splitting potential $\Delta V$''), the
-physical Hamiltonian can be generalized to
-$H_{\mathrm{phys}}\to H_{\mathrm{phys}}+\tfrac{\Delta V}{2}(n_0-n_1)$
-($\Delta V=0$ recovers the plain dimer; CLI flag \texttt{-{}-deltaV} on
-\texttt{not\_imp\_gga\_dimer.py} too). This is a bare one-body, fragment-diagonal term
-($\epsilon_0=+\Delta V/2$, $\epsilon_1=-\Delta V/2$), so by the same Lagrangian argument
-as \texttt{code.tex}'s $\Delta V$ section, it adds
-$\sum_I\epsilon_I(R^I)^T\rho^{II}R^I$ to the energy functional of Eq.~11 and does
-\emph{not} touch $H_{\mathrm{loc}}$ or the constraints (Eq.~7).
+site-splitting potential $\Delta V$''), the model can be generalized by splitting the
+two fragments' chemical potentials, $\mu^0=U/2+\Delta V$, $\mu^1=U/2-\Delta V$, in place
+of the single $\mu=U/2$ of Section~\ref{sec:problem} ($\Delta V=0$ recovers the plain
+dimer; CLI flag \texttt{-{}-deltaV} on \texttt{not\_imp\_gga\_dimer.py} too). This is the
+convention validated against the reference C++ \texttt{Asym\_Hubbard} calculations in
+\texttt{code.tex}'s $\Delta V$ section, which also explains \emph{why} this placement
+(an undressed shift of $H_{\mathrm{loc}}$'s own chemical potential) was chosen over the
+alternative of adding $\Delta V$ to the bare one-body Hamiltonian feeding $\Hqp$ instead
+(a dressed, Gutzwiller-renormalized external field): the two are genuinely different
+models, confirmed to disagree numerically, and only the first matches the reference.
 
-\paragraph{Energy and gradient (Section~\ref{sec:functional}).} Since this term is,
-like the kinetic term, linear in $\rho$ (via its fragment-diagonal blocks
-$\rho^{00},\rho^{11}$ instead of the off-diagonal $\rho^{01}$), it is folded into the
-\emph{same} matrix $G$ of Eq.~\eqref{eq:gX} (now also given diagonal blocks
-$G^{00}=\epsilon_0R^0(R^0)^T$, $G^{11}=\epsilon_1R^1(R^1)^T$), so the existing
-projector-derivative formula for $\nabla_XE$ needs no change; only $\nabla_{R^I}E$
-(hence, through the chain rule of Section~\ref{sec:gradients}, $\nabla_{\phi^I}E$) gains
-the explicit extra term $2\epsilon_I\rho^{II}R^I$. Checked against finite differences
-(\texttt{check\_gradients}, now with an optional \texttt{deltaV}): max$|$analytic
-$-$ FD$|\lesssim10^{-10}$, same order as at $\Delta V=0$.
+\paragraph{No change to the energy functional, the constraints, or their gradients.}
+Since $\mu^I$ only ever enters through $H_{\mathrm{loc}}^I=U\,n_\uparrow n_\downarrow-\mu^I(n_\uparrow+n_\downarrow)$
+(Eq.~\eqref{eq:quadforms}'s $E^I_{\mathrm{loc}}=\phi^{I\,T}H^{s,I}_{\mathrm{loc}}\phi^I$,
+now with a per-fragment operator matrix $H^{s,I}_{\mathrm{loc}}$ in place of the shared
+$H^s_{\mathrm{loc}}$), every other formula of Sections~\ref{sec:functional}--\ref{sec:gradients}
+is literally unchanged: $E(\rho,\phi^0,\phi^1)$ is still Eq.~\eqref{eq:Eni}, $R^I$ is
+still Eq.~\eqref{eq:Rphi}, the constraints are still Eq.~\eqref{eq:constraints}, and the
+gradients of Section~\ref{sec:gradients} only pick up the replacement
+$H^s_{\mathrm{loc}}\to H^{s,I}_{\mathrm{loc}}$ in $g_\phi$ (Eq.~\eqref{eq:gphi}) and in
+the KKT check of Section~\ref{sec:kkt} -- nowhere else does $\Delta V$ appear, and in
+particular $K$ (Eq.~\eqref{eq:linsys}) keeps the \emph{pure hopping} form
+$K=\bigl[\begin{smallmatrix}0&-tR^0R^{1T}\\-tR^1R^{0T}&0\end{smallmatrix}\bigr]$, with no
+$\Delta V$-dependent diagonal block.
 
-\paragraph{Reconstruction (Section~\ref{sec:reconstruction}).} Step 2 ($R^I$ from
-$\phi^I$) is unchanged -- $\Delta V$ does not enter $H_{\mathrm{loc}}$ or $\phi^I$'s own
-energy, only $\rho$ and $R^I$ together, which are not yet coupled at that step. Step 3
-changes only in $K$, which must now carry the $\Delta V$ part of $\Hqp$'s diagonal
-blocks too (exactly $\Hqp$'s diagonal blocks of \texttt{code.tex}'s $\Delta V$ section
-minus $\lambda$):
-\begin{equation}
-  K \;=\;
-  \begin{pmatrix}
-    \tfrac{\Delta V}{2}R^0(R^0)^T & -tR^0R^{1T}\\
-    -tR^1R^{0T} & -\tfrac{\Delta V}{2}R^1(R^1)^T
-  \end{pmatrix},
-\end{equation}
-so that $\mathrm{vec}[K,\rho]$ (the right-hand side of the last block row of
-Eq.~\eqref{eq:linsys}) is the full one-body commutator target; $A^{(I)}$, $C^{(I)}$ are
-unchanged (the $\lambda$-dependence of $[\Hqp,\rho]$ does not involve $\Delta V$). Step
-4 ($V^I$, $\lambda^{I,c}$, $\Hqp$) calls \texttt{gga\_dimer.py}'s
-\texttt{hybridization\_V}/\texttt{embedding\_lambda\_c}/\texttt{qp\_state}, now passing
-\texttt{deltaV} through, so it automatically uses the generalized $V$-fit of
-\texttt{code.tex}'s $\Delta V$ section.
+\emph{Code:} \texttt{NotImpDimer.\_\_init\_\_} builds two operator sets, one per
+fragment, with $\mu^0=U/2+\Delta V$ and $\mu^1=U/2-\Delta V$ (\texttt{Hyb}, \texttt{B},
+\texttt{Ndd}, \texttt{Nph} and the sector do not depend on $\mu$, so only
+\texttt{self.Hloc} becomes a $2$-list, \texttt{self.Hloc[I]}); \texttt{frag(x, I)} takes
+the fragment index explicitly and uses \texttt{self.Hloc[I]} for $E^I_{\mathrm{loc}}$ and
+its gradient. Checked against finite differences (\texttt{check\_gradients}, with an
+optional \texttt{deltaV}): max$|$analytic $-$ FD$|\lesssim3\times10^{-10}$, same order as
+at $\Delta V=0$.
 
-\paragraph{A bug found and fixed.} The first version of this generalization updated
-$K$ above but left \texttt{hybridization\_V} itself unchanged (i.e.\ called it without
-\texttt{deltaV}, implicitly $\epsilon_I=0$ in the generalized $V$-fit). This is
-exactly the same omission described in \texttt{code.tex}
-(``A bug found and fixed while adding this''), and this document's own
-\texttt{analyse} machinery is precisely what exposed it: with $K$ fixed but $V^I$ not,
-``KKT: $\phi$ stationarity'' and ``KKT: $[\Hqp,\rho]$'' were both small
-($\lesssim10^{-7}$, confirming $\lambda^I$ itself was correctly recovered), yet
-``KKT: $\Himp\phi=E\phi$'' (which uses $V^I$, $\lambda^{I,c}$ built downstream of
-$\lambda^I$) was $\sim0.3$ -- a residual two orders of magnitude above the $\Delta V=0$
-baseline, and unchanged whether the point was reached by a random start or by seeding
-\texttt{minimize} exactly at a converged \texttt{gga\_dimer.py} fixed point. This
-three-way split (two KKT checks fine, the third not) is what localized the bug to the
-$V^I$ reconstruction specifically, rather than to the energy functional or to
-$\lambda^I$'s own recovery (both already independently validated by the
-finite-difference gradient check and by \texttt{hessian\_analysis}'s simpler, direct
-Lagrange-stationarity test, $\lVert\nabla E+J^T\mu\rVert_\infty\sim10^{-8}$, which does
-not depend on \texttt{hybridization\_V} at all). After passing \texttt{deltaV} through,
-``KKT: $\Himp\phi=E\phi$'' dropped to $\sim10^{-7}$, matching the other two residuals
-and the $\Delta V=0$ baseline.
+\paragraph{An earlier, different placement, and why it was abandoned.} A first version
+of this generalization instead added $\Delta V$ to $\Hqp$'s diagonal block and to the
+$V$-fit (the dressed-field placement described in \texttt{code.tex}), leaving
+$H_{\mathrm{loc}}$ untouched. It had its own internal bug (the $V$-fit's $\Delta V$ term
+was computed in \texttt{analyse} but not inside \texttt{hybridization\_V} itself, caught
+by exactly the same three-way KKT split used here: $\phi$ stationarity and
+$[\Hqp,\rho]$ small while $\Himp\phi=E\phi$ was $\sim0.3$), but once fixed it was
+internally consistent and passed its own gradient and Hessian checks -- it was a
+\emph{legitimate} model, just not the reference's. Direct comparison at the same
+$(U,\Delta V)$ against the placement used here showed they disagree (\texttt{code.tex}:
+$\Ng=0$, $U/t=2$, $\lvert\epsilon_I\rvert=1$ gives $E_{\mathrm{var}}/t=-3.570052$ there
+versus $-3.548937$ here), and only the placement of this section matches the C++
+reference, so the dressed-field version was removed rather than kept as an option.
 
-\paragraph{Validation summary.} With the fix: finite-difference gradient check
-$\lesssim10^{-10}$; \texttt{hessian\_analysis} stationarity $\sim10^{-8}$ with no
-negative reduced-Hessian eigenvalue (genuine local minimum, up to the documented zero
-modes); all three KKT residuals $\sim10^{-7}$--$10^{-8}$, same order as $\Delta V=0$;
-and, for $\Ng=0$ (several $(U,\Delta V)$), agreement with \texttt{gga\_dimer.py} to
-$\sim10^{-8}$--$10^{-10}$ in $E_{\mathrm{var}}$, $Z^0$, $Z^1$. For $\Ng=2$,
-\texttt{gga\_dimer.py}'s fixed-point iteration was found to converge to a spurious,
-much higher-energy ``sleeping ghost'' solution regardless of the starting guess
-(including when seeded exactly at this script's converged, KKT-validated solution), so
-the two solvers were \emph{not} cross-checked at $\Ng=2,\Delta V\neq0$ beyond
-confirming (via the KKT residuals above) that \emph{this} script's own solution is
-correct; see \texttt{code.tex}'s ``Known caveat'' paragraph for how this relates to the
-pre-existing $\Delta V=0$ multi-fixed-point phenomenon.
+\paragraph{Validation summary.} Finite-difference gradient check
+$\lesssim3\times10^{-10}$; \texttt{hessian\_analysis} stationarity $\sim10^{-8}$ with no
+negative reduced-Hessian eigenvalue beyond the documented zero modes; all three KKT
+residuals $\sim10^{-7}$--$10^{-8}$, same order as $\Delta V=0$; agreement with
+\texttt{gga\_dimer.py} to $\sim10^{-8}$--$10^{-10}$ in $E_{\mathrm{var}}$, $Z^0$, $Z^1$ at
+several $(\Ng,U,\Delta V)$; and, read directly from the reference C++'s own
+already-completed output (\texttt{\textasciitilde/Documents/GGut/calcs/Asym\_Hubbard},
+no C++ rerun needed), exact agreement at $\Ng=0$ ($U/t=2,5$) and, seeded from the C++'s
+own guess files to avoid the $\Ng\ge2$ sleeping-ghost branch (\texttt{code.tex}'s ``Known
+caveat''), at $\Ng=2$ ($U/t=2,6$) -- including the exact iteration count. E.g.\ $\Ng=2$,
+$U/t=2$, $\Delta V/t=1$: this code gives $E_{\mathrm{var}}/t=-3.549112$, $Z^0=Z^1=0.999974$,
+against the C++'s $-3.5491$, $0.99997$, both in $10$ iterations.
 
 \begin{thebibliography}{9}
 \bibitem{tpf} A.~M.~Tagliente, I.~Pasqua and M.~Fabrizio, \emph{Direct minimization versus

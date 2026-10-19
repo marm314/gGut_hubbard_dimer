@@ -61,13 +61,20 @@ def _F_inv_sqrt(m):
 
 class NotImpDimer:
     def __init__(self, Ng, U, t=1.0, shift=1e-9, deltaV=0.0):
+        """deltaV: site-splitting potential, entering as a per-fragment shift of the
+        impurity's own chemical potential (mu_0 = U/2 + deltaV, mu_1 = U/2 - deltaV),
+        the SAME convention validated against the reference C++ calculations in
+        gga_dimer.py (see its run_gga docstring and doc/code.tex). Hyb/B/Ndd/Nph and
+        the sector do not depend on mu, so only H_loc differs between the two
+        fragments; it is built as a 2-list, self.Hloc[I], and used only inside frag()."""
         self.Ng, self.U, self.t, self.shift, self.deltaV = Ng, U, t, shift, deltaV
         N = self.N = Ng + 1
-        ops = g.build_impurity_ops(N, U, U / 2.0)
+        ops = g.build_impurity_ops(N, U, U / 2.0 + deltaV)
+        ops1 = g.build_impurity_ops(N, U, U / 2.0 - deltaV)
         sec = ops["sector"]
         self.m = len(sec)
         rs = lambda A: A.tocsr()[sec][:, sec].toarray()
-        self.Hloc = rs(ops["H_loc"])
+        self.Hloc = [rs(ops["H_loc"]), rs(ops1["H_loc"])]
         self.Hyb = np.array([rs(ops["hyb_up"][a] + ops["hyb_dn"][a]) for a in range(N)])
         B = np.array([[0.5 * rs(ops["lam_up"][a][b] + ops["lam_dn"][a][b]) for b in range(N)]
                       for a in range(N)])
@@ -76,7 +83,7 @@ class NotImpDimer:
         self.Nph = rs(ops["n_pu"] + ops["n_pd"])
         self.iu = np.triu_indices(N)
         self.nsym = len(self.iu[0])
-        self.ops = ops
+        self.ops = [ops, ops1]
         self.nz = 2 * self.m + 2 * N * N
 
     # ---- variables ------------------------------------------------------
@@ -93,53 +100,39 @@ class NotImpDimer:
         return rho, Y
 
     # ---- one fragment -----------------------------------------------------
-    def frag(self, x):
+    def frag(self, x, I):
+        """I selects the fragment's own H_loc (self.Hloc[I] = U n_up n_dn - mu_I n,
+        mu_I = U/2 +- deltaV): this is the ONLY place deltaV enters the whole
+        functional (see __init__ and the module docstring's deltaV section)."""
         nrm = np.linalg.norm(x)
         phi = x / nrm
         Bphi = np.einsum("abij,j->abi", self.B, phi)
         Dbb = np.einsum("i,abi->ab", phi, Bphi)
         Hphi = np.einsum("aij,j->ai", self.Hyb, phi)
         D = 0.25 * np.einsum("i,ai->a", phi, Hphi)
-        Eloc = phi @ self.Hloc @ phi
+        Eloc = phi @ self.Hloc[I] @ phi
         d, W = np.linalg.eigh(np.eye(self.N) - Dbb)
         mm = d * (1.0 - d) + self.shift
         f = mm ** -0.5
         R = W @ (f * (W.T @ D))
         return dict(nrm=nrm, phi=phi, Bphi=Bphi, Dbb=Dbb, D=D, Hphi=Hphi, Eloc=Eloc,
-                    d=d, W=W, mm=mm, f=f, R=R)
+                    d=d, W=W, mm=mm, f=f, R=R, I=I)
 
     # ---- objective and gradient (Eq. 11) ----------------------------------
     def energy(self, z, grad=True):
-        """deltaV adds the bare site-splitting potential (DeltaV/2)(n_0-n_1) of the
-        physical Hamiltonian (see gga_dimer.qp_state): a one-body, fragment-diagonal
-        term, so -- exactly as for the hopping term above -- it contributes
-        +-(DeltaV/2) R_I rho_II R_I to E (both spins: the overall deltaV*(...), no
-        factor 1/2, mirrors the -4t of the hopping term, which is likewise 2 (spin) x
-        2 (I,J ordering) x (-t)). Since this term is linear in rho exactly like the
-        hopping term, it is folded into the SAME G matrix (now also given diagonal
-        blocks) so the existing projector-derivative formula for gX needs no change;
-        only gR picks up an explicit extra piece from the R_I rho_II R_I form."""
-        N, t, dV = self.N, self.t, self.deltaV
+        N, t = self.N, self.t
         x0, x1, X = self.unpack(z)
         rho, Y = self.projector(X)
-        fr = [self.frag(x0), self.frag(x1)]
+        fr = [self.frag(x0, 0), self.frag(x1, 1)]
         R0, R1 = fr[0]["R"], fr[1]["R"]
         rho01 = rho[:N, N:]
-        rho00, rho11 = rho[:N, :N], rho[N:, N:]
         E = -4.0 * t * R0 @ rho01 @ R1 + fr[0]["Eloc"] + fr[1]["Eloc"]
-        if dV != 0.0:
-            E += dV * (R0 @ rho00 @ R0 - R1 @ rho11 @ R1)
         if not grad:
             return E
         G = np.zeros((2 * N, 2 * N))
         G[:N, N:] = -2.0 * t * np.outer(R0, R1)
         G[N:, :N] = G[:N, N:].T
         gR = [-4.0 * t * rho01 @ R1, -4.0 * t * rho01.T @ R0]
-        if dV != 0.0:
-            G[:N, :N] = dV * np.outer(R0, R0)
-            G[N:, N:] = -dV * np.outer(R1, R1)
-            gR[0] = gR[0] + 2.0 * dV * rho00 @ R0
-            gR[1] = gR[1] - 2.0 * dV * rho11 @ R1
         gX = 2.0 * (np.eye(2 * N) - rho) @ G @ X @ Y
         gx = []
         for I in range(2):
@@ -153,7 +146,7 @@ class NotImpDimer:
             gD = F["W"] @ (F["f"] * u)
             gphi = (2.0 * np.einsum("ab,abi->i", gDbb, F["Bphi"])
                     + 0.5 * np.einsum("a,ai->i", gD, F["Hphi"])
-                    + 2.0 * self.Hloc @ F["phi"])
+                    + 2.0 * self.Hloc[I] @ F["phi"])
             gx.append((gphi - (F["phi"] @ gphi) * F["phi"]) / F["nrm"])
         return E, self.pack(gx[0], gx[1], gX)
 
@@ -164,7 +157,7 @@ class NotImpDimer:
         rho, _ = self.projector(X)
         out = []
         for I, x in enumerate((x0, x1)):
-            Dbb = self.frag(x)["Dbb"]
+            Dbb = self.frag(x, I)["Dbb"]
             blk = rho[I * N:(I + 1) * N, I * N:(I + 1) * N]
             out.append((blk + Dbb - np.eye(N))[self.iu])
         return np.concatenate(out)
@@ -176,7 +169,7 @@ class NotImpDimer:
         P = np.eye(2 * N) - rho
         J = np.zeros((2 * self.nsym, self.nz))
         for I, x in enumerate((x0, x1)):
-            F = self.frag(x)
+            F = self.frag(x, I)
             phi = F["phi"]
             for k, (a, b) in enumerate(zip(*self.iu)):
                 row = I * self.nsym + k
@@ -200,7 +193,7 @@ class NotImpDimer:
         R0[0] = 0.9
         if N > 1:
             R0[1:] = 0.05 * (1.0 + 0.3 * np.arange(N - 1))
-        _, rho = g.qp_state([R0, R0], [np.zeros((N, N))] * 2, self.t, self.deltaV)
+        _, rho = g.qp_state([R0, R0], [np.zeros((N, N))] * 2, self.t)
         w, V = np.linalg.eigh(rho)
         X = V[:, -N:] + 0.05 * rng.normal(size=(2 * N, N))
         return self.pack(x0, x1, X)
@@ -210,15 +203,15 @@ class NotImpDimer:
         orbitals of H_qp(R, lambda); phi_i = lowest state of the sector Hamiltonian built from
         V_i, lambda^c_i of Eqs. 7-8 (one small diagonalization, used ONLY to initialize phi)."""
         N, t, shift = self.N, self.t, self.shift
-        Hqp, rho = g.qp_state(R, lam, t, self.deltaV)
+        Hqp, rho = g.qp_state(R, lam, t)
         w, Vv = np.linalg.eigh(Hqp)
         X = Vv[:, :N]
         xs = []
         for I in range(2):
             Delta = rho[I * N:(I + 1) * N, I * N:(I + 1) * N]
-            V = g.hybridization_V(rho, R, t, shift, I, self.deltaV)
+            V = g.hybridization_V(rho, R, t, shift, I)
             lamc = g.embedding_lambda_c(Delta, lam[I], V, R[I], shift)
-            H = self.Hloc.copy()
+            H = self.Hloc[I].copy()
             for a in range(N):
                 H = H + V[a] * self.Hyb[a]
                 for b in range(N):
@@ -279,7 +272,7 @@ class NotImpDimer:
         x0, x1, X = self.unpack(z)
         rho, Y = self.projector(X)
         E, grad = self.energy(z)
-        fr = [self.frag(x0), self.frag(x1)]
+        fr = [self.frag(x0, 0), self.frag(x1, 1)]
         R = [fr[0]["R"], fr[1]["R"]]
         Delta = [np.eye(N) - fr[I]["Dbb"] for I in range(2)]
 
@@ -293,11 +286,6 @@ class NotImpDimer:
         K = np.zeros((2 * N, 2 * N))
         K[:N, N:] = -t * np.outer(R[0], R[1])
         K[N:, :N] = K[:N, N:].T
-        if self.deltaV != 0.0:
-            # the non-lambda part of H_qp's diagonal blocks too (see qp_state),
-            # needed so bp = [K, rho] below is the full one-body commutator target
-            K[:N, :N] = 0.5 * self.deltaV * np.outer(R[0], R[0])
-            K[N:, N:] = -0.5 * self.deltaV * np.outer(R[1], R[1])
         blocks, rhs = [], []
         for I in range(2):
             F = fr[I]
@@ -332,16 +320,16 @@ class NotImpDimer:
             L[self.iu] = sol[I * ns:(I + 1) * ns]
             lam.append(L + L.T - np.diag(np.diag(L)))
 
-        Hqp, _ = g.qp_state(R, lam, t, self.deltaV)
+        Hqp, _ = g.qp_state(R, lam, t)
         kkt_psi = np.abs(Hqp @ rho - rho @ Hqp).max()
         eqp = np.linalg.eigvalsh(Hqp)
 
         # embedding quantities of gga_dimer.py (Eqs. 7, 8) and H_imp phi = E phi
-        V = [g.hybridization_V(rho, R, t, shift, i, self.deltaV) for i in range(2)]
+        V = [g.hybridization_V(rho, R, t, shift, i) for i in range(2)]
         lamc = [g.embedding_lambda_c(Delta[i], lam[i], V[i], R[i], shift) for i in range(2)]
         kkt_imp = 0.0
         for I in range(2):
-            H = self.Hloc.copy()
+            H = self.Hloc[I].copy()
             for a in range(N):
                 H = H + V[I][a] * self.Hyb[a]
                 for b in range(N):
@@ -416,8 +404,10 @@ def main():
     p.add_argument("--Ng", type=int)
     p.add_argument("--t", type=float, default=1.0)
     p.add_argument("--deltaV", type=float, default=0.0,
-                   help="site-splitting potential (DeltaV/2)(n_0-n_1) of the physical "
-                        "Hamiltonian; 0 recovers the plain dimer (default: 0.0)")
+                   help="site-splitting potential: shifts the impurity's own chemical "
+                        "potential per fragment (mu_0 = U/2 + deltaV, mu_1 = U/2 - deltaV); "
+                        "0 recovers the plain dimer. Same convention as gga_dimer.py and "
+                        "the reference C++ Asym_Hubbard calculations (default: 0.0)")
     p.add_argument("--nstarts", type=int, default=10, help="random starts; the lowest feasible one is kept")
     p.add_argument("--R-file", default="R.in", help="R guess (gga_dimer.py format); if it and --lam-file exist "
                    "they are used as the (single) starting point instead of random starts")
@@ -465,7 +455,7 @@ def main():
         # G(omega) = [(omega + i eta) 1 - H_qp]^-1 with the H_qp of the reconstructed (R, lambda),
         # transformed with R_mat = diag(R0, R1) and traced: same routine as gga_dimer.py
         omega_grid, A = g.compute_spectral_function(r["R0"], r["R1"], r["lam0"], r["lam1"], a.t,
-                                                    a.omega, a.eta, a.domega, deltaV=a.deltaV)
+                                                    a.omega, a.eta, a.domega)
         g.save_spectral_function(omega_grid, A)
         print(f"  spectral function: int A d(omega) = {np.trapezoid(A, omega_grid):.4f} over "
               f"[{omega_grid[0]:.2f}, {omega_grid[-1]:.2f}]  (sum rule 4 = 2 sites x 2 spins)")
