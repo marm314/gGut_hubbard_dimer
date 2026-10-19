@@ -1600,6 +1600,125 @@ the mixed $\Delta$ is clipped to $[0,1]$), but noise of the eigenvalues of
 $\Delta$ larger than $\varepsilon$ would produce it; the unshifted formula gave NaN
 on the forward seed (Section~\ref{sec:eqV}).
 
+\section{Generalization: a site-splitting potential $\Delta V$}
+\label{sec:deltaV}
+
+\texttt{gga\_dimer.py} (and \texttt{not\_imp\_gga\_dimer.py}, Section ``Generalization:
+a site-splitting potential $\Delta V$'' of \texttt{doc/not\_impurity.tex}) optionally
+generalizes the physical Hamiltonian
+Eq.~\eqref{eq:Hphys} to
+\begin{equation}
+  H_{\mathrm{phys}} \;\to\; H_{\mathrm{phys}} \;+\; \frac{\Delta V}{2}\,(n_0-n_1),
+  \qquad n_i=n_{i\uparrow}+n_{i\downarrow},
+  \label{eq:HphysDeltaV}
+\end{equation}
+site $0$ raised and site $1$ lowered by $\Delta V/2$ ($\Delta V=0$ recovers
+Eq.~\eqref{eq:Hphys} exactly); this is the same model generalization as
+\texttt{exact\_dimer\_deltaV.py}/\texttt{scan\_ed\_deltaV/ED\_deltaV.tex}, here combined
+with the gGA approximation instead of exact diagonalization. CLI flag: \texttt{-{}-deltaV}
+(default $0.0$) on both scripts.
+
+\paragraph{Only one new term in the Lagrangian.} The new term of
+Eq.~\eqref{eq:HphysDeltaV} is a bare \emph{one-body}, fragment-\emph{diagonal} operator
+($\epsilon_0=+\Delta V/2$, $\epsilon_1=-\Delta V/2$; no $I\protect\neq J$ part), so it
+enters the Lagrangian Eq.~\eqref{eq:lagrangian} exactly like the kinetic term, but with
+$I=J$ instead of $I\neq J$:
+\begin{equation}
+  L \;\to\; L \;+\; \sum_I \epsilon_I\,(R^I)^T\langle\Psi_{\mathrm{qp}}|d^\dagger_Id_I|\Psi_{\mathrm{qp}}\rangle\,R^I .
+  \label{eq:LdeltaV}
+\end{equation}
+Only two of the Euler-Lagrange equations of Section~\ref{sec:elderive} depend on
+$|\Psi_{\mathrm{qp}}\rangle$ or $R^I$, so only two equations of this document change --
+$H_{\mathrm{qp}}$ (Eq.~\eqref{eq:Hqp2}, from varying $\langle\Psi_{\mathrm{qp}}|$) and the
+$V$-fit (Eq.~\eqref{eq:eqV}, from varying $R^I$, Section~\ref{sec:elderive}); $\Hloc$
+(Eq.~\eqref{eq:Himp}), $\lambda^{I,c}$ (Eq.~\eqref{eq:lambdac-def}) and the variational
+energy's \emph{formula} $E_{\mathrm{var}}=E_{\mathrm{qp}}+E_{\mathrm{loc}}$ are all
+unchanged -- the new physics enters only through $\Hqp$ and $V$.
+
+\begin{equation}
+  \boxed{\;
+  \Hqp \;=\;
+  \begin{pmatrix}
+    -\lambda^{0}+\tfrac{\Delta V}{2}R^{0}(R^{0})^{T} & -t\,R^{0}(R^{1})^{T} \\[2pt]
+    -t\,R^{1}(R^{0})^{T} & -\lambda^{1}-\tfrac{\Delta V}{2}R^{1}(R^{1})^{T}
+  \end{pmatrix}
+  \;}
+  \label{eq:Hqp2-deltaV}
+\end{equation}
+(reduces to Eq.~\eqref{eq:Hqp2} at $\Delta V=0$). Because
+$\Hqp+\mathrm{diag}(\lambda^0,\lambda^1)$ keeps exactly the $\Delta V$ term and loses the
+$\lambda$ term, $E_{\mathrm{qp}}=2\,\mathrm{Tr}[\rho^{\mathrm{qp}}(\Hqp+\mathrm{diag}(\lambda^0,\lambda^1))]$
+(Section~\ref{sec:selfconsistency}'s variational-energy formula) automatically picks up
+the correct $2\epsilon_I(R^I)^T\Delta^{II}R^I$ contribution with no change to that formula
+itself.
+
+\begin{equation}
+  \boxed{\;
+  \sqrt{\Delta^{II}(\mathbf I-\Delta^{II})}\,V^{I}
+  \;=\; \epsilon_I\,\Delta^{II}R^{I} \;-\; t\,\Delta^{IJ}R^{J}, \qquad J\neq I,
+  \;}
+  \label{eq:eqV-deltaV}
+\end{equation}
+i.e.\ $V^I$ gains a same-fragment term with the \emph{same} per-term coefficient
+convention as the already-validated neighbor term of Eq.~\eqref{eq:eqV} (the general,
+multi-orbital RISB form being $X_i=\sum_j (h_0)_{ij}\,\rho_{ij}R^j$, summed over
+\emph{all} $j$ including $j=i$, with $h_0$ the bare one-body Hamiltonian: hopping
+off-diagonal, $\epsilon_I$ on the diagonal).
+
+\emph{Code:} \texttt{qp\_state(R, lam, t, deltaV)} builds Eq.~\eqref{eq:Hqp2-deltaV};
+\texttt{hybridization\_V(rho, R, t, shift, i, deltaV)} builds Eq.~\eqref{eq:eqV-deltaV}.
+
+\paragraph{A bug found and fixed while adding this.} An earlier version of this
+generalization added the $\Delta V$ term to $\Hqp$ (Eq.~\eqref{eq:Hqp2-deltaV}) but
+\emph{not} to the $V$-fit, reasoning (wrongly) that $V^I$ is fixed only by the
+$V^I$-term of the Lagrangian, which Eq.~\eqref{eq:LdeltaV} does not touch -- but the
+$V$-fit comes from varying $R^I$ (Section~\ref{sec:elderive}, ``This -- not the
+$V^I$-term's own stationarity -- is where the $V$-fit equation comes from''), and
+$R^I$ \emph{does} appear in Eq.~\eqref{eq:LdeltaV}. This was caught by
+\texttt{not\_imp\_gga\_dimer.py}'s independent KKT check, ``$\Himp\phi=E\phi$''
+(its $\Delta V$ section in \texttt{doc/not\_impurity.tex}): with the old
+(uncorrected) $V$-fit this residual was $\sim0.3$ at $\Delta V\neq0$ (vs.\ the
+$\lesssim10^{-6}$ baseline at $\Delta V=0$) even though \texttt{gga\_dimer.py}'s own
+internal self-consistency check ($\Delta^{\mathrm{qp}}$ vs.\ $\Delta^{\mathrm{new}}$,
+Section~\ref{sec:outer-loop}) was satisfied to $\sim10^{-13}$ -- i.e.\ the fixed-point
+iteration was internally consistent but converging to the \emph{wrong} fixed point,
+not a numerical non-convergence. A sweep of candidate coefficients for the new $V$-fit
+term (comparing against the KKT residual) confirmed the coefficient of
+Eq.~\eqref{eq:eqV-deltaV}; after the fix the residual is $\sim10^{-7}$--$10^{-8}$,
+matching the $\Delta V=0$ baseline, and \texttt{gga\_dimer.py} and
+\texttt{not\_imp\_gga\_dimer.py} agree on $E_{\mathrm{var}}$, $Z^0$, $Z^1$ to
+$\sim10^{-8}$--$10^{-10}$ (checked for $\Ng=0$, several $(U,\Delta V)$; see its $\Delta V$
+section in \texttt{doc/not\_impurity.tex} for the $\Ng=2$ caveat).
+
+\paragraph{Validation.} (1) \emph{Exact $U=0$ limit}: at $U=0$ the gGA ansatz is exact,
+and \texttt{run\_gga} converges to $R^0=R^1=\mathbf 1$ (no renormalization, $Z^0=Z^1=1$,
+any $\Ng$) with $\Hqp$'s eigenvalues matching $\pm\xi=\pm\sqrt{t^2+(\Delta V/2)^2}$ --
+the exact one-body (free-fermion) problem with $\Delta V$ -- to $7$+ digits, for several
+$\Delta V$. (2) \emph{Finite-difference gradient check} of the direct-minimization
+energy functional with $\Delta V\neq0$ (\texttt{not\_imp\_gga\_dimer.check\_gradients},
+see \texttt{doc/not\_impurity.tex}): $\lesssim10^{-10}$. (3) \emph{Cross-validation} between the
+two independent formulations, described above. No comparison against
+\texttt{exact\_dimer\_deltaV.py} (exact diagonalization) is made here: gGA is a
+variational approximation, exact only at $U=0$ or in special limits, so agreement with
+ED is not expected at generic $(U,\Delta V)$ (see \texttt{plot\_eqp\_3d.py} for how the
+$\Delta V=0$ case is compared to ED only qualitatively, via the spectral function).
+
+\paragraph{Known caveat: $\Ng=2$ convergence.} For $\Ng\ge2$, \texttt{run\_gga}'s
+fixed-point iteration can converge to a spurious, highly symmetric ``sleeping ghost''
+fixed point ($Z^0=Z^1\approx0$) regardless of the initial guess, including when seeded
+\emph{at} the true, lower-energy solution found by \texttt{not\_imp\_gga\_dimer.py} --
+i.e.\ the true solution is not even a stable fixed point of the iteration's local basin
+structure for the $(\Ng,U,\Delta V)$ combinations tried. This is the same
+``sleeping ghost''/multiple-fixed-point phenomenon already documented for $\Delta V=0$
+(the reason \texttt{scan\_U\_forward.py}/\texttt{scan\_U\_backward.py} exist as two
+different starting-guess branches); $\Delta V$ appears to make it worse for at least
+some parameter combinations tested, since the default initial guess
+($R^0_0=0.9$, small symmetric-looking tail) was never tuned for a site-asymmetric
+problem. \texttt{not\_imp\_gga\_dimer.py}'s direct minimization does not have this
+failure mode (confirmed by \texttt{hessian\_analysis}'s KKT stationarity, independent
+of \texttt{analyse}'s $\lambda$-recovery machinery) and is the more reliable solver for
+$\Ng\ge2$, $\Delta V\neq0$ until \texttt{run\_gga}'s guess-generation is revisited.
+
 \section{References}
 \label{sec:refs}
 

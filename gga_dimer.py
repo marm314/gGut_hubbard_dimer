@@ -91,9 +91,17 @@ def apply_S_inv(Delta, B, shift):
     return W @ (Bt / (s[:, None] if Bt.ndim == 2 else s))
 
 
-def qp_state(R, lam, t):
+def qp_state(R, lam, t, deltaV=0.0):
     """Quasiparticle Hamiltonian and its zero-temperature ground-state 1-RDM
     (per spin) for the two fragments, R = [R0, R1], lam = [lam0, lam1].
+
+    deltaV adds the bare site-splitting potential (DeltaV/2)(n_0-n_1) of the
+    physical Hamiltonian: since this is a one-body term with no I != J
+    (inter-fragment) part, it enters the Lagrangian the same way as the
+    kinetic term but diagonal in the fragment index, and its Euler-Lagrange
+    equation (see doc/code.tex, Section "Theory") adds +-(DeltaV/2) R_I R_I^T
+    to fragment I's own diagonal block of H_qp -- it does NOT enter H_loc
+    (the impurity Hamiltonian only ever sees U and the double-counting mu).
 
     The occupation is the C++ RSImpMolecule one: a fixed LEVEL COUNT, the
     lowest nup_eff = mol_nups + (Neff_tot - Nphys_tot)/2 = Neff eigenvectors
@@ -101,8 +109,8 @@ def qp_state(R, lam, t):
     eigenvalues. (The base-class rule "e < 0" is NOT what molecules use.)"""
     Neff = len(R[0])
     Hqp = np.zeros((2 * Neff, 2 * Neff))
-    Hqp[:Neff, :Neff] = -lam[0]
-    Hqp[Neff:, Neff:] = -lam[1]
+    Hqp[:Neff, :Neff] = -lam[0] + 0.5 * deltaV * np.outer(R[0], R[0])
+    Hqp[Neff:, Neff:] = -lam[1] - 0.5 * deltaV * np.outer(R[1], R[1])
     Hqp[:Neff, Neff:] = -t * np.outer(R[0], R[1])
     Hqp[Neff:, :Neff] = -t * np.outer(R[1], R[0])
     evals, evecs = np.linalg.eigh(Hqp)
@@ -112,13 +120,23 @@ def qp_state(R, lam, t):
     return Hqp, rho
 
 
-def hybridization_V(rho, R, t, shift, i):
-    """Eq. 7: S(Delta_i) V_i = X_i, with X_i = -t rho_ij R_j (the other fragment's R)."""
+def hybridization_V(rho, R, t, shift, i, deltaV=0.0):
+    """Eq. 7: S(Delta_i) V_i = X_i, with X_i = -t rho_ij R_j (the other fragment's R).
+
+    deltaV: the R^I Euler-Lagrange equation that this V-fit comes from (see
+    doc/code.tex, Section "Theory") picks up the SAME extra term as H_qp's
+    diagonal block once the physical Hamiltonian has the onsite (DeltaV/2)(n_0-n_1)
+    potential: X_i gets an added +-(DeltaV/2) rho_ii R_i piece (same fragment,
+    same per-term coefficient convention as the existing -t rho_ij R_j piece --
+    confirmed numerically against the independent not_imp_gga_dimer.py KKT check,
+    H_imp phi = E phi, which is otherwise violated by O(0.1-0.3) once deltaV != 0)."""
     Neff = len(R[0])
     j = 1 - i
+    eps_i = 0.5 * deltaV if i == 0 else -0.5 * deltaV
     rho_ii = rho[i * Neff:(i + 1) * Neff, i * Neff:(i + 1) * Neff]
     rho_ij = rho[i * Neff:(i + 1) * Neff, j * Neff:(j + 1) * Neff]
-    return apply_S_inv(rho_ii, -t * (rho_ij @ R[j]), shift)
+    X = eps_i * (rho_ii @ R[i]) - t * (rho_ij @ R[j])
+    return apply_S_inv(rho_ii, X, shift)
 
 
 def grad_S(Delta, M, shift):
@@ -267,12 +285,20 @@ def impurity_solve(V, lam_c, ops):
 # Self-consistency loop
 # ---------------------------------------------------------------------------
 
-def run_gga(Ng, U, t=1.0, max_iter=200, tol_E=1e-6, tol_mat=1e-6, mix=0.65, eq_time=10,
+def run_gga(Ng, U, t=1.0, deltaV=0.0, max_iter=200, tol_E=1e-6, tol_mat=1e-6, mix=0.65, eq_time=10,
             sqmat_shift=1e-9, round_fcidump=True, verbose=False,
             Rg0=None, Rg1=None, lamg0=None, lamg1=None):
     """Self-consistency loop for the 2-site dimer, treating the two fragments as
     INDEPENDENT (no site-exchange symmetry assumed). See the module docstring
     for the cycle, which follows the reference C++ code step by step.
+
+    deltaV: site-splitting potential (DeltaV/2)(n_0-n_1) of the physical
+    Hamiltonian (0 recovers the plain dimer); see qp_state for how it enters
+    H_qp. It does not change H_loc, so build_impurity_ops/impurity_solve are
+    untouched; the final E_var = E_qp + E_loc formula below is also unchanged
+    (Hqp's onsite deltaV term and Lblk's +lambda are added in such a way that
+    Hqp + Lblk, which E_qp is built from, keeps exactly the deltaV piece and
+    cancels the lambda piece, same as at deltaV=0).
 
     Convergence (as in the C++ GhostGutTerminationTracker): |dE| < tol_E, or
     both ddelta < tol_mat and dR < tol_mat, where ddelta and dR are the
@@ -327,16 +353,16 @@ def run_gga(Ng, U, t=1.0, max_iter=200, tol_E=1e-6, tol_mat=1e-6, mix=0.65, eq_t
 
         if it == 0:
             # start from the input lambda: Delta from the qp ground state
-            Hqp, rho = qp_state(R, lam, t)
+            Hqp, rho = qp_state(R, lam, t, deltaV)
             Delta = blocks(rho)
             prev_Delta = [d.copy() for d in Delta]
         else:
             # lambda from the previous lambda^c and V, at the (mixed) Delta and R
             lam = [embedding_lambda_c(Delta[i], lamc[i], V[i], R[i], sqmat_shift) for i in range(2)]
-            Hqp, rho = qp_state(R, lam, t)
+            Hqp, rho = qp_state(R, lam, t, deltaV)
             Delta = blocks(rho)
 
-        V = [hybridization_V(rho, R, t, sqmat_shift, i) for i in range(2)]
+        V = [hybridization_V(rho, R, t, sqmat_shift, i, deltaV) for i in range(2)]
         lamc = [embedding_lambda_c(Delta[i], lam[i], V[i], R[i], sqmat_shift) for i in range(2)]
         t_qp = time.time()
 
@@ -416,14 +442,15 @@ def run_gga(Ng, U, t=1.0, max_iter=200, tol_E=1e-6, tol_mat=1e-6, mix=0.65, eq_t
         print()
 
     return {
-        "Ng": Ng, "U": U, "R0": R[0], "R1": R[1], "Z0": Z0, "Z1": Z1, "E_var": res["E_var"],
-        "docc": res["docc"], "n_phys": res["n_phys"], "iters": it, "converged": converged,
+        "Ng": Ng, "U": U, "deltaV": deltaV, "R0": R[0], "R1": R[1], "Z0": Z0, "Z1": Z1,
+        "E_var": res["E_var"], "docc": res["docc"], "n_phys": res["n_phys"], "iters": it,
+        "converged": converged,
         "lam0": res["lam"][0], "lam1": res["lam"][1],
         "lamc0": res["lamc"][0], "lamc1": res["lamc"][1], "V0": res["V"][0], "V1": res["V"][1],
     }
 
 
-def compute_spectral_function(R0, R1, lam0, lam1, t, omega_max, eta, domega):
+def compute_spectral_function(R0, R1, lam0, lam1, t, omega_max, eta, domega, deltaV=0.0):
     """Quasiparticle Green's function G(omega) = [(omega + i*eta) I - H_qp]^-1,
     on a uniform grid from -omega_max to +omega_max in steps of domega,
     transformed to the physical (site) basis via the block-diagonal
@@ -433,12 +460,12 @@ def compute_spectral_function(R0, R1, lam0, lam1, t, omega_max, eta, domega):
 
     The physical spectral function is A(omega) = -Im[Tr G_phys(omega)] / pi,
     doubled to account for both (degenerate) spin channels, since H_qp above
-    is the same one-body problem for either spin."""
+    is the same one-body problem for either spin. deltaV: see qp_state."""
     Neff = len(R0)
     dim = 2 * Neff
     Hqp = np.zeros((dim, dim))
-    Hqp[:Neff, :Neff] = -lam0
-    Hqp[Neff:, Neff:] = -lam1
+    Hqp[:Neff, :Neff] = -lam0 + 0.5 * deltaV * np.outer(R0, R0)
+    Hqp[Neff:, Neff:] = -lam1 - 0.5 * deltaV * np.outer(R1, R1)
     Hqp[:Neff, Neff:] = -t * np.outer(R0, R1)
     Hqp[Neff:, :Neff] = -t * np.outer(R1, R0)
 
@@ -476,12 +503,13 @@ def save_results(res, prefix=None):
     lamc_file = f"{prefix}_lambda_c.dat"
 
     Neff = len(res["R0"])
+    dV = res.get("deltaV", 0.0)
     np.savetxt(r_file, np.vstack([res["R0"], res["R1"]]),
-               header=f"Ng={res['Ng']} U={res['U']} Neff={Neff}  converged R, one row per atom (atom0, atom1)")
+               header=f"Ng={res['Ng']} U={res['U']} deltaV={dV} Neff={Neff}  converged R, one row per atom (atom0, atom1)")
     np.savetxt(lam_file, np.vstack([res["lam0"], res["lam1"]]),
-               header=f"Ng={res['Ng']} U={res['U']}  qp-side lambda, stacked Neff x Neff blocks per atom (atom0, atom1)")
+               header=f"Ng={res['Ng']} U={res['U']} deltaV={dV}  qp-side lambda, stacked Neff x Neff blocks per atom (atom0, atom1)")
     np.savetxt(lamc_file, np.vstack([res["lamc0"], res["lamc1"]]),
-               header=f"Ng={res['Ng']} U={res['U']}  impurity-side lambda^c, stacked Neff x Neff blocks per atom (atom0, atom1)")
+               header=f"Ng={res['Ng']} U={res['U']} deltaV={dV}  impurity-side lambda^c, stacked Neff x Neff blocks per atom (atom0, atom1)")
 
     print(f"[saved] R -> {r_file}")
     print(f"[saved] lambda -> {lam_file}")
@@ -524,6 +552,9 @@ if __name__ == "__main__":
     parser.add_argument("--U", type=float, default=None, help="Hubbard U/t (single run)")
     parser.add_argument("--Ng", type=int, default=None, help="number of ghost bath orbitals (must be even)")
     parser.add_argument("--t", type=float, default=1.0, help="hopping (energy unit)")
+    parser.add_argument("--deltaV", type=float, default=0.0,
+                         help="site-splitting potential (DeltaV/2)(n_0-n_1) of the physical "
+                              "Hamiltonian; 0 recovers the plain dimer (default: 0.0)")
     parser.add_argument("--quiet", action="store_true", help="suppress the per-iteration trace (single-run mode is verbose by default)")
     parser.add_argument("--R-file", type=str, default="R.in", metavar="PATH",
                          help="file with the initial R guess (1 or 2 rows of Neff numbers); read automatically if it exists (default: R.in)")
@@ -583,9 +614,10 @@ if __name__ == "__main__":
         if lamg0 is not None and (lamg0.shape != (Neff, Neff) or lamg1.shape != (Neff, Neff)):
             parser.error(f"{args.lam_file} blocks must be {Neff}x{Neff}")
 
-        res = run_gga(args.Ng, args.U, t=args.t, verbose=not args.quiet,
+        res = run_gga(args.Ng, args.U, t=args.t, deltaV=args.deltaV, verbose=not args.quiet,
                        Rg0=Rg0, Rg1=Rg1, lamg0=lamg0, lamg1=lamg1, **solver_kw)
-        print(f"Ng={res['Ng']}  U/t={res['U']/args.t:.4f}  Z0={res['Z0']:.6f}  Z1={res['Z1']:.6f}  "
+        print(f"Ng={res['Ng']}  U/t={res['U']/args.t:.4f}  deltaV/t={args.deltaV/args.t:.4f}  "
+              f"Z0={res['Z0']:.6f}  Z1={res['Z1']:.6f}  "
               f"E_var/t={res['E_var']/args.t:.6f}  docc={res['docc']:.6f}  iters={res['iters']}  "
               f"converged={res['converged']}")
         save_results(res)
@@ -593,12 +625,12 @@ if __name__ == "__main__":
         if args.omega is not None:
             omega_grid, A = compute_spectral_function(
                 res["R0"], res["R1"], res["lam0"], res["lam1"], args.t,
-                args.omega, args.eta, args.domega)
+                args.omega, args.eta, args.domega, deltaV=args.deltaV)
             save_spectral_function(omega_grid, A)
     else:
         t = args.t
         print(f"{'Ng':>4}{'U/t':>6}{'Z0':>10}{'Z1':>10}{'E_var/t':>12}{'docc':>10}")
         for Ng in [0, 2, 4]:
             for U in [0.0, 1.0, 2.0, 4.0, 8.0]:
-                res = run_gga(Ng, U, t=t, **solver_kw)
+                res = run_gga(Ng, U, t=t, deltaV=args.deltaV, **solver_kw)
                 print(f"{Ng:4d}{U/t:6.2f}{res['Z0']:10.4f}{res['Z1']:10.4f}{res['E_var']/t:12.6f}{res['docc']:10.4f}")

@@ -137,8 +137,8 @@ def finalize(rows, t0):
     np.savetxt(os.path.join(OUT, "eqp_vs_U.txt"), np.column_stack([U, eq]), header="U/t eqp0..eqp9 (Ng=4)")
 
     fig, ax = plt.subplots(2, 1, figsize=(6.4, 6.2), sharex=True, gridspec_kw=dict(height_ratios=[3, 1.4]))
-    ax[0].plot(U, E4, "-", lw=1.6, label="Ng=4 (direct minimization)")
-    ax[0].plot(U, E2, "--", lw=1.2, label="Ng=2 (direct minimization, lowest)")
+    ax[0].plot(U, E4, "-", lw=1.6, label="Ng=4")
+    ax[0].plot(U, E2, "--", lw=1.2, label="Ng=2 (lowest)")
     ax[0].set_ylabel("E_var / t"); ax[0].set_title("Variational energy vs U"); ax[0].legend(fontsize=8)
     ax[1].plot(U, E4 - E2, "-", lw=1.2, color="tab:red")
     ax[1].axhline(0.0, color="gray", lw=0.5, ls=":")
@@ -150,7 +150,7 @@ def finalize(rows, t0):
         plt.plot(U, eq[:, i], "-", lw=1.1)
     plt.axhline(0.0, color="gray", lw=0.5, ls=":")
     plt.xlabel("U/t"); plt.ylabel("quasiparticle energy / t")
-    plt.title("Quasiparticle energies vs U (Ng=4, direct minimization)")
+    plt.title("Quasiparticle energies vs U (Ng=4)")
     plt.tight_layout(); plt.savefig(os.path.join(OUT, "eqp_vs_U.png"), dpi=150); plt.close()
 
     nb = sum(1 for r in rows if not r[10])

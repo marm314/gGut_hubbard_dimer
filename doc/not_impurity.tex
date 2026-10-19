@@ -580,6 +580,87 @@ $R^I\to Q_IR^I$ and $\lambda^I\to Q_I\lambda^IQ_I^{T}$, while $E$, $Z^I$ and the
 energies are invariant. (The inverse map, from $(R,\lambda)$ to a starting $(x,X)$, is the
 seeded start described in Section~\ref{sec:minimization}.)
 
+\section{Generalization: a site-splitting potential $\Delta V$}
+\label{sec:niDeltaV}
+
+As in \texttt{gga\_dimer.py} (\texttt{doc/code.tex}, Section ``Generalization: a
+site-splitting potential $\Delta V$''), the
+physical Hamiltonian can be generalized to
+$H_{\mathrm{phys}}\to H_{\mathrm{phys}}+\tfrac{\Delta V}{2}(n_0-n_1)$
+($\Delta V=0$ recovers the plain dimer; CLI flag \texttt{-{}-deltaV} on
+\texttt{not\_imp\_gga\_dimer.py} too). This is a bare one-body, fragment-diagonal term
+($\epsilon_0=+\Delta V/2$, $\epsilon_1=-\Delta V/2$), so by the same Lagrangian argument
+as \texttt{code.tex}'s $\Delta V$ section, it adds
+$\sum_I\epsilon_I(R^I)^T\rho^{II}R^I$ to the energy functional of Eq.~11 and does
+\emph{not} touch $H_{\mathrm{loc}}$ or the constraints (Eq.~7).
+
+\paragraph{Energy and gradient (Section~\ref{sec:functional}).} Since this term is,
+like the kinetic term, linear in $\rho$ (via its fragment-diagonal blocks
+$\rho^{00},\rho^{11}$ instead of the off-diagonal $\rho^{01}$), it is folded into the
+\emph{same} matrix $G$ of Eq.~\eqref{eq:gX} (now also given diagonal blocks
+$G^{00}=\epsilon_0R^0(R^0)^T$, $G^{11}=\epsilon_1R^1(R^1)^T$), so the existing
+projector-derivative formula for $\nabla_XE$ needs no change; only $\nabla_{R^I}E$
+(hence, through the chain rule of Section~\ref{sec:gradients}, $\nabla_{\phi^I}E$) gains
+the explicit extra term $2\epsilon_I\rho^{II}R^I$. Checked against finite differences
+(\texttt{check\_gradients}, now with an optional \texttt{deltaV}): max$|$analytic
+$-$ FD$|\lesssim10^{-10}$, same order as at $\Delta V=0$.
+
+\paragraph{Reconstruction (Section~\ref{sec:reconstruction}).} Step 2 ($R^I$ from
+$\phi^I$) is unchanged -- $\Delta V$ does not enter $H_{\mathrm{loc}}$ or $\phi^I$'s own
+energy, only $\rho$ and $R^I$ together, which are not yet coupled at that step. Step 3
+changes only in $K$, which must now carry the $\Delta V$ part of $\Hqp$'s diagonal
+blocks too (exactly $\Hqp$'s diagonal blocks of \texttt{code.tex}'s $\Delta V$ section
+minus $\lambda$):
+\begin{equation}
+  K \;=\;
+  \begin{pmatrix}
+    \tfrac{\Delta V}{2}R^0(R^0)^T & -tR^0R^{1T}\\
+    -tR^1R^{0T} & -\tfrac{\Delta V}{2}R^1(R^1)^T
+  \end{pmatrix},
+\end{equation}
+so that $\mathrm{vec}[K,\rho]$ (the right-hand side of the last block row of
+Eq.~\eqref{eq:linsys}) is the full one-body commutator target; $A^{(I)}$, $C^{(I)}$ are
+unchanged (the $\lambda$-dependence of $[\Hqp,\rho]$ does not involve $\Delta V$). Step
+4 ($V^I$, $\lambda^{I,c}$, $\Hqp$) calls \texttt{gga\_dimer.py}'s
+\texttt{hybridization\_V}/\texttt{embedding\_lambda\_c}/\texttt{qp\_state}, now passing
+\texttt{deltaV} through, so it automatically uses the generalized $V$-fit of
+\texttt{code.tex}'s $\Delta V$ section.
+
+\paragraph{A bug found and fixed.} The first version of this generalization updated
+$K$ above but left \texttt{hybridization\_V} itself unchanged (i.e.\ called it without
+\texttt{deltaV}, implicitly $\epsilon_I=0$ in the generalized $V$-fit). This is
+exactly the same omission described in \texttt{code.tex}
+(``A bug found and fixed while adding this''), and this document's own
+\texttt{analyse} machinery is precisely what exposed it: with $K$ fixed but $V^I$ not,
+``KKT: $\phi$ stationarity'' and ``KKT: $[\Hqp,\rho]$'' were both small
+($\lesssim10^{-7}$, confirming $\lambda^I$ itself was correctly recovered), yet
+``KKT: $\Himp\phi=E\phi$'' (which uses $V^I$, $\lambda^{I,c}$ built downstream of
+$\lambda^I$) was $\sim0.3$ -- a residual two orders of magnitude above the $\Delta V=0$
+baseline, and unchanged whether the point was reached by a random start or by seeding
+\texttt{minimize} exactly at a converged \texttt{gga\_dimer.py} fixed point. This
+three-way split (two KKT checks fine, the third not) is what localized the bug to the
+$V^I$ reconstruction specifically, rather than to the energy functional or to
+$\lambda^I$'s own recovery (both already independently validated by the
+finite-difference gradient check and by \texttt{hessian\_analysis}'s simpler, direct
+Lagrange-stationarity test, $\lVert\nabla E+J^T\mu\rVert_\infty\sim10^{-8}$, which does
+not depend on \texttt{hybridization\_V} at all). After passing \texttt{deltaV} through,
+``KKT: $\Himp\phi=E\phi$'' dropped to $\sim10^{-7}$, matching the other two residuals
+and the $\Delta V=0$ baseline.
+
+\paragraph{Validation summary.} With the fix: finite-difference gradient check
+$\lesssim10^{-10}$; \texttt{hessian\_analysis} stationarity $\sim10^{-8}$ with no
+negative reduced-Hessian eigenvalue (genuine local minimum, up to the documented zero
+modes); all three KKT residuals $\sim10^{-7}$--$10^{-8}$, same order as $\Delta V=0$;
+and, for $\Ng=0$ (several $(U,\Delta V)$), agreement with \texttt{gga\_dimer.py} to
+$\sim10^{-8}$--$10^{-10}$ in $E_{\mathrm{var}}$, $Z^0$, $Z^1$. For $\Ng=2$,
+\texttt{gga\_dimer.py}'s fixed-point iteration was found to converge to a spurious,
+much higher-energy ``sleeping ghost'' solution regardless of the starting guess
+(including when seeded exactly at this script's converged, KKT-validated solution), so
+the two solvers were \emph{not} cross-checked at $\Ng=2,\Delta V\neq0$ beyond
+confirming (via the KKT residuals above) that \emph{this} script's own solution is
+correct; see \texttt{code.tex}'s ``Known caveat'' paragraph for how this relates to the
+pre-existing $\Delta V=0$ multi-fixed-point phenomenon.
+
 \begin{thebibliography}{9}
 \bibitem{tpf} A.~M.~Tagliente, I.~Pasqua and M.~Fabrizio, \emph{Direct minimization versus
   iterative embedding in the ghost-Gutzwiller method: a comparative study of magnetism in
