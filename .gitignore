@@ -23,3 +23,9 @@ examples/*/gga_Ng*.out
 # Local virtualenvs and reference-code test runs (not tracked)
 .venv/
 outside_code/
+
+# Transient run logs (the actual results live in each scan's own output.out/lowest_energy.txt)
+*.log
+
+# Claude Code session-local runtime state (machine/session-specific, not reproducible elsewhere)
+.claude/scheduled_tasks.lock

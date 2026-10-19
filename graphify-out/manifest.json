@@ -1,0 +1,182 @@
+{
+  "add_ed_spectral.py": {
+    "mtime": 1792417320.1633513,
+    "seen": 1792433927.2146196,
+    "ast_hash": "ecde8d947543cdd1b23e6ce32ef1600d",
+    "semantic_hash": "ecde8d947543cdd1b23e6ce32ef1600d"
+  },
+  "check_hessian.py": {
+    "mtime": 1790010426.281401,
+    "seen": 1792433927.2146237,
+    "ast_hash": "55675b01583ac17449902cf5b31c08ac",
+    "semantic_hash": "55675b01583ac17449902cf5b31c08ac"
+  },
+  "check_not_imp_in_gga.py": {
+    "mtime": 1792429128.0387673,
+    "seen": 1792433927.2146256,
+    "ast_hash": "21fbf6fa5594d5b5e15c66f87108344c",
+    "semantic_hash": "21fbf6fa5594d5b5e15c66f87108344c"
+  },
+  "check_stationarity.py": {
+    "mtime": 1790010426.282401,
+    "seen": 1792433927.2146266,
+    "ast_hash": "2ab86e7f820e2ba417d4e23c2f4c1bb6",
+    "semantic_hash": "2ab86e7f820e2ba417d4e23c2f4c1bb6"
+  },
+  "exact_dimer.py": {
+    "mtime": 1789385013.445681,
+    "seen": 1792433927.2146275,
+    "ast_hash": "f5b6fb85e79c3221f1f2b7dc0e12755e",
+    "semantic_hash": "f5b6fb85e79c3221f1f2b7dc0e12755e"
+  },
+  "exact_dimer_deltaV.py": {
+    "mtime": 1792419094.7017362,
+    "seen": 1792433927.2146287,
+    "ast_hash": "b46b0b0b9a66dc825adaebf5e41dd492",
+    "semantic_hash": "b46b0b0b9a66dc825adaebf5e41dd492"
+  },
+  "gga_dimer.py": {
+    "mtime": 1792425864.0916705,
+    "seen": 1792433927.2146297,
+    "ast_hash": "3df43ff0ad757c31fcdf5ea827b50727",
+    "semantic_hash": "3df43ff0ad757c31fcdf5ea827b50727"
+  },
+  "make_A_omega_video.py": {
+    "mtime": 1792433019.9581966,
+    "seen": 1792433927.2146304,
+    "ast_hash": "b176f08e73d67caf18640bb14b9ace6d",
+    "semantic_hash": "b176f08e73d67caf18640bb14b9ace6d"
+  },
+  "make_A_omega_video_dV2.py": {
+    "mtime": 1792433030.3417253,
+    "seen": 1792433927.214631,
+    "ast_hash": "369be84a9b8f785c421ed45a23743bef",
+    "semantic_hash": "369be84a9b8f785c421ed45a23743bef"
+  },
+  "not_imp_gga_dimer.py": {
+    "mtime": 1792425864.0916705,
+    "seen": 1792433927.2146392,
+    "ast_hash": "252a00d7665ce47e11a48a87c3738ffa",
+    "semantic_hash": "252a00d7665ce47e11a48a87c3738ffa"
+  },
+  "plot_eqp_3d.py": {
+    "mtime": 1792432995.4053512,
+    "seen": 1792433927.2146401,
+    "ast_hash": "70ab4c191d5f43806b8973127981b732",
+    "semantic_hash": "70ab4c191d5f43806b8973127981b732"
+  },
+  "plot_eqp_3d_dV2.py": {
+    "mtime": 1792433006.8128076,
+    "seen": 1792433927.214641,
+    "ast_hash": "5e6fe9295f6084efddf0bd496fa83ace",
+    "semantic_hash": "5e6fe9295f6084efddf0bd496fa83ace"
+  },
+  "scan_U_backward.py": {
+    "mtime": 1792432629.810135,
+    "seen": 1792433927.2146418,
+    "ast_hash": "ab5d850dcd3bc120679d942ddce52503",
+    "semantic_hash": "ab5d850dcd3bc120679d942ddce52503"
+  },
+  "scan_U_forward.py": {
+    "mtime": 1792432615.2190151,
+    "seen": 1792433927.2146428,
+    "ast_hash": "16a9c7152f59d392776ca02da49a01e3",
+    "semantic_hash": "16a9c7152f59d392776ca02da49a01e3"
+  },
+  "scan_ed_deltaV/make_plot.py": {
+    "mtime": 1792421768.3878725,
+    "seen": 1792433927.2146435,
+    "ast_hash": "65033262a74ec2520c5f769c8ff55900",
+    "semantic_hash": "65033262a74ec2520c5f769c8ff55900"
+  },
+  "scan_mix_U.py": {
+    "mtime": 1792429115.9626818,
+    "seen": 1792433927.2146442,
+    "ast_hash": "583928771eef8d796981d690686265aa",
+    "semantic_hash": "583928771eef8d796981d690686265aa"
+  },
+  "scan_ng2_imp_dV2_U.py": {
+    "mtime": 1792432674.5072107,
+    "seen": 1792433927.214645,
+    "ast_hash": "bfdc7cd708adc5112c85a405bc4b8e8d",
+    "semantic_hash": "bfdc7cd708adc5112c85a405bc4b8e8d"
+  },
+  "scan_ng2_not_imp_dV2_U.py": {
+    "mtime": 1792432674.506969,
+    "seen": 1792433927.2146459,
+    "ast_hash": "c3a3bbc53a0031cf3f8e8c06b3da1a75",
+    "semantic_hash": "c3a3bbc53a0031cf3f8e8c06b3da1a75"
+  },
+  "scan_ng4_U.py": {
+    "mtime": 1792432644.7552578,
+    "seen": 1792433927.2146466,
+    "ast_hash": "9a5677e4421d653e484fc72635bdbd95",
+    "semantic_hash": "9a5677e4421d653e484fc72635bdbd95"
+  },
+  "scan_ng4_not_imp_dV2_U.py": {
+    "mtime": 1792432674.507384,
+    "seen": 1792433927.2146475,
+    "ast_hash": "cbfe4e94bae2f1ea8b0f932e3697796b",
+    "semantic_hash": "cbfe4e94bae2f1ea8b0f932e3697796b"
+  },
+  "scan_not_imp_U.py": {
+    "mtime": 1792432599.494887,
+    "seen": 1792433927.2146482,
+    "ast_hash": "beefc8674c7f5104b85136b1512cef52",
+    "semantic_hash": "beefc8674c7f5104b85136b1512cef52"
+  },
+  "README.md": {
+    "mtime": 1790001767.1395206,
+    "seen": 1792433927.2146492,
+    "ast_hash": "7a56360b387a73163dd4edc27290e0a8",
+    "semantic_hash": "7a56360b387a73163dd4edc27290e0a8"
+  },
+  "examples/U10/README.md": {
+    "mtime": 1790257463.8441558,
+    "seen": 1792433927.2146502,
+    "ast_hash": "cf8d4177c07b5b39f1ef978603e4ade4",
+    "semantic_hash": "cf8d4177c07b5b39f1ef978603e4ade4"
+  },
+  "examples/U2_backward/README.md": {
+    "mtime": 1790165287.7943769,
+    "seen": 1792433927.2146509,
+    "ast_hash": "8d4327143e85458cfc4c10244460002a",
+    "semantic_hash": "8d4327143e85458cfc4c10244460002a"
+  },
+  "examples/U2_forward/README.md": {
+    "mtime": 1790165287.794503,
+    "seen": 1792433927.2146516,
+    "ast_hash": "9e8670e2b3e8841224cbfcd5063a1046",
+    "semantic_hash": "9e8670e2b3e8841224cbfcd5063a1046"
+  },
+  "scan_ed_deltaV/eqp_vs_U.txt": {
+    "mtime": 1792421771.9638855,
+    "seen": 1792433927.2146523,
+    "ast_hash": "b41a6e21e7f10309c383c44234eb2c2a",
+    "semantic_hash": "b41a6e21e7f10309c383c44234eb2c2a"
+  },
+  "doc/code.pdf": {
+    "mtime": 1792425864.0886705,
+    "seen": 1792433927.2146535,
+    "ast_hash": "d9426d57194b7e1253702df151e302fe",
+    "semantic_hash": "d9426d57194b7e1253702df151e302fe"
+  },
+  "doc/not_impurity.pdf": {
+    "mtime": 1792425864.0906703,
+    "seen": 1792433927.214657,
+    "ast_hash": "4b8a2a60d403957e0456a4bf1c2d35af",
+    "semantic_hash": "4b8a2a60d403957e0456a4bf1c2d35af"
+  },
+  "scan_ed_deltaV/ED_deltaV.pdf": {
+    "mtime": 1792421499.0999734,
+    "seen": 1792433927.214658,
+    "ast_hash": "97e47127d98d45bf1a5245901bafc746",
+    "semantic_hash": "97e47127d98d45bf1a5245901bafc746"
+  },
+  "scan_ed_deltaV/eqp_vs_U.png": {
+    "mtime": 1792421772.1748862,
+    "seen": 1792433927.2146587,
+    "ast_hash": "44422696f62515f19188b51bdb20fa2f",
+    "semantic_hash": "44422696f62515f19188b51bdb20fa2f"
+  }
+}

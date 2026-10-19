@@ -4,7 +4,7 @@ U/t = 0.1, 0.2, ..., 10.0.
 Random starts at Ng=4 only reach the higher inert-ghost boundary minima, so two starts are
 used at every U and the lower converged result is kept:
 
-  embedded   the lowest-energy Ng=2 solution of scan_not_imp/ at this U, embedded in Ng=4 by
+  embedded   the lowest-energy Ng=2 solution of scan_ng2_not_imp/ at this U, embedded in Ng=4 by
              adding two inert bath orbitals per fragment (impurity: one filled, one empty;
              qp: the opposite, so Delta = 1 - Dbb still holds), then perturbed by 1e-3
              (at the exact embedded point the constraint Jacobian is rank deficient and
@@ -14,13 +14,14 @@ used at every U and the lower converged result is kept:
 Each point is minimized until |c| < 1e-9 and the projected gradient < 5e-6 (up to 5 SLSQP
 passes), or the pass limit is reached (then flagged).
 
-Output in scan_ng4/: U_<U>/ (output.out, eqp.txt (10 levels), not_imp_Ng4_U*_{R,lambda,lambda_c}.dat,
+Output in scan_ng4_not_imp/: U_<U>/ (output.out, eqp.txt (10 levels), not_imp_Ng4_U*_{R,lambda,lambda_c}.dat,
 z.npy), summary.txt, E_vs_U.png (with the Ng=2 energies for comparison and the difference),
 eqp_vs_U.png.
 """
 import contextlib
 import io
 import os
+import sys
 import time
 
 import numpy as np
@@ -31,9 +32,23 @@ import matplotlib.pyplot as plt
 import gga_dimer as g
 import not_imp_gga_dimer as ni
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "scan_ed_deltaV"))
+import make_plot as ed_dV  # scan_ed_deltaV/make_plot.py (deltaV=0 here: no conversion needed)
+
+# eqp_vs_U.png colors: one color per +-symmetric pair (outermost first) -- see
+# scan_ng2_not_imp_dV2_U.py's branch_color for the full rationale.
+PAIR_COLORS = ["tab:orange", "tab:blue"]
+GHOST_COLOR = "0.6"
+
+
+def branch_color(i, n):
+    pair = min(i, n - 1 - i)
+    return PAIR_COLORS[pair] if pair < len(PAIR_COLORS) else GHOST_COLOR
+
+
 Ng, t = 4, 1.0
-OUT = "scan_ng4"
-SC2 = "scan_not_imp"
+OUT = "scan_ng4_not_imp"
+SC2 = "scan_ng2_not_imp"
 
 
 def embed_ng2_in_ng4(m2, m4, z2):
@@ -145,12 +160,17 @@ def finalize(rows, t0):
     ax[1].set_xlabel("U/t"); ax[1].set_ylabel("E(Ng=4) - E(Ng=2)")
     plt.tight_layout(); plt.savefig(os.path.join(OUT, "E_vs_U.png"), dpi=150); plt.close()
 
+    n = eq.shape[1]
+    ed_p = np.array([sorted(ed_dV.analytic_poles(t, u, 0.0)[0]) for u in U])
     plt.figure(figsize=(6.4, 4.8))
-    for i in range(eq.shape[1]):
-        plt.plot(U, eq[:, i], "-", lw=1.1)
+    for i in range(n):
+        plt.plot(U, eq[:, i], "-", lw=1.1, color=branch_color(i, n))
+    for i in range(ed_p.shape[1]):
+        plt.plot(U, ed_p[:, i], "--", lw=1.2, color="black", label="exact (ED)" if i == 0 else None)
     plt.axhline(0.0, color="gray", lw=0.5, ls=":")
     plt.xlabel("U/t"); plt.ylabel("quasiparticle energy / t")
     plt.title("Quasiparticle energies vs U (Ng=4)")
+    plt.legend(fontsize=8)
     plt.tight_layout(); plt.savefig(os.path.join(OUT, "eqp_vs_U.png"), dpi=150); plt.close()
 
     nb = sum(1 for r in rows if not r[10])

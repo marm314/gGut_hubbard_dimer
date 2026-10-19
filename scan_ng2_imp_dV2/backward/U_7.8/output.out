@@ -1,0 +1,42 @@
+[setup] Ng=2  Neff=3  impurity orbitals/spin=4  Fock dim=256  (sparse operators)
+[setup] built impurity operators in 0.03s; ground state searched in the N_up=N_dn sector of dim 36
+  it=  0  Z0=0.968089  Z1=0.968089  E_var=-7.972167  dE=-1.080e+02  docc=0.018753  n_phys=1.000000  |dDelta|=7.112e-02  |dR|=6.500e-04  [qp 0.00s | ED 0.00s]
+  it=  1  Z0=0.968272  Z1=0.968272  E_var=-7.975783  dE=-3.617e-03  docc=0.019180  n_phys=1.000000  |dDelta|=9.018e-04  |dR|=1.528e-03  [qp 0.00s | ED 0.00s]
+  it=  2  Z0=0.966864  Z1=0.966864  E_var=-7.975725  dE=5.855e-05  docc=0.019207  n_phys=1.000000  |dDelta|=6.901e-05  |dR|=5.663e-04  [qp 0.00s | ED 0.00s]
+  it=  3  Z0=0.966401  Z1=0.966401  E_var=-7.975758  dE=-3.325e-05  docc=0.019223  n_phys=1.000000  |dDelta|=3.535e-05  |dR|=1.279e-04  [qp 0.00s | ED 0.00s]
+  it=  4  Z0=0.966290  Z1=0.966290  E_var=-7.975755  dE=3.271e-06  docc=0.019226  n_phys=1.000000  |dDelta|=5.091e-06  |dR|=3.552e-05  [qp 0.00s | ED 0.00s]
+  it=  5  Z0=0.966260  Z1=0.966260  E_var=-7.975756  dE=-9.645e-07  docc=0.019227  n_phys=1.000000  |dDelta|=1.962e-06  |dR|=8.525e-06  [qp 0.00s | ED 0.00s]
+
+[check] Delta_qp (quasiparticle 1-RDM) vs Delta_new (impurity-derived 1 - Delta_bb), final iteration:
+
+  fragment 0: Delta_qp =
+[[ 0.02551813 -0.05326691 -0.0699072 ]
+ [-0.05326691  0.67095239  0.24041003]
+ [-0.0699072   0.24041003  0.8076601 ]]
+  fragment 0: eig(Delta_qp)  = [0.01756844 0.48936807 0.99719411]
+
+  fragment 0: Delta_new =
+[[ 0.02551826 -0.05327341 -0.06990227]
+ [-0.05327341  0.67772072  0.2352963 ]
+ [-0.06990227  0.2352963   0.81152363]]
+  fragment 0: eig(Delta_new) = [0.01756856 0.5        0.99719404]
+
+  fragment 0: max|Delta_qp - Delta_new| = 6.768e-03
+
+  fragment 1: Delta_qp =
+[[0.97722524 0.05185075 0.03274152]
+ [0.05185075 0.00640908 0.02245653]
+ [0.03274152 0.02245653 0.51223507]]
+  fragment 1: eig(Delta_qp)  = [0.00280589 0.51063193 0.98243156]
+
+  fragment 1: Delta_new =
+[[0.97716685 0.05187969 0.03352584]
+ [0.05187969 0.00639476 0.02206686]
+ [0.03352584 0.02206686 0.50167578]]
+  fragment 1: eig(Delta_new) = [0.00280596 0.5        0.98243144]
+
+  fragment 1: max|Delta_qp - Delta_new| = 1.056e-02
+
+
+
+Ng=2  U/t=7.8000  deltaV/t=2.0000  Z0=0.966253  Z1=0.966253  E_var/t=-7.97575584  docc=0.019227  converged=True  iters=5

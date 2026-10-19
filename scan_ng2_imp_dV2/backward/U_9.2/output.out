@@ -1,0 +1,41 @@
+[setup] Ng=2  Neff=3  impurity orbitals/spin=4  Fock dim=256  (sparse operators)
+[setup] built impurity operators in 0.03s; ground state searched in the N_up=N_dn sector of dim 36
+  it=  0  Z0=0.982985  Z1=0.982985  E_var=-9.333303  dE=-1.093e+02  docc=0.010653  n_phys=1.000000  |dDelta|=9.995e-01  |dR|=2.792e-04  [qp 0.00s | ED 0.00s]
+  it=  1  Z0=0.983085  Z1=0.983085  E_var=-9.335391  dE=-2.088e-03  docc=0.010834  n_phys=1.000000  |dDelta|=3.696e-04  |dR|=6.725e-04  [qp 0.00s | ED 0.00s]
+  it=  2  Z0=0.982458  Z1=0.982458  E_var=-9.335384  dE=6.966e-06  docc=0.010842  n_phys=1.000000  |dDelta|=1.690e-05  |dR|=1.312e-04  [qp 0.00s | ED 0.00s]
+  it=  3  Z0=0.982348  Z1=0.982348  E_var=-9.335390  dE=-6.472e-06  docc=0.010844  n_phys=1.000000  |dDelta|=4.832e-06  |dR|=1.668e-05  [qp 0.00s | ED 0.00s]
+  it=  4  Z0=0.982333  Z1=0.982333  E_var=-9.335390  dE=2.086e-07  docc=0.010844  n_phys=1.000000  |dDelta|=7.958e-07  |dR|=2.591e-06  [qp 0.00s | ED 0.00s]
+
+[check] Delta_qp (quasiparticle 1-RDM) vs Delta_new (impurity-derived 1 - Delta_bb), final iteration:
+
+  fragment 0: Delta_qp =
+[[ 0.01715345 -0.05247818 -0.06948108]
+ [-0.05247818  0.35985595  0.47636278]
+ [-0.06948108  0.47636278  0.63059451]]
+  fragment 0: eig(Delta_qp)  = [1.70024260e-06 9.42521976e-03 9.98176991e-01]
+
+  fragment 0: Delta_new =
+[[ 0.01715379 -0.05278841 -0.06924669]
+ [-0.05278841  0.67815925  0.23587573]
+ [-0.06924669  0.23587573  0.8122892 ]]
+  fragment 0: eig(Delta_new) = [0.00942525 0.5        0.99817698]
+
+  fragment 0: max|Delta_qp - Delta_new| = 3.183e-01
+
+  fragment 1: Delta_qp =
+[[ 0.98814886  0.04936581 -0.00270183]
+ [ 0.04936581  0.00593866  0.04035039]
+ [-0.00270183  0.04035039  0.99830857]]
+  fragment 1: eig(Delta_qp)  = [0.00182301 0.99057478 0.9999983 ]
+
+  fragment 1: Delta_new =
+[[0.98540955 0.05072687 0.03418011]
+ [0.05072687 0.0052624  0.02202494]
+ [0.03418011 0.02202494 0.50172582]]
+  fragment 1: eig(Delta_new) = [0.00182302 0.5        0.99057475]
+
+  fragment 1: max|Delta_qp - Delta_new| = 4.966e-01
+
+
+
+Ng=2  U/t=9.2000  deltaV/t=2.0000  Z0=0.982331  Z1=0.982331  E_var/t=-9.33539023  docc=0.010844  converged=True  iters=4

@@ -1,0 +1,40 @@
+[setup] Ng=2  Neff=3  impurity orbitals/spin=4  Fock dim=256  (sparse operators)
+[setup] built impurity operators in 0.03s; ground state searched in the N_up=N_dn sector of dim 36
+  it=  0  Z0=0.496708  Z1=0.496708  E_var=-9.981735  dE=-1.100e+02  docc=0.006645  n_phys=1.000000  |dDelta|=2.000e+00  |dR|=7.569e-05  [qp 0.00s | ED 0.01s]
+  it=  1  Z0=0.496655  Z1=0.496655  E_var=-9.983033  dE=-1.298e-03  docc=0.006752  n_phys=1.000000  |dDelta|=2.434e-01  |dR|=7.650e-05  [qp 0.00s | ED 0.00s]
+  it=  2  Z0=0.496601  Z1=0.496601  E_var=-9.982998  dE=3.565e-05  docc=0.006750  n_phys=1.000000  |dDelta|=7.530e-01  |dR|=1.031e-06  [qp 0.00s | ED 0.00s]
+  it=  3  Z0=0.496602  Z1=0.496602  E_var=-9.982998  dE=-5.421e-07  docc=0.006750  n_phys=1.000000  |dDelta|=2.706e-01  |dR|=2.155e-08  [qp 0.00s | ED 0.00s]
+
+[check] Delta_qp (quasiparticle 1-RDM) vs Delta_new (impurity-derived 1 - Delta_bb), final iteration:
+
+  fragment 0: Delta_qp =
+[[ 0.01018157  0.01257735 -0.0571866 ]
+ [ 0.01257735  0.04274569 -0.20183685]
+ [-0.0571866  -0.20183685  0.95382379]]
+  fragment 0: eig(Delta_qp)  = [1.71114803e-06 6.75016961e-03 9.99999172e-01]
+
+  fragment 0: Delta_new =
+[[ 0.01128923 -0.04011482 -0.03199104]
+ [-0.04011482  0.92793612 -0.15316833]
+ [-0.03199104 -0.15316833  0.56752481]]
+  fragment 0: eig(Delta_new) = [0.00675017 0.51503397 0.98496603]
+
+  fragment 0: max|Delta_qp - Delta_new| = 8.852e-01
+
+  fragment 1: Delta_qp =
+[[ 0.9916094  -0.01811001  0.03664446]
+ [-0.01811001  0.81445685  0.38828707]
+ [ 0.03664446  0.38828707  0.1871827 ]]
+  fragment 1: eig(Delta_qp)  = [8.28428673e-07 9.93249830e-01 9.99998289e-01]
+
+  fragment 1: Delta_new =
+[[ 0.98513851  0.05875712  0.06711274]
+ [ 0.05875712  0.25508395 -0.24574003]
+ [ 0.06711274 -0.24574003  0.25302737]]
+  fragment 1: eig(Delta_new) = [2.67449692e-04 4.99732550e-01 9.93249831e-01]
+
+  fragment 1: max|Delta_qp - Delta_new| = 6.340e-01
+
+
+
+Ng=2  U/t=9.9000  deltaV/t=2.0000  Z0=0.496602  Z1=0.496602  E_var/t=-9.98299834  docc=0.006750  converged=True  iters=3

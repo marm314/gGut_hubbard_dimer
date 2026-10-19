@@ -1,0 +1,53 @@
+[setup] Ng=2  Neff=3  impurity orbitals/spin=4  Fock dim=256  (sparse operators)
+[setup] built impurity operators in 0.03s; ground state searched in the N_up=N_dn sector of dim 36
+  it=  0  Z0=0.995709  Z1=0.995709  E_var=-7.167309  dE=-1.072e+02  docc=0.110647  n_phys=1.000000  |dDelta|=6.517e-03  |dR|=1.985e-02  [qp 0.00s | ED 0.00s]
+  it=  1  Z0=0.995592  Z1=0.995592  E_var=-7.159146  dE=8.163e-03  docc=0.109086  n_phys=1.000000  |dDelta|=4.110e-03  |dR|=9.349e-03  [qp 0.00s | ED 0.00s]
+  it=  2  Z0=0.995514  Z1=0.995514  E_var=-7.151517  dE=7.629e-03  docc=0.108682  n_phys=1.000000  |dDelta|=1.610e-03  |dR|=3.031e-03  [qp 0.00s | ED 0.00s]
+  it=  3  Z0=0.995344  Z1=0.995344  E_var=-7.152476  dE=-9.590e-04  docc=0.108228  n_phys=1.000000  |dDelta|=1.139e-03  |dR|=2.598e-03  [qp 0.00s | ED 0.00s]
+  it=  4  Z0=0.995256  Z1=0.995256  E_var=-7.148875  dE=3.601e-03  docc=0.108241  n_phys=1.000000  |dDelta|=4.257e-04  |dR|=3.541e-04  [qp 0.00s | ED 0.00s]
+  it=  5  Z0=0.995206  Z1=0.995206  E_var=-7.150759  dE=-1.884e-03  docc=0.108040  n_phys=1.000000  |dDelta|=4.838e-04  |dR|=1.047e-03  [qp 0.00s | ED 0.00s]
+  it=  6  Z0=0.995187  Z1=0.995187  E_var=-7.148441  dE=2.318e-03  docc=0.108127  n_phys=1.000000  |dDelta|=2.854e-04  |dR|=3.772e-04  [qp 0.00s | ED 0.00s]
+  it=  7  Z0=0.995173  Z1=0.995173  E_var=-7.150195  dE=-1.754e-03  docc=0.108005  n_phys=1.000000  |dDelta|=3.071e-04  |dR|=5.984e-04  [qp 0.00s | ED 0.00s]
+  it=  8  Z0=0.995170  Z1=0.995170  E_var=-7.148482  dE=1.713e-03  docc=0.108092  n_phys=1.000000  |dDelta|=2.414e-04  |dR|=4.015e-04  [qp 0.00s | ED 0.00s]
+  it=  9  Z0=0.995166  Z1=0.995166  E_var=-7.149935  dE=-1.453e-03  docc=0.108004  n_phys=1.000000  |dDelta|=2.292e-04  |dR|=4.211e-04  [qp 0.00s | ED 0.00s]
+  it= 10  Z0=0.995166  Z1=0.995166  E_var=-7.148606  dE=1.329e-03  docc=0.108077  n_phys=1.000000  |dDelta|=7.657e-04  |dR|=2.236e-04  [qp 0.00s | ED 0.00s]
+  it= 11  Z0=0.995165  Z1=0.995165  E_var=-7.149365  dE=-7.598e-04  docc=0.108033  n_phys=1.000000  |dDelta|=8.153e-04  |dR|=5.766e-05  [qp 0.00s | ED 0.00s]
+  it= 12  Z0=0.995165  Z1=0.995165  E_var=-7.149188  dE=1.774e-04  docc=0.108042  n_phys=1.000000  |dDelta|=1.859e-04  |dR|=9.014e-06  [qp 0.00s | ED 0.00s]
+  it= 13  Z0=0.995165  Z1=0.995165  E_var=-7.149226  dE=-3.817e-05  docc=0.108040  n_phys=1.000000  |dDelta|=4.312e-05  |dR|=4.954e-06  [qp 0.00s | ED 0.01s]
+  it= 14  Z0=0.995164  Z1=0.995164  E_var=-7.149216  dE=1.036e-05  docc=0.108040  n_phys=1.000000  |dDelta|=9.531e-06  |dR|=9.546e-07  [qp 0.00s | ED 0.00s]
+  it= 15  Z0=0.995164  Z1=0.995164  E_var=-7.149217  dE=-1.303e-06  docc=0.108040  n_phys=1.000000  |dDelta|=2.440e-06  |dR|=1.141e-06  [qp 0.00s | ED 0.00s]
+  it= 16  Z0=0.995164  Z1=0.995164  E_var=-7.149216  dE=1.007e-06  docc=0.108040  n_phys=1.000000  |dDelta|=4.569e-07  |dR|=6.384e-07  [qp 0.00s | ED 0.00s]
+
+[check] Delta_qp (quasiparticle 1-RDM) vs Delta_new (impurity-derived 1 - Delta_bb), final iteration:
+
+  fragment 0: Delta_qp =
+[[ 0.5829468   0.06266028  0.02261278]
+ [ 0.06266028  0.5983537  -0.48505976]
+ [ 0.02261278 -0.48505976  0.40585895]]
+  fragment 0: eig(Delta_qp)  = [0.00193947 0.58578652 0.99943346]
+
+  fragment 0: Delta_new =
+[[ 0.58294665  0.06266028  0.02261273]
+ [ 0.06266028  0.5983537  -0.48505976]
+ [ 0.02261273 -0.48505976  0.40585894]]
+  fragment 0: eig(Delta_new) = [0.00193947 0.58578636 0.99943346]
+
+  fragment 0: max|Delta_qp - Delta_new| = 1.481e-07
+
+  fragment 1: Delta_qp =
+[[ 0.41683979 -0.0135715  -0.05894278]
+ [-0.0135715   0.4545351   0.49337534]
+ [-0.05894278  0.49337534  0.54146566]]
+  fragment 1: eig(Delta_qp)  = [5.66536853e-04 4.14213479e-01 9.98060533e-01]
+
+  fragment 1: Delta_new =
+[[ 0.41683994 -0.01357145 -0.05894278]
+ [-0.01357145  0.45453511  0.49337534]
+ [-0.05894278  0.49337534  0.54146566]]
+  fragment 1: eig(Delta_new) = [5.66538110e-04 4.14213639e-01 9.98060527e-01]
+
+  fragment 1: max|Delta_qp - Delta_new| = 1.496e-07
+
+
+
+Ng=2  U/t=6.8000  deltaV/t=2.0000  Z0=0.995164  Z1=0.995164  E_var/t=-7.14921609  docc=0.108040  converged=True  iters=16

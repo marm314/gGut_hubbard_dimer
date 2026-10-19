@@ -1,7 +1,7 @@
-"""Are the lowest-energy solutions of the direct minimization (scan_not_imp/) also
+"""Are the lowest-energy solutions of the direct minimization (scan_ng2_not_imp/) also
 solutions of the iterative embedding of gga_dimer.py?
 
-For every U of scan_not_imp/lowest_energy.txt the (R, lambda) reconstructed from the
+For every U of scan_ng2_not_imp/lowest_energy.txt the (R, lambda) reconstructed from the
 solution (not_imp_gga_dimer.analyse -> not_imp_Ng2_U*_R.dat, _lambda.dat) is used as the
 seed of gga_dimer, and two things are measured.
 
@@ -13,7 +13,8 @@ seed of gga_dimer, and two things are measured.
 (2) A full run_gga from the seed (default tolerances): converged?, iterations, final E_var
     and its difference from the direct-minimization energy.
 
-Writes scan_mix/gga_dimer_check.txt and scan_mix/gga_dimer_check.png.
+Writes scan_ng2_not_imp_sol_at_imp/gga_dimer_check.txt and
+scan_ng2_not_imp_sol_at_imp/gga_dimer_check.png.
 """
 import contextlib
 import glob
@@ -32,8 +33,8 @@ import not_imp_gga_dimer as ni
 
 Ng, t = 2, 1.0
 N = Ng + 1
-SC = "scan_not_imp"
-OUT = "scan_mix"
+SC = "scan_ng2_not_imp"
+OUT = "scan_ng2_not_imp_sol_at_imp"
 os.makedirs(OUT, exist_ok=True)
 
 

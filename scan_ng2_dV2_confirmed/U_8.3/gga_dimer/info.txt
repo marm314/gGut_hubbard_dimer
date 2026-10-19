@@ -1,0 +1,6 @@
+gga_dimer.py's own result at U/t=8.3000, deltaV/t=2.0000: E_var/t=-8.45872462
+Cross-seeded INTO not_imp's own result instead, to see if not_imp's point
+is ALSO a fixed point of gga_dimer: gga_dimer, started AT not_imp's (R,lambda),
+converged=True in 1 outer iterations to E_var/t=-8.45864963.
+-> STRONG confirmation: few iterations, landed back on not_imp's own energy;
+   not_imp's point is ALSO a genuine fixed point of gga_dimer.

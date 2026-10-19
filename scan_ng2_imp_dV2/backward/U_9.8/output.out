@@ -1,0 +1,40 @@
+[setup] Ng=2  Neff=3  impurity orbitals/spin=4  Fock dim=256  (sparse operators)
+[setup] built impurity operators in 0.03s; ground state searched in the N_up=N_dn sector of dim 36
+  it=  0  Z0=0.496602  Z1=0.496602  E_var=-9.883068  dE=-1.099e+02  docc=0.006861  n_phys=1.000000  |dDelta|=1.505e+00  |dR|=7.939e-05  [qp 0.00s | ED 0.00s]
+  it=  1  Z0=0.496546  Z1=0.496546  E_var=-9.884408  dE=-1.340e-03  docc=0.006972  n_phys=1.000000  |dDelta|=1.352e+00  |dR|=8.023e-05  [qp 0.00s | ED 0.00s]
+  it=  2  Z0=0.496489  Z1=0.496489  E_var=-9.884370  dE=3.800e-05  docc=0.006970  n_phys=1.000000  |dDelta|=7.141e-01  |dR|=1.184e-06  [qp 0.00s | ED 0.00s]
+  it=  3  Z0=0.496490  Z1=0.496490  E_var=-9.884370  dE=-5.966e-07  docc=0.006971  n_phys=1.000000  |dDelta|=3.402e-02  |dR|=1.267e-05  [qp 0.00s | ED 0.00s]
+
+[check] Delta_qp (quasiparticle 1-RDM) vs Delta_new (impurity-derived 1 - Delta_bb), final iteration:
+
+  fragment 0: Delta_qp =
+[[ 0.0151466  -0.05468544 -0.07114154]
+ [-0.05468544  0.99565506 -0.00334373]
+ [-0.07114154 -0.00334373  0.99457924]]
+  fragment 0: eig(Delta_qp)  = [0.00697052 0.99841093 0.99999946]
+
+  fragment 0: Delta_new =
+[[ 0.01115104 -0.03404298 -0.03169714]
+ [-0.03404298  0.89003183 -0.20791376]
+ [-0.03169714 -0.20791376  0.60578766]]
+  fragment 0: eig(Delta_new) = [0.00697052 0.50000538 0.99999462]
+
+  fragment 0: max|Delta_qp - Delta_new| = 3.888e-01
+
+  fragment 1: Delta_qp =
+[[0.98485791 0.05473545 0.07104063]
+ [0.05473545 0.00312966 0.00358601]
+ [0.07104063 0.00358601 0.00663153]]
+  fragment 1: eig(Delta_qp)  = [5.43122009e-07 1.58907484e-03 9.93029478e-01]
+
+  fragment 1: Delta_new =
+[[0.98715766 0.02144014 0.06480973]
+ [0.02144014 0.48340448 0.09515579]
+ [0.06480973 0.09515579 0.02246735]]
+  fragment 1: eig(Delta_new) = [1.34283619e-05 4.99986572e-01 9.93029478e-01]
+
+  fragment 1: max|Delta_qp - Delta_new| = 4.803e-01
+
+
+
+Ng=2  U/t=9.8000  deltaV/t=2.0000  Z0=0.496490  Z1=0.496490  E_var/t=-9.88437024  docc=0.006971  converged=True  iters=3

@@ -1,16 +1,16 @@
 """gga_dimer.py started from the direct-minimization (not-impurity) solutions.
 
 For every U/t = 0.1, 0.2, ..., 10.0 the (R, lambda) reconstructed from the lowest-energy
-solution of scan_not_imp/ (scan_not_imp/lowest_energy.txt) is used as the seed of
-gga_dimer.run_gga (default settings). For each U it writes scan_mix/U_<U>/ :
+solution of scan_ng2_not_imp/ (scan_ng2_not_imp/lowest_energy.txt) is used as the seed of
+gga_dimer.run_gga (default settings). For each U it writes scan_ng2_not_imp_sol_at_imp/U_<U>/ :
 
   R.in, L.in    the seed (R, lambda) from the direct minimization
   output.out    the full run_gga trace (incl. the Delta_qp / Delta_new comparison) + summary
   gga_Ng2_U*_{R,lambda,lambda_c}.dat   converged (R, lambda, lambda^c) of gga_dimer.py
   eqp.txt       eigenvalues of H_qp(R, lambda) built from the converged gga_dimer.py values
 
-and, for all U together, scan_mix/eqp_vs_U.txt and scan_mix/eqp_vs_U.png (quasiparticle
-energies obtained with gga_dimer.py).
+and, for all U together, scan_ng2_not_imp_sol_at_imp/eqp_vs_U.txt and
+scan_ng2_not_imp_sol_at_imp/eqp_vs_U.png (quasiparticle energies obtained with gga_dimer.py).
 """
 import contextlib
 import glob
@@ -26,7 +26,7 @@ import gga_dimer as g
 
 Ng, t = 2, 1.0
 N = Ng + 1
-SC, OUT = "scan_not_imp", "scan_mix"
+SC, OUT = "scan_ng2_not_imp", "scan_ng2_not_imp_sol_at_imp"
 os.makedirs(OUT, exist_ok=True)
 
 rows = []

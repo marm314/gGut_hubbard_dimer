@@ -1,0 +1,1 @@
+Ng=4  U/t=8.6000  deltaV/t=2.0000  Z0=0.999393  Z1=0.999393  E_var/t=-8.75007923  converged=True  source=imp-own  (global lowest energy among gga_dimer's own, not_imp's own, and both cross-seeded candidates; see gga_dimer/info.txt and not_imp_gga_dimer/info.txt for the mutual-confirmation details)

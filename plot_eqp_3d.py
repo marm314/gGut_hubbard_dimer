@@ -65,7 +65,9 @@ def branch_of(path_a, path_b):
     return {u: (path_a if Ea[u] <= Eb[u] else path_b) for u in sorted(Ea)}
 
 
-def ridge_plot(get_dir_for_U, Us, title, png_path):
+def ridge_plot(get_dir_for_U, Us, title, png_path, ed_fn=ed_Aomega):
+    """ed_fn(omega, U, t, eta): the exact-ED A(omega) overlay; defaults to the Delta V=0
+    closed form above, but e.g. plot_eqp_3d_dV2.py passes a Delta V=2 one instead."""
     fig = plt.figure(figsize=(8.0, 6.8))
     ax = fig.add_subplot(111, projection="3d")
     cmap = plt.cm.viridis
@@ -74,7 +76,7 @@ def ridge_plot(get_dir_for_U, Us, title, png_path):
         d = get_dir_for_U(U)
         R, lam = load_R_lambda(d)
         omega_grid, A = g.compute_spectral_function(R[0], R[1], lam[0], lam[1], t, OMEGA_MAX, ETA, DOMEGA)
-        A_ed = ed_Aomega(omega_grid, U, t, ETA)
+        A_ed = ed_fn(omega_grid, U, t, ETA)
         zmax = max(zmax, A.max(), A_ed.max())
 
         color = cmap(k / max(1, len(Us) - 1))
@@ -109,28 +111,29 @@ def ridge_plot(get_dir_for_U, Us, title, png_path):
 
 Us_ridge = [round(u, 1) for u in np.arange(0.1, 10.01, 1.0)]  # 0.1, 1.0, 2.0, ..., 10.0
 
-# 1) scan_ng2_imp: gga_dimer.py, lowest of the backward/forward branches
-br = branch_of("scan_ng2_imp/backward", "scan_ng2_imp/forward")
-ridge_plot(lambda U: br[U] + f"/U_{U:.1f}", Us_ridge,
-           "Spectral function vs U (Ng=2, minimum-energy branch)",
-           "scan_ng2_imp/eqp_vs_U_3d.png")
+if __name__ == "__main__":
+    # 1) scan_ng2_imp: gga_dimer.py, lowest of the backward/forward branches
+    br = branch_of("scan_ng2_imp/backward", "scan_ng2_imp/forward")
+    ridge_plot(lambda U: br[U] + f"/U_{U:.1f}", Us_ridge,
+               "Spectral function vs U (Ng=2, minimum-energy branch)",
+               "scan_ng2_imp/eqp_vs_U_3d.png")
 
-# 2) scan_ng2_not_imp: direct minimization, lowest_energy.txt records the branch
-br2 = {}
-for line in open("scan_ng2_not_imp/lowest_energy.txt"):
-    if not line.startswith("#") and line.strip():
-        p = line.split()
-        br2[round(float(p[0]), 1)] = p[2]
-ridge_plot(lambda U: f"scan_ng2_not_imp/{br2[U]}/U_{U:.1f}", Us_ridge,
-           "Spectral function, lowest-energy solution (Ng=2)",
-           "scan_ng2_not_imp/eqp_vs_U_3d.png")
+    # 2) scan_ng2_not_imp: direct minimization, lowest_energy.txt records the branch
+    br2 = {}
+    for line in open("scan_ng2_not_imp/lowest_energy.txt"):
+        if not line.startswith("#") and line.strip():
+            p = line.split()
+            br2[round(float(p[0]), 1)] = p[2]
+    ridge_plot(lambda U: f"scan_ng2_not_imp/{br2[U]}/U_{U:.1f}", Us_ridge,
+               "Spectral function, lowest-energy solution (Ng=2)",
+               "scan_ng2_not_imp/eqp_vs_U_3d.png")
 
-# 3) scan_ng2_not_imp_sol_at_imp: gga_dimer.py seeded by the direct-minimization solutions
-ridge_plot(lambda U: f"scan_ng2_not_imp_sol_at_imp/U_{U:.1f}", Us_ridge,
-           "Spectral function of gga_dimer.py (Ng=2),\nseeded with the direct-minimization solutions",
-           "scan_ng2_not_imp_sol_at_imp/eqp_vs_U_3d.png")
+    # 3) scan_ng2_not_imp_sol_at_imp: gga_dimer.py seeded by the direct-minimization solutions
+    ridge_plot(lambda U: f"scan_ng2_not_imp_sol_at_imp/U_{U:.1f}", Us_ridge,
+               "Spectral function of gga_dimer.py (Ng=2),\nseeded with the direct-minimization solutions",
+               "scan_ng2_not_imp_sol_at_imp/eqp_vs_U_3d.png")
 
-# 4) scan_ng4_not_imp
-ridge_plot(lambda U: f"scan_ng4_not_imp/U_{U:.1f}", Us_ridge,
-           "Spectral function vs U (Ng=4)",
-           "scan_ng4_not_imp/eqp_vs_U_3d.png")
+    # 4) scan_ng4_not_imp
+    ridge_plot(lambda U: f"scan_ng4_not_imp/U_{U:.1f}", Us_ridge,
+               "Spectral function vs U (Ng=4)",
+               "scan_ng4_not_imp/eqp_vs_U_3d.png")

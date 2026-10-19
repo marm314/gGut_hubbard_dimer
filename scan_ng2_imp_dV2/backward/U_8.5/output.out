@@ -1,0 +1,41 @@
+[setup] Ng=2  Neff=3  impurity orbitals/spin=4  Fock dim=256  (sparse operators)
+[setup] built impurity operators in 0.03s; ground state searched in the N_up=N_dn sector of dim 36
+  it=  0  Z0=0.977391  Z1=0.977391  E_var=-8.650020  dE=-1.087e+02  docc=0.013824  n_phys=1.000000  |dDelta|=9.884e-01  |dR|=4.111e-04  [qp 0.00s | ED 0.00s]
+  it=  1  Z0=0.977521  Z1=0.977521  E_var=-8.652714  dE=-2.694e-03  docc=0.014094  n_phys=1.000000  |dDelta|=5.590e-04  |dR|=9.830e-04  [qp 0.00s | ED 0.00s]
+  it=  2  Z0=0.976609  Z1=0.976609  E_var=-8.652692  dE=2.230e-05  docc=0.014107  n_phys=1.000000  |dDelta|=3.166e-05  |dR|=2.574e-04  [qp 0.00s | ED 0.00s]
+  it=  3  Z0=0.976396  Z1=0.976396  E_var=-8.652705  dE=-1.378e-05  docc=0.014113  n_phys=1.000000  |dDelta|=1.196e-05  |dR|=4.242e-05  [qp 0.00s | ED 0.00s]
+  it=  4  Z0=0.976359  Z1=0.976359  E_var=-8.652705  dE=7.876e-07  docc=0.014114  n_phys=1.000000  |dDelta|=1.312e-06  |dR|=8.555e-06  [qp 0.00s | ED 0.00s]
+
+[check] Delta_qp (quasiparticle 1-RDM) vs Delta_new (impurity-derived 1 - Delta_bb), final iteration:
+
+  fragment 0: Delta_qp =
+[[ 0.02037854 -0.05268372 -0.06975295]
+ [-0.05268372  0.36177569  0.47456045]
+ [-0.06975295  0.47456045  0.6314898 ]]
+  fragment 0: eig(Delta_qp)  = [0.00328292 0.01256099 0.99780012]
+
+  fragment 0: Delta_new =
+[[ 0.02037898 -0.05299176 -0.06952022]
+ [-0.05299176  0.67798988  0.23565149]
+ [-0.06952022  0.23565149  0.81199235]]
+  fragment 0: eig(Delta_new) = [0.01256113 0.5        0.99780008]
+
+  fragment 0: max|Delta_qp - Delta_new| = 3.162e-01
+
+  fragment 1: Delta_qp =
+[[ 0.98495478  0.04984562 -0.00271298]
+ [ 0.04984562  0.00637081  0.04024747]
+ [-0.00271298  0.04024747  0.99503039]]
+  fragment 1: eig(Delta_qp)  = [0.00219988 0.98743901 0.99671708]
+
+  fragment 1: Delta_new =
+[[0.98223348 0.05119767 0.03392596]
+ [0.05119767 0.00569907 0.02204299]
+ [0.03392596 0.02204299 0.50170624]]
+  fragment 1: eig(Delta_new) = [0.00219992 0.5        0.98743887]
+
+  fragment 1: max|Delta_qp - Delta_new| = 4.933e-01
+
+
+
+Ng=2  U/t=8.5000  deltaV/t=2.0000  Z0=0.976352  Z1=0.976352  E_var/t=-8.65270452  docc=0.014114  converged=True  iters=4

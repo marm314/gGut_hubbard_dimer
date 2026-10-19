@@ -19,14 +19,17 @@ from plot_eqp_3d import ed_Aomega, load_R_lambda, branch_of, t, ETA, OMEGA_MAX, 
 Us = [round(u, 1) for u in np.arange(0.1, 10.01, 0.1)]
 
 
-def make_video(get_dir_for_U, title, out_path, fps=12):
+def make_video(get_dir_for_U, title, out_path, fps=12, ed_fn=ed_Aomega):
+    """ed_fn(omega, U, t, eta): the exact-ED A(omega) overlay; defaults to the Delta V=0
+    closed form of plot_eqp_3d.py, but e.g. make_A_omega_video_dV2.py passes a Delta V=2
+    one instead."""
     # precompute all frames and the global y-limit
     frames = []
     zmax = 0.0
     for U in Us:
         R, lam = load_R_lambda(get_dir_for_U(U))
         omega_grid, A = g.compute_spectral_function(R[0], R[1], lam[0], lam[1], t, OMEGA_MAX, ETA, DOMEGA)
-        A_ed = ed_Aomega(omega_grid, U, t, ETA)
+        A_ed = ed_fn(omega_grid, U, t, ETA)
         zmax = max(zmax, A.max(), A_ed.max())
         frames.append((omega_grid, A, A_ed))
 
@@ -59,28 +62,29 @@ def make_video(get_dir_for_U, title, out_path, fps=12):
     print(f"wrote {out_path}  ({len(Us)} frames @ {fps} fps = {len(Us)/fps:.1f}s)")
 
 
-# 1) scan_ng2_imp
-br = branch_of("scan_ng2_imp/backward", "scan_ng2_imp/forward")
-make_video(lambda U: br[U] + f"/U_{U:.1f}",
-           "Spectral function vs U (Ng=2, minimum-energy branch)",
-           "scan_ng2_imp/A_omega_vs_U.mp4")
+if __name__ == "__main__":
+    # 1) scan_ng2_imp
+    br = branch_of("scan_ng2_imp/backward", "scan_ng2_imp/forward")
+    make_video(lambda U: br[U] + f"/U_{U:.1f}",
+               "Spectral function vs U (Ng=2, minimum-energy branch)",
+               "scan_ng2_imp/A_omega_vs_U.mp4")
 
-# 2) scan_ng2_not_imp
-br2 = {}
-for line in open("scan_ng2_not_imp/lowest_energy.txt"):
-    if not line.startswith("#") and line.strip():
-        p = line.split()
-        br2[round(float(p[0]), 1)] = p[2]
-make_video(lambda U: f"scan_ng2_not_imp/{br2[U]}/U_{U:.1f}",
-           "Spectral function, lowest-energy solution (Ng=2)",
-           "scan_ng2_not_imp/A_omega_vs_U.mp4")
+    # 2) scan_ng2_not_imp
+    br2 = {}
+    for line in open("scan_ng2_not_imp/lowest_energy.txt"):
+        if not line.startswith("#") and line.strip():
+            p = line.split()
+            br2[round(float(p[0]), 1)] = p[2]
+    make_video(lambda U: f"scan_ng2_not_imp/{br2[U]}/U_{U:.1f}",
+               "Spectral function, lowest-energy solution (Ng=2)",
+               "scan_ng2_not_imp/A_omega_vs_U.mp4")
 
-# 3) scan_ng2_not_imp_sol_at_imp
-make_video(lambda U: f"scan_ng2_not_imp_sol_at_imp/U_{U:.1f}",
-           "Spectral function of gga_dimer.py (Ng=2),\nseeded with the direct-minimization solutions",
-           "scan_ng2_not_imp_sol_at_imp/A_omega_vs_U.mp4")
+    # 3) scan_ng2_not_imp_sol_at_imp
+    make_video(lambda U: f"scan_ng2_not_imp_sol_at_imp/U_{U:.1f}",
+               "Spectral function of gga_dimer.py (Ng=2),\nseeded with the direct-minimization solutions",
+               "scan_ng2_not_imp_sol_at_imp/A_omega_vs_U.mp4")
 
-# 4) scan_ng4_not_imp
-make_video(lambda U: f"scan_ng4_not_imp/U_{U:.1f}",
-           "Spectral function vs U (Ng=4)",
-           "scan_ng4_not_imp/A_omega_vs_U.mp4")
+    # 4) scan_ng4_not_imp
+    make_video(lambda U: f"scan_ng4_not_imp/U_{U:.1f}",
+               "Spectral function vs U (Ng=4)",
+               "scan_ng4_not_imp/A_omega_vs_U.mp4")

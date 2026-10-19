@@ -1,0 +1,40 @@
+[setup] Ng=2  Neff=3  impurity orbitals/spin=4  Fock dim=256  (sparse operators)
+[setup] built impurity operators in 0.03s; ground state searched in the N_up=N_dn sector of dim 36
+  it=  0  Z0=0.999972  Z1=0.999972  E_var=-4.495354  dE=-1.045e+02  docc=0.445072  n_phys=1.000000  |dDelta|=1.978e+00  |dR|=3.597e-05  [qp 0.00s | ED 0.00s]
+  it=  1  Z0=0.999936  Z1=0.999936  E_var=-4.503943  dE=-8.589e-03  docc=0.444055  n_phys=1.000000  |dDelta|=2.086e+00  |dR|=2.359e-06  [qp 0.00s | ED 0.00s]
+  it=  2  Z0=0.999934  Z1=0.999934  E_var=-4.503875  dE=6.728e-05  docc=0.444063  n_phys=1.000000  |dDelta|=1.492e+00  |dR|=1.769e-08  [qp 0.00s | ED 0.00s]
+  it=  3  Z0=0.999934  Z1=0.999934  E_var=-4.503876  dE=-5.055e-07  docc=0.444062  n_phys=1.000000  |dDelta|=2.742e+00  |dR|=1.330e-10  [qp 0.00s | ED 0.00s]
+
+[check] Delta_qp (quasiparticle 1-RDM) vs Delta_new (impurity-derived 1 - Delta_bb), final iteration:
+
+  fragment 0: Delta_qp =
+[[ 0.93613125  0.06587414  0.01348385]
+ [ 0.06587414  0.06638266 -0.23950191]
+ [ 0.01348385 -0.23950191  0.93829748]]
+  fragment 0: eig(Delta_qp)  = [1.08155716e-04 9.40764754e-01 9.99938475e-01]
+
+  fragment 0: Delta_new =
+[[ 0.9365972  -0.00768389  0.06361527]
+ [-0.00768389  0.99435791  0.06516682]
+ [ 0.06361527  0.06516682  0.00980964]]
+  fragment 0: eig(Delta_new) = [0.00113869 0.94076475 0.99886131]
+
+  fragment 0: max|Delta_qp - Delta_new| = 9.285e-01
+
+  fragment 1: Delta_qp =
+[[ 0.05882107 -0.00397294  0.0087909 ]
+ [-0.00397294  0.71634534 -0.45045933]
+ [ 0.0087909  -0.45045933  0.28402221]]
+  fragment 1: eig(Delta_qp)  = [6.15245579e-05 5.92352459e-02 9.99891844e-01]
+
+  fragment 1: Delta_new =
+[[ 0.06410007  0.0015588  -0.06855818]
+ [ 0.0015588   0.00319189  0.02152682]
+ [-0.06855818  0.02152682  0.99194328]]
+  fragment 1: eig(Delta_new) = [0.00255966 0.05923525 0.99744034]
+
+  fragment 1: max|Delta_qp - Delta_new| = 7.132e-01
+
+
+
+Ng=2  U/t=0.3000  deltaV/t=2.0000  Z0=0.999934  Z1=0.999934  E_var/t=-4.50387594  docc=0.444062  converged=True  iters=3

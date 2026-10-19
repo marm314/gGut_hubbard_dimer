@@ -10,7 +10,7 @@ without saving anything, using gga_dimer.run_gga (the actual solver,
 unmodified) at each step. Only then does the requested ascending scan,
 U=0.1 -> 10.0 step +0.1, run and save its output.
 
-For every U/t = U_k of the ascending scan, this writes to scan/forward/U_<U_k>/:
+For every U/t = U_k of the ascending scan, this writes to scan_ng2_imp/forward/U_<U_k>/:
   R.in, L.in    the (R, lambda) guess actually fed into run_gga for this U
                 (i.e. the previous point's converged values)
   output.out    the full run_gga verbose trace + a one-line summary
@@ -19,12 +19,13 @@ For every U/t = U_k of the ascending scan, this writes to scan/forward/U_<U_k>/:
   eqp.txt       the 2*Neff eigenvalues of H_qp(R, lambda) at the CONVERGED point
                 (the quasiparticle energies), via gga_dimer.qp_state
 
-After the scan, scan/forward/eqp_vs_U.txt collects U and all eqp branches, and
-scan/forward/eqp_vs_U.png plots the quasiparticle spectrum vs U.
+After the scan, scan_ng2_imp/forward/eqp_vs_U.txt collects U and all eqp branches, and
+scan_ng2_imp/forward/eqp_vs_U.png plots the quasiparticle spectrum vs U.
 """
 import contextlib
 import io
 import os
+import sys
 
 import numpy as np
 import matplotlib
@@ -33,9 +34,23 @@ import matplotlib.pyplot as plt
 
 import gga_dimer as g
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "scan_ed_deltaV"))
+import make_plot as ed_dV  # scan_ed_deltaV/make_plot.py (deltaV=0 here: no conversion needed)
+
+# eqp_vs_U.png colors: one color per +-symmetric pair (outermost first) -- see
+# scan_ng2_not_imp_dV2_U.py's branch_color for the full rationale.
+PAIR_COLORS = ["tab:orange", "tab:blue"]
+GHOST_COLOR = "0.6"
+
+
+def branch_color(i, n):
+    pair = min(i, n - 1 - i)
+    return PAIR_COLORS[pair] if pair < len(PAIR_COLORS) else GHOST_COLOR
+
+
 Ng, t = 2, 1.0
 Neff = Ng + 1
-SCAN_DIR = os.path.join("scan", "forward")
+SCAN_DIR = os.path.join("scan_ng2_imp", "forward")
 
 os.makedirs(SCAN_DIR, exist_ok=True)
 
@@ -102,13 +117,18 @@ rows = rows[np.argsort(rows[:, 0])]
 header = "U/t " + " ".join(f"eqp{i}" for i in range(rows.shape[1] - 1))
 np.savetxt(os.path.join(SCAN_DIR, "eqp_vs_U.txt"), rows, header=header)
 
+n = rows.shape[1] - 1
+ed_p = np.array([sorted(ed_dV.analytic_poles(t, U, 0.0)[0]) for U in rows[:, 0]])
 plt.figure(figsize=(6, 4.5))
 for i in range(1, rows.shape[1]):
-    plt.plot(rows[:, 0], rows[:, i], "-", lw=1.2)
+    plt.plot(rows[:, 0], rows[:, i], "-", lw=1.2, color=branch_color(i - 1, n))
+for i in range(ed_p.shape[1]):
+    plt.plot(rows[:, 0], ed_p[:, i], "--", lw=1.2, color="black", label="exact (ED)" if i == 0 else None)
 plt.xlabel("U/t")
 plt.ylabel("quasiparticle energy / t")
 plt.title(f"Quasiparticle spectrum of H_qp vs U (Ng={Ng}, forward branch)")
 plt.axhline(0.0, color="gray", lw=0.5, ls=":")
+plt.legend(fontsize=8)
 plt.tight_layout()
 png_path = os.path.join(SCAN_DIR, "eqp_vs_U.png")
 plt.savefig(png_path, dpi=150)

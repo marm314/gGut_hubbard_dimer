@@ -15,17 +15,19 @@ previous solution is exactly feasible at the new U):
 Every point is minimized until the constraint violation is < 1e-9 and the
 gradient projected on the constraint tangent space is < 5e-6 (up to 5 SLSQP passes).
 
-For every U it writes scan_not_imp/<branch>/U_<U>/ : output.out (one-line summary),
+For every U it writes scan_ng2_not_imp/<branch>/U_<U>/ : output.out (one-line summary),
 not_imp_Ng2_U*_{R,lambda,lambda_c}.dat, eqp.txt (eigenvalues of H_qp(R, lambda)),
 z.npy (the variables, to restart). Per branch: summary.txt (U, E_var, Z0, Z1, docc,
 residuals), eqp_vs_U.txt, and the plots E_vs_U.png, eqp_vs_U.png.
-Combined, directly in scan_not_imp/: E_vs_U.png (both branches, their lower envelope
-and, for reference, the lower envelope of the gga_dimer.py scans in scan/), eqp_vs_U.png
-and eqp_vs_U.txt (quasiparticle energies of the lowest-energy solution at each U).
+Combined, directly in scan_ng2_not_imp/: E_vs_U.png (both branches, their lower envelope
+and, for reference, the lower envelope of the gga_dimer.py scans in scan_ng2_imp/),
+eqp_vs_U.png and eqp_vs_U.txt (quasiparticle energies of the lowest-energy solution at
+each U).
 """
 import contextlib
 import io
 import os
+import sys
 import time
 
 import numpy as np
@@ -36,8 +38,27 @@ import matplotlib.pyplot as plt
 import gga_dimer as g
 import not_imp_gga_dimer as ni
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "scan_ed_deltaV"))
+import make_plot as ed_dV  # scan_ed_deltaV/make_plot.py (deltaV=0 here: no conversion needed)
+
+# eqp_vs_U.png colors: one color per +-symmetric pair (outermost first), not a raw default
+# cycle over the sorted eigenvalue index -- see scan_ng2_not_imp_dV2_U.py's branch_color
+# for the full rationale; kept consistent with that script's eqp_vs_U.png style.
+PAIR_COLORS = ["tab:orange", "tab:blue"]
+GHOST_COLOR = "0.6"
+
+
+def branch_color(i, n):
+    pair = min(i, n - 1 - i)
+    return PAIR_COLORS[pair] if pair < len(PAIR_COLORS) else GHOST_COLOR
+
+
+def ed_poles(Us):
+    return np.array([sorted(ed_dV.analytic_poles(t, U, 0.0)[0]) for U in Us])
+
+
 Ng, t = 2, 1.0
-OUT = "scan_not_imp"
+OUT = "scan_ng2_not_imp"
 
 
 def tangent_grad(model, z):
@@ -114,25 +135,31 @@ def write_branch(name, rows):
     U = np.array([r["U"] for r in rows])
     plt.figure(figsize=(6, 4.5))
     plt.plot(U, [r["E"] for r in rows], "-", lw=1.5)
-    plt.xlabel("U/t"); plt.ylabel("E_var / t"); plt.title(f"E_var vs U ({name}, direct minimization, Ng={Ng})")
+    plt.xlabel("U/t"); plt.ylabel("E_var / t"); plt.title(f"E_var vs U ({name}, Ng={Ng})")
     plt.tight_layout(); plt.savefig(os.path.join(d, "E_vs_U.png"), dpi=150); plt.close()
     plt.figure(figsize=(6, 4.5))
     eq = np.array([r["eqp"] for r in rows])
-    for i in range(eq.shape[1]):
-        plt.plot(U, eq[:, i], "-", lw=1.2)
+    ed_p = ed_poles(U)
+    n = eq.shape[1]
+    for i in range(n):
+        plt.plot(U, eq[:, i], "-", lw=1.2, color=branch_color(i, n))
+    for i in range(ed_p.shape[1]):
+        plt.plot(U, ed_p[:, i], "--", lw=1.2, color="black", label="exact (ED)" if i == 0 else None)
     plt.axhline(0.0, color="gray", lw=0.5, ls=":")
     plt.xlabel("U/t"); plt.ylabel("quasiparticle energy / t")
-    plt.title(f"eqp vs U ({name}, direct minimization, Ng={Ng})")
+    plt.title(f"eqp vs U ({name}, Ng={Ng})")
+    plt.legend(fontsize=8)
     plt.tight_layout(); plt.savefig(os.path.join(d, "eqp_vs_U.png"), dpi=150); plt.close()
     return rows
 
 
 def gga_dimer_envelope():
-    """Lower envelope of the E_var of the two gga_dimer.py scans (scan/backward, scan/forward)."""
+    """Lower envelope of the E_var of the two gga_dimer.py scans (scan_ng2_imp/backward,
+    scan_ng2_imp/forward)."""
     import glob, re
     E = {}
     for branch in ("backward", "forward"):
-        for f in glob.glob(os.path.join("scan", branch, "U_*", "output.out")):
+        for f in glob.glob(os.path.join("scan_ng2_imp", branch, "U_*", "output.out")):
             m = re.search(r"U/t=([\d.]+).*?E_var/t=(-?[\d.]+)", open(f).readlines()[-1])
             u, e = round(float(m.group(1)), 1), float(m.group(2))
             E[u] = min(E.get(u, np.inf), e)
@@ -174,8 +201,8 @@ if __name__ == "__main__":
 
     ug, eg = gga_dimer_envelope()
     plt.figure(figsize=(6.4, 4.8))
-    plt.plot(Us, [B[u]["E"] for u in Us], "-", lw=1.5, label="direct min., backward (from U=10)")
-    plt.plot(Us, [F[u]["E"] for u in Us], "--", lw=1.5, label="direct min., forward (from U=0.1)")
+    plt.plot(Us, [B[u]["E"] for u in Us], "-", lw=1.5, label="backward (from U=10)")
+    plt.plot(Us, [F[u]["E"] for u in Us], "--", lw=1.5, label="forward (from U=0.1)")
     plt.plot(Us, [r["E"] for r in best], ":", lw=2.2, color="black", label="lowest of the two")
     plt.plot(ug, eg, "-", lw=0.8, color="tab:red", alpha=0.7, label="gga_dimer.py, lowest of its 2 scans")
     plt.xlabel("U/t"); plt.ylabel("E_var / t"); plt.title(f"Variational energy vs U (Ng={Ng})")
@@ -183,12 +210,17 @@ if __name__ == "__main__":
     plt.savefig(os.path.join(OUT, "E_vs_U.png"), dpi=150); plt.close()
 
     eq = np.array([r["eqp"] for r in best])
+    ed_p = ed_poles(np.array(Us))
+    n = eq.shape[1]
     plt.figure(figsize=(6.4, 4.8))
-    for i in range(eq.shape[1]):
-        plt.plot(Us, eq[:, i], "-", lw=1.2)
+    for i in range(n):
+        plt.plot(Us, eq[:, i], "-", lw=1.2, color=branch_color(i, n))
+    for i in range(ed_p.shape[1]):
+        plt.plot(Us, ed_p[:, i], "--", lw=1.2, color="black", label="exact (ED)" if i == 0 else None)
     plt.axhline(0.0, color="gray", lw=0.5, ls=":")
     plt.xlabel("U/t"); plt.ylabel("quasiparticle energy / t")
     plt.title(f"Quasiparticle energies, lowest-energy solution (Ng={Ng})")
+    plt.legend(fontsize=8)
     plt.tight_layout()
     plt.savefig(os.path.join(OUT, "eqp_vs_U.png"), dpi=150); plt.close()
 
