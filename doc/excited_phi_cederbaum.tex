@@ -1,0 +1,129 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\newcommand{\dg}{^{\dagger}}
+\newcommand{\ket}[1]{|#1\rangle}
+\newcommand{\braket}[1]{\langle #1\rangle}
+\newcommand{\Tr}{\mathrm{Tr}}
+
+\title{Why the direct-minimization embedding state is an excited eigenstate\\
+\large (ghost Gutzwiller for the $t_c$-Cederbaum model, $B_c=3$)}
+\author{}
+\date{\today}
+
+\begin{document}
+\emergencystretch=4em
+\maketitle
+
+\noindent This note explains a numerical observation made when the solution of the direct minimization
+(\texttt{not\_imp\_gga\_cederbaum.py}) was used as the starting point of the embedding fixed-point loop
+(\texttt{gga\_cederbaum.py}) for the $t_c$-Cederbaum model of \texttt{cederbaum.tex}: the core embedding state $\Phi_c$ of the direct
+minimization is an \emph{excited} eigenstate of the embedding Hamiltonian, which the loop (that takes the lowest state) cannot follow.
+Notation is that of \texttt{cederbaum.tex}.
+
+%======================================================================
+\section{Statement}
+
+``Excited'' does \emph{not} refer to the physical system: the direct-minimization point is the lowest-energy solution of the
+constrained problem (its energy agrees with the exact ground-state energy to $\sim10^{-7}$). It refers to the embedding Hamiltonian
+$H^c_{\rm imp}$ built from the multipliers recovered at that point: $\Phi_c$ is an exact eigenstate of $H^c_{\rm imp}$, but not the lowest one.
+
+%======================================================================
+\section{The two procedures and what each requires}
+
+Both stationarize the same Lagrangian
+\begin{equation}
+\mathcal L=E+\sum_I2\,\Tr\big[\lambda_I\big({}^I\Delta(\Phi_I)-\rho^{II}\big)\big]-\sum_IE^c_I\big(\braket{\Phi_I|\Phi_I}-1\big),
+\end{equation}
+with $E$ of Eq.~(E) of \texttt{cederbaum.tex} and multipliers $\lambda_I$ (density constraint) and $E^c_I$ (normalization).
+
+\paragraph{Direct minimization} minimizes $E$ over $\Phi_I$ and $\psi_{qp}$ subject to the constraints. At a constrained minimum, $\mathcal L$ is
+stationary in $\Phi_I$, i.e.
+\begin{equation}
+H^I_{\rm imp}\,\Phi_I=E^c_I\,\Phi_I ,
+\label{eq:eig}
+\end{equation}
+where, for the core,
+\begin{equation}
+H^c_{\rm imp}=H^{loc}_c+\sum_{a\sigma}h_{a}\big(d\dg_{a\sigma}c_\sigma+\mathrm{h.c.}\big)+\sum_{ab\sigma}\lambda^c_{ab}\,d\dg_{a\sigma}d_{b\sigma}
++n_c\Big[\alpha+2\Tr\Xi-\sum_{ab\sigma}\Xi_{ab}\,d\dg_{a\sigma}d_{b\sigma}\Big],\qquad\lambda^c=\Lambda-\lambda ,
+\end{equation}
+(with $h_a$, $\Lambda$, $\alpha$, $\Xi$ the derivatives of $E$ given in Sec.~Direct minimization of \texttt{cederbaum.tex}). Equation~\eqref{eq:eig} says that
+$\Phi_I$ is \emph{an eigenstate} of $H^I_{\rm imp}$; it says nothing about which one.
+
+\paragraph{The impurity loop} \emph{assumes} that $\Phi_I$ is the \emph{lowest} eigenstate of $H^I_{\rm imp}$ at the current multipliers (it diagonalizes
+$H^I_{\rm imp}$ and takes the ground state). This is the saddle-point reading of $\mathcal L$: minimize over $\Phi_I$ at fixed multipliers,
+then adjust the multipliers to satisfy the constraints. It is equivalent to the constrained minimum when the problem has no duality gap
+(e.g.\ if it were convex).
+
+%======================================================================
+\section{Numerical check}
+
+At $V=1$, $t_c=0.5$, $B_c=3$ ($\Delta=1$, $E_c=10$), with the multipliers recovered from the direct-minimization point:
+\begin{itemize}
+\item $\Phi_c$ is an exact eigenstate of $H^c_{\rm imp}$ (overlap$^2=1.000000$), as Eq.~\eqref{eq:eig} requires.
+\item It is the $15$th eigenstate (index $14$): $\braket{\Phi_c|H^c_{\rm imp}|\Phi_c}=-22.04$ against a lowest eigenvalue of $-42.58$.
+\item $\Phi_o$ and $\Phi_v$ are ground states of their embedding Hamiltonians.
+\item The bath levels of $\lambda^c_c$ are $-11.27$, $-2.23$ and $+2.24$ (eigenvalues of the $3\times3$ matrix); the core has ${}^c\Delta$
+eigenvalues $1.2\times10^{-5}$, $0.9979$ and $1.0000$.
+\end{itemize}
+
+%======================================================================
+\section{Why it can be excited}
+
+\begin{enumerate}
+\item \textbf{Stationarity is not minimality.} Stationarity of $\mathcal L$ in $\Phi$ gives Eq.~\eqref{eq:eig} for \emph{some} eigenstate. It is the
+\emph{constraint}, not the energy of $H_{\rm imp}$, that selects which one.
+\item \textbf{The constraint fixes the bath occupations.} ${}^c\Delta=\mathbb I-\Delta^{bb}$ must equal $\rho^{cc}$, the local density matrix of the
+quasiparticle state. With one bath electron per spin, this fixes \emph{which} bath orbital is filled: the one that corresponds to the empty
+quasiparticle orbital. The multipliers $\lambda_I$ are then adjusted so that this state is stationary.
+\item \textbf{That need not be the lowest state at the recovered multipliers.} At these multipliers the lowest state of $H^c_{\rm imp}$ would put the
+bath electron in the $-11.27$ bath level (and, with it, change the core occupation), which contradicts the constraint satisfied by $\Phi_c$. The state that
+satisfies the constraint is a different, higher eigenstate.
+\item \textbf{Non-convexity.} The constraint is quadratic in $\Phi$ and the energy functional is nonlinear in the quantities extracted from $\Phi$
+(through $R_I=S^{-1}D$ and $\bar\Theta$), so the problem is not convex and a duality gap is possible: the minimum of $\mathcal L$ over $\Phi$ at the
+optimal multipliers is not the constrained minimum. This is why the saddle-point assumption of the loop can fail.
+\end{enumerate}
+Points 1 and 2 follow directly from the equations; points 3 and 4 are my reading of the numerical result, not a proof.
+
+%======================================================================
+\section{Consequences for the impurity loop}
+
+\paragraph{Lowest-state selection.} Started from the full direct-minimization state (\texttt{state0}), one loop iteration already moves away: the residual
+$\|\rho^{II}-(1-\Delta^{bb}_I)\|$ is $1.4$, and the loop collapses to $\nu_c\approx0$ (shift $\varepsilon=10^{-9}$).
+
+\paragraph{Maximum-overlap (MOM-like) selection.} In each embedding solve, the eigenstate with the largest overlap with the previous
+$\Phi_I$ is taken instead of the lowest one (\texttt{follow=True}; degenerate subspaces are projected). One step from the direct-minimization
+state then gives a residual of $7.6\times10^{-3}$ (instead of $1.4$), but it is still not a fixed point at $\varepsilon=10^{-9}$, for two reasons: (i) a
+filled ghost orbital has ${}^c\Delta$ eigenvalue $1.0000$, so $S_c\sim\sqrt\varepsilon$ and $\lambda^c$ is ill conditioned: a change of $\rho$ of
+$2\times10^{-6}$ changes $\lambda^c$ by $\approx3$; (ii) the followed state sits in a dense stretch of the embedding spectrum (level spacing $\lesssim2\times10^{-3}$).
+After that the loop drifts to the $B_c=1$-like state or to the trivial product state ($E=-22$, $R_c=0$).
+
+\paragraph{Dependence on the shift} (300 iterations, started from the direct-minimization state):
+\begin{center}\footnotesize
+\begin{tabular}{rp{3.6cm}p{8.2cm}}
+\toprule
+shift $\varepsilon$ & lowest-state selection & max-overlap selection\\
+\midrule
+$10^{-9}$ & no convergence & no convergence or product state\\
+$10^{-8}$, $10^{-7}$ & no convergence & some mixings converge, to the product state ($R_c=0$)\\
+$10^{-6}$ & no convergence & no convergence\\
+$10^{-5}$ & no convergence (residual $2.4$) & \textbf{converges} (residual $\sim10^{-13}$) to a nearby minimum, $E$ higher by $1.0\times10^{-4}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+The shifts $10^{-4}$ and $10^{-3}$ were not completed. At $\varepsilon=10^{-5}$ the loop point is itself a constrained local minimum (restarting
+the direct minimizer from it lowers $E$ by $<10^{-12}$), with the same single pole in $G^h_{cc}$.
+
+\paragraph{Conclusion.} The impurity loop reproduces a solution of this kind only with maximum-overlap state selection and a large regularization shift; and then
+it finds a different, higher local minimum. The direct minimization needs no choice of eigenstate and is the more reliable solver.
+
+\paragraph{Scope.} The numbers are for $V=1$, $t_c=0.5$, $B_c=3$ (shift sweep: $V=1$, $t_c=0.5$). The explanation in Sec.~3, points 3--4, is an interpretation of
+those numbers.
+
+\end{document}
