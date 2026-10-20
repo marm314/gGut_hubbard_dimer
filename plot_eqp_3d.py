@@ -65,6 +65,10 @@ def branch_of(path_a, path_b):
     return {u: (path_a if Ea[u] <= Eb[u] else path_b) for u in sorted(Ea)}
 
 
+FS_LABEL, FS_TICK, FS_LEGEND = 17, 14, 15  # large fonts: the plots are shrunk into 2x2 report subfigures
+SHOW_TITLE = False  # report figures carry no in-plot title (identified by the caption instead)
+
+
 def ridge_plot(get_dir_for_U, Us, title, png_path, ed_fn=ed_Aomega):
     """ed_fn(omega, U, t, eta): the exact-ED A(omega) overlay; defaults to the Delta V=0
     closed form above, but e.g. plot_eqp_3d_dV2.py passes a Delta V=2 one instead."""
@@ -88,10 +92,13 @@ def ridge_plot(get_dir_for_U, Us, title, png_path, ed_fn=ed_Aomega):
     ax.set_xlim(-OMEGA_MAX, OMEGA_MAX)
     ax.set_ylim(min(Us), max(Us))
     ax.set_zlim(0, 1.08 * zmax)
-    ax.set_xlabel("quasiparticle energy / t")
-    ax.set_ylabel("U/t")
-    ax.set_zlabel(rf"A($\omega$)  ($\eta$={ETA:g})")
-    ax.set_title(title)
+    ax.set_xlabel("quasiparticle energy / t", fontsize=FS_LABEL, labelpad=12)
+    ax.set_ylabel("U/t", fontsize=FS_LABEL, labelpad=10)
+    ax.set_zlabel(rf"A($\omega$)  ($\eta$={ETA:g})", fontsize=FS_LABEL, labelpad=10)
+    ax.tick_params(axis="both", which="major", labelsize=FS_TICK)
+    ax.tick_params(axis="z", which="major", labelsize=FS_TICK)
+    if SHOW_TITLE:
+        ax.set_title(title)
 
     # no background mesh/panes at all
     ax.grid(False)
@@ -102,7 +109,7 @@ def ridge_plot(get_dir_for_U, Us, title, png_path, ed_fn=ed_Aomega):
     ax.view_init(elev=28, azim=-50)
     handles = [Patch(facecolor=cmap(0.5), edgecolor="k", alpha=0.85, label="gGA A(omega)"),
                Line2D([0], [0], color="red", lw=1.2, label="ED A(omega) (exact)")]
-    ax.legend(handles=handles, fontsize=8, loc="upper left")
+    ax.legend(handles=handles, fontsize=FS_LEGEND, loc="upper left")
     plt.tight_layout()
     plt.savefig(png_path, dpi=150)
     plt.close(fig)
