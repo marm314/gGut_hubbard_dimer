@@ -1,0 +1,418 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\newcommand{\dg}{^{\dagger}}
+\newcommand{\ket}[1]{|#1\rangle}
+\newcommand{\bra}[1]{\langle #1|}
+\newcommand{\braket}[1]{\langle #1\rangle}
+\newcommand{\Tr}{\mathrm{Tr}}
+
+\title{The $t_c$-Cederbaum model: ghost Gutzwiller by direct minimization\\
+\large (core fragment with $B_c=1$, $3$ and $5$ quasiparticle orbitals)}
+\author{}
+\date{\today}
+
+\begin{document}
+\emergencystretch=4em
+\maketitle
+
+\noindent This note defines the Hamiltonian that is solved, the $t_c$-Cederbaum model (the Cederbaum model of core-hole satellites plus a weak
+core--virtual hopping $t_c$; $t_c=0$ is the original Cederbaum model), the
+ghost-Gutzwiller (gGut) variational problem used for it, the direct minimization that solves that problem, and the
+comparison with exact diagonalization (ED), for a core fragment without ghosts ($B_c=1$) and with two and four ghosts
+($B_c=3$, $5$). The aim of the test is to see whether gGut reproduces the satellite structure of the core-hole spectrum of this model.
+Quantities are per spin unless stated otherwise; solutions are real and paramagnetic.
+
+%======================================================================
+\section{The Hamiltonian}
+\label{sec:H}
+
+Three orbitals, $c$ (core), $o$ (occupied) and $v$ (virtual), each with two spins. The $t_c$-Cederbaum model is
+$H_{\rm tot}=H+H_t$, where $H$ is the Cederbaum model (the $o$--$v$ hopping conditioned on a core hole) and $H_t$ the added hopping:
+\begin{equation}
+\begin{aligned}
+H_{\rm tot}={}&\Delta\sum_\sigma(n_{v\sigma}-n_{o\sigma})-E_c\sum_\sigma n_{c\sigma}
+-V\sum_{\sigma\sigma'}(1-n_{c\sigma})\left(c\dg_{v\sigma'}c_{o\sigma'}+\mathrm{h.c.}\right)\\
+&+t_c\sum_\sigma\left(c\dg_{c\sigma}c_{v\sigma}+\mathrm{h.c.}\right),
+\end{aligned}
+\label{eq:Htot}
+\end{equation}
+with $E_c>0$, orbital gap $\Delta$, core--valence coupling $V$, and a weak core--virtual hopping $t_c$. The prefactor
+$\sum_\sigma(1-n_{c\sigma})=2-n_c$ counts the core holes, so the $o$--$v$ hopping acts only when the core is not full.
+The particle number and $S_z$ are conserved. The core occupation $n_c$ is conserved only at $t_c=0$. All results below use
+$\Delta=1$, $E_c=10$, $V\in\{0.5,1,2\}$ and $t_c\le0.5$; the ground state then lies in the sector with two electrons of each
+spin.
+
+\paragraph{Why a hopping $t_c$ at all.} The quantity of interest is not the ground-state energy but the core-hole Green's
+function $G^h_{cc}$ (Eq.~\ref{eq:Gh} below): its three poles are final-state physics, the three $N-1$ eigenstates that appear when a core
+electron is removed and $V$ then moves electrons between $o$ and $v$. The gGut ground state is the exact ground state at $t_c=0$
+(it reproduces $\ket{220}$, $E=-2E_c-2\Delta$ exactly), but gGut does not compute $N-1$ states: its spectrum comes from the
+quasiparticle Hamiltonian $H_{qp}$ (Sec.~\ref{sec:spectrum}), whose parameters $R_I$, $\lambda_I$ are fixed by the ground-state variational problem.
+At $t_c=0$ that ground state is a product state: $\nu_c=2$, the core--valence correlation vanishes, so every $V$ term of the energy is
+zero (Eq.~\ref{eq:E}), $V$ does not enter the problem at all, and $R_c$, hence $G_{cc}$, is undetermined. A weak $t_c$ makes the ground state
+slightly correlated ($\nu_c<2$), so that $V$ enters the energy functional and $R_c$, $H_{qp}$ acquire $V$-dependent values. It is a
+probe, not a change of the question: the exact poles move only at $O(t_c^2)$ (Tab.~\ref{tab:EDpoles}), so a method that captures the satellites
+should reproduce them at small $t_c$.
+
+\paragraph{Why the core hops to $v$.} At $t_c=0$ the ground state is the product state $\ket{220}$ (core and $o$ doubly
+occupied, $v$ empty; notation $\ket{n_cn_on_v}$) with $E=-2E_c-2\Delta$, $\nu_c=\braket{n_c}=2$, and no core--valence correlation. A
+hopping $t_c(c\dg_cc_o+\mathrm{h.c.})$ would be useless: both orbitals are full in $\ket{220}$, so it annihilates the state, and
+$\ket{220}$ remains an exact eigenstate for every $t_c$ (checked by ED). With $c\dg_vc_c$, instead, a core electron
+moves to $v$ at an energy cost $E_c+\Delta$, so the ground state acquires a core-hole component of amplitude
+$\sim t_c/(E_c+\Delta)$, with $2-\nu_c=O(t_c^2)$, and the $V$ term then acts on it.
+
+\paragraph{Exact solution.} $H_{\rm tot}$ is diagonalized exactly in the 64-dimensional Fock space of six spin orbitals
+(Jordan--Wigner operators). The core-hole Green's function for spin $\uparrow$ is
+\begin{equation}
+G^h_{cc}(\omega)=\sum_n\frac{|\braket{n|c_{c\uparrow}|{\rm GS}}|^2}{\omega+(E_n-E_{\rm GS})-i\eta},
+\label{eq:Gh}
+\end{equation}
+with poles at $\omega=-E_i$ and weights $p_i$. At $t_c=0$ there are three poles; with $\alpha=V/\Delta$,
+\begin{equation}
+\begin{aligned}
+E_1&=E_c+2\Delta-2\Delta\sqrt{1+\alpha^2}, & p_1&=\frac{(1+\sqrt{1+\alpha^2})^2}{4(1+\alpha^2)},\\
+E_2&=E_c+2\Delta, & p_2&=\frac{\alpha^2}{2(1+\alpha^2)},\\
+E_3&=E_c+2\Delta+2\Delta\sqrt{1+\alpha^2}, & p_3&=\frac{(1-\sqrt{1+\alpha^2})^2}{4(1+\alpha^2)},
+\end{aligned}
+\label{eq:poles}
+\end{equation}
+which the ED reproduces to $9\times10^{-15}$. For $t_c>0$ the poles move at $O(t_c^2)$ and the middle pole splits into two
+lines $\sim10^{-4}$ apart (Tab.~\ref{tab:EDpoles}); Tab.~\ref{tab:ED} gives the ground-state quantities.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{rrrrr}
+\toprule
+$V$ & $t_c$ & $E_0+2E_c+2\Delta$ & $2-\nu_c$ & $\rho^{cv}=\braket{c\dg_{c\uparrow}c_{v\uparrow}}$\\
+\midrule
+1 & 0.5  & $-4.57\times10^{-2}$ & $4.19\times10^{-3}$ & $-4.56\times10^{-2}$\\
+1 & 0.2  & $-7.32\times10^{-3}$ & $6.74\times10^{-4}$ & $-1.83\times10^{-2}$\\
+1 & 0.1  & $-1.83\times10^{-3}$ & $1.69\times10^{-4}$ & $-9.15\times10^{-3}$\\
+1 & 0.05 & $-4.58\times10^{-4}$ & $4.22\times10^{-5}$ & $-4.58\times10^{-3}$\\
+2 & 0.5  & $-4.67\times10^{-2}$ & $4.45\times10^{-3}$ & $-4.66\times10^{-2}$\\
+2 & 0.05 & $-4.68\times10^{-4}$ & $4.48\times10^{-5}$ & $-4.68\times10^{-3}$\\
+\bottomrule
+\end{tabular}
+\caption{Exact ground state of $H_{\rm tot}$: $2-\nu_c\propto t_c^2$ and $\rho^{cv}\propto t_c$.}
+\label{tab:ED}
+\end{table}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{r rrrr}
+\toprule
+$V=1$ & $-E_1$ & $-E_2$ (split pair) & $-E_3$ & $p_1$\\
+\midrule
+$t_c\to0$ (Eq.~\ref{eq:poles}) & $-9.1716$ & $-12$ & $-14.8284$ & $0.7286$\\
+$t_c=0.5$  & $-9.2019$ & $-12.0429,\,-12.0492$ & $-14.8878$ & $0.7319$\\
+$t_c=0.1$  & $-9.1728$ & $-12.0017,\,-12.0020$ & $-14.8308$ & $0.7287$\\
+$t_c=0.05$ & $-9.1719$ & $-12.0004,\,-12.0005$ & $-14.8290$ & $0.7286$\\
+\bottomrule
+\end{tabular}
+\caption{Exact hole poles of $G^h_{cc}$ at $V=1$ (weights $>10^{-3}$); the split pair has total weight $p_2=0.25$.}
+\label{tab:EDpoles}
+\end{table}
+
+%======================================================================
+\section{The ghost-Gutzwiller variational problem}
+\label{sec:gGut}
+
+\paragraph{Fragments and quasiparticle space.} Each orbital $I\in\{c,o,v\}$ is a fragment with $B_I$ quasiparticle
+orbitals $d_{Ia\sigma}$, $a=1,\dots,B_I$: $B_o=B_v=1$ (no local interaction) and $B_c\in\{1,3,5\}$, i.e.\ $B_c-1$ ghost orbitals on
+the core. The Gutzwiller wave function is $\ket{\Psi_G}=\prod_IP_I\ket{\psi_{qp}}$ with $\ket{\psi_{qp}}$ a Slater determinant that fills
+$N_{\rm occ}=2+(B_c-1)/2$ of the $B_c+2$ levels per spin. Its one-body density matrix is
+$\rho^{IJ}_{ab}=\braket{d\dg_{Ia\sigma}d_{Jb\sigma}}$.
+
+\paragraph{Embedding states.} The projector of each fragment is represented by a real normalized state $\Phi_I$ in the
+Fock space of the physical orbital $I$ plus $B_I$ bath orbitals per spin, restricted to the half-filled sector with
+$(1+B_I)/2$ electrons of each spin ($B_I$ odd). Writing $c_{I\sigma}$ for the physical and $d_{Ia\sigma}$ for the bath orbitals, the
+following quantities are expectation values in $\Phi_I$ (spin averaged):
+\begin{equation}
+\begin{aligned}
+D_{I,a}&=\tfrac12\sum_\sigma\braket{d\dg_{Ia\sigma}c_{I\sigma}}, &
+\Delta^{bb}_{I,ab}&=\tfrac12\sum_\sigma\braket{d\dg_{Ia\sigma}d_{Ib\sigma}},\\
+\nu_c&=\braket{n_c}, &
+K_{\gamma\delta}&=\Big\langle n_c\sum_\sigma d_{c\delta\sigma}d\dg_{c\gamma\sigma}\Big\rangle,
+\end{aligned}
+\end{equation}
+and $E^{loc}_I=\braket{H^{loc}_I}$ with $H^{loc}_c=-E_cn_c$, $H^{loc}_o=-\Delta n_o$, $H^{loc}_v=+\Delta n_v$
+($n_I=\sum_\sigma n_{I\sigma}$). From them:
+\begin{equation}
+{}^I\Delta=\mathbb I-\Delta^{bb}_I,\qquad S_I=\big[{}^I\Delta(\mathbb I-{}^I\Delta)+\varepsilon\,\mathbb I\big]^{1/2},\qquad
+R_I=S_I^{-1}D_I,\qquad C=(\mathbb I-{}^c\Delta+\varepsilon\,\mathbb I)^{-1},
+\end{equation}
+where $\varepsilon$ is a small regularizing shift ($10^{-9}$ unless stated) and $R_I\in\mathbb R^{B_I}$ is the renormalization vector,
+$c\dg_{I\sigma}\to\sum_aR_{I,a}d\dg_{Ia\sigma}$. The non-local core--valence correlation enters through the tensor
+\begin{equation}
+\bar\Theta=\tfrac12S_c^{-1}KS_c^{-1}-\nu_c\,C,\qquad u=\rho^{cv}R_v,\quad w=\rho^{co}R_o,
+\end{equation}
+which follows from evaluating $\braket{\Psi_G|n_{c\sigma}c\dg_{o\sigma'}c_{v\sigma'}|\Psi_G}$ with the Gutzwiller approximation
+(derived in \texttt{main.tex}, Eqs.~ThetaEff--ThetaEqn, and \texttt{SI.tex}, S2).
+
+\paragraph{Energy functional.} With Wick's theorem on $\ket{\psi_{qp}}$, the energy $E=\braket{\Psi_G|H_{\rm tot}|\Psi_G}$ is
+\begin{equation}
+E=\sum_IE^{loc}_I+4t_c\,R_c^T\rho^{cv}R_v-4V(2-\nu_c)\,R_v^T\rho^{vo}R_o-4V\,w^T\bar\Theta\,u .
+\label{eq:E}
+\end{equation}
+The first term is the local energy; the second is the weak hopping, renormalized by $R_c$ and $R_v$ (the factor 4 is
+two spins times the hermitian conjugate); the third is the $o$--$v$ hopping with weight $2-\nu_c$ (core holes); the last
+is the connected core--valence correlation. $E$ depends on the embedding states only through $E^{loc}_I$, $D_I$,
+$\Delta^{bb}_I$, $\nu_c$ and $K$, and on $\ket{\psi_{qp}}$ only through $\rho$.
+
+\paragraph{Variational problem.}
+\begin{equation}
+\min_{\{\Phi_I\},\ \psi_{qp}}E\qquad\text{subject to}\qquad
+\braket{\Phi_I|\Phi_I}=1,\qquad \rho^{II}={}^I\Delta(\Phi_I)\quad(I=c,o,v).
+\label{eq:problem}
+\end{equation}
+The second constraint ties the local quasiparticle density matrix to the embedding state; it has $B_I(B_I+1)/2$
+independent components per fragment ($8$ for $B_c=3$). Multipliers $\lambda_I$ of this constraint define the
+quasiparticle Hamiltonian $H_{qp}$ of Sec.~\ref{sec:spectrum}.
+
+%======================================================================
+\section{Direct minimization}
+\label{sec:direct}
+
+Problem~\eqref{eq:problem} is solved directly (\texttt{not\_imp\_gga\_cederbaum.py}), as in the direct-minimization solver
+used for the Hubbard dimer, without any self-consistency cycle.
+
+\paragraph{Variables.} The embedding states are parametrized by unnormalized real vectors $x_I$ in the half-filled sector
+($\Phi_I=x_I/|x_I|$; dimensions $36$, $4$, $4$ for $B_c=3$ and $400$, $4$, $4$ for $B_c=5$), and the Slater determinant by a
+real $(B_c+2)\times N_{\rm occ}$ matrix $X$ with $\rho=X(X^TX)^{-1}X^T$. The constraints $\rho^{II}={}^I\Delta(\Phi_I)$ are imposed as
+equalities (SLSQP, tolerance $10^{-13}$ on the energy). Everything is evaluated with sector-projected dense matrices of the
+operators above.
+
+\paragraph{Gradients.} The analytic gradient of Eq.~\eqref{eq:E} follows from the chain rule through $R_I(D_I,\Delta^{bb}_I)$,
+$\bar\Theta(\nu_c,K,{}^c\Delta)$ and $\rho(X)$:
+\begin{equation}
+dE=\sum_I4\,h_I\!\cdot\!dD_I+\sum_I2\,\Tr[\Lambda_I\,d\Delta^{bb}_I]+\alpha\,d\nu_c+\Tr[\Xi\,dK]+\sum_IdE^{loc}_I
++2\,\Tr[H_{\rm off}\,d\rho] ,
+\label{eq:dE}
+\end{equation}
+with $h_I=S_I^{-1}X_I$, where $X_I=\tfrac14\,\partial E/\partial R_I$,
+\begin{equation}
+\begin{aligned}
+X_c&=t_c\,\rho^{cv}R_v,\qquad
+X_o=-V\big[(2-\nu_c)\rho^{ov}R_v+\rho^{oc}\bar\Theta u\big],\\
+X_v&=t_c\,\rho^{vc}R_c-V\big[(2-\nu_c)\rho^{vo}R_o+\rho^{vc}\bar\Theta w\big],
+\end{aligned}
+\end{equation}
+and with the matrices $\Lambda_I=-\tfrac12\nabla^s_{{}^I\Delta}E_{\rm tot}$ (derivative of $E$ with respect to ${}^I\Delta$ at fixed
+$D_I$ through $R_I$, $S_I$ and $\bar\Theta$) given by
+\begin{equation}
+\begin{aligned}
+\Lambda_{o,v}&=G\big({}^I\Delta,\,h_IR_I^T\big),\\
+\Lambda_c&=G\big({}^c\Delta,\,h_cR_c^T-\tfrac14Y\big)-V\nu_c\,C\,(uw^T+wu^T)\,C,\\
+Y&=V\big(S_c^{-1}K\,\Pi+\Pi\,K\,S_c^{-1}\big),\quad \Pi=xy^T+yx^T,\quad x=S_c^{-1}w,\ y=S_c^{-1}u,
+\end{aligned}
+\end{equation}
+where $G(\Delta,M)=W\,[(\tilde M+\tilde M^T)\circ\omega]\,W^T$ is twice the symmetrized gradient of $\Tr[M\,S(\Delta)]$,
+$\Delta=W\,\mathrm{diag}(n_a)W^T$, $\tilde M=W^TMW$, $\omega_{ab}=(1-n_a-n_b)/(s_a+s_b)$, $s_a=\sqrt{n_a(1-n_a)+\varepsilon}$
+and $\circ$ is the elementwise product. The remaining derivatives are
+\begin{equation}
+\alpha=\frac{\partial E}{\partial\nu_c}=4V\big(R_v^T\rho^{vo}R_o+w^TCu\big),\qquad\Xi=\nabla_KE=-V\,\Pi,
+\end{equation}
+and $H_{\rm off}$ has the off-diagonal blocks
+$H^{co}=-V(\bar\Theta u)R_o^T$, $H^{cv}=t_cR_cR_v^T-V(\bar\Theta w)R_v^T$, $H^{ov}=-V(2-\nu_c)R_oR_v^T$
+(and their transposes), i.e.\ $\tfrac14\partial E/\partial\rho^{IJ}=H^{IJ}$. The Jacobian of the constraints is also analytic.
+Gradients and Jacobian are verified against finite differences in Sec.~\ref{sec:checks}.
+
+\paragraph{Starting points.} The problem is non-convex, so several random starts are run per parameter set (embedding states from
+random small Hamiltonians, $X$ from a random symmetric matrix); a point is accepted if the constraint residual is $<10^{-9}$, and
+the lowest accepted energy is kept. Seeding from the previous $t_c$ can end in a poor local minimum (Sec.~\ref{sec:energies}), so points
+are judged by their residuals and not by the energy alone.
+
+\paragraph{$B_c=5$.} Random starts rarely converge at $B_c=5$ ($436$ variables), so the search is seeded from a $B_c=3$ solution
+with the two new ghosts asleep: $\Phi_c^{(5)}=\Phi_c^{(3)}\otimes\ket{\rm ghost}$ (one extra bath orbital filled, one empty) and
+$\rho^{(5)}=\rho^{(3)}\oplus\mathrm{diag}(0,1)$. This point is feasible and has the $B_c=3$ energy; it is perturbed randomly and
+minimized. Sparse operators and caching make a $B_c=5$ run take about $2$ s.
+
+\paragraph{Quasiparticle Hamiltonian and spectrum.}\label{sec:spectrum}
+The multipliers are recovered from the stationarity of $E+\sum_k\mu_k\kappa_k$ in $\Phi$ (least squares over the constraint
+components $\kappa_k=\rho^{II}_{ab}-{}^I\Delta_{ab}$; the residual of this fit is reported as the KKT residual), with
+$\lambda_{aa}=-\mu_{aa}/2$, $\lambda_{a<b}=-\mu_{ab}/4$. The quasiparticle Hamiltonian is
+$H_{qp}=H_{\rm off}-\mathrm{blockdiag}(\lambda_I)$, whose commutator with $\rho$ vanishes at a solution (reported as
+$\|[H_{qp},\rho]\|$). The hole Green's function of the core orbital is
+\begin{equation}
+G^h_{cc}(\omega)=\sum_{n\le N_{\rm occ}}\frac{|R_c^T\phi^{(c)}_n|^2}{\omega-\epsilon_n-i\eta},
+\label{eq:Ghgg}
+\end{equation}
+with $\epsilon_n$, $\phi_n$ the eigenvalues (ascending) and eigenvectors of $H_{qp}$ and $\phi^{(c)}_n$ the core block of $\phi_n$;
+the poles $\epsilon_n$ are compared with $-E_i$ and the weights with $p_i$ [Eq.~\eqref{eq:poles}]. The total weight of $G_{cc}$ is
+$R_c^TR_c$. The constraint Jacobian is rank deficient at solutions with pure ghost occupations (eigenvalues $0$ or $1$ of
+${}^c\Delta$): some multiplier components are then undetermined (Sec.~\ref{sec:spectra}).
+
+%======================================================================
+\section{Checks}
+\label{sec:checks}
+
+\paragraph{Gradients.} The expressions of Sec.~\ref{sec:direct} were compared with central finite differences of
+Eq.~\eqref{eq:E} at random points (random $\rho$, $R_I$, ${}^I\Delta$, $\nu_c$, $K$), for $B_c=1,3,5$; maximum deviations:
+
+\begin{center}\small
+\begin{tabular}{lc}
+\toprule
+Identity & max.\ deviation\\
+\midrule
+$H^{IJ}=\tfrac14\,\partial E/\partial\rho^{IJ}$ & $8\times10^{-11}$\\
+$S_I h_I=\tfrac14\,\partial E/\partial R_I$ & $1\times10^{-10}$\\
+$G(\Delta,M)=2\nabla^s\Tr[M S(\Delta)]$ & $4\times10^{-10}$\\
+$G({}^c\Delta,h_cR_c^T)-\Lambda_c$ vs.\ $\tfrac12\nabla^s_{{}^c\Delta}E$ (fixed $R_c$) & $6\times10^{-10}$\\
+$\alpha=\partial E/\partial\nu_c$ & $2\times10^{-10}$\\
+$\Xi=\nabla_KE$ & $2\times10^{-10}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+The complete gradient of the minimization (with respect to $x_I$ and $X$) agrees with finite differences with a relative error
+that decreases with the step down to $4\times10^{-7}$ (limited by the stiffness of $S^{-1}$ for nearly pure ${}^I\Delta$), and the
+constraint Jacobian to $3\times10^{-10}$.
+
+\paragraph{Limits.} For $B_c=1$ and $B_c=3$:
+\begin{center}\small
+\begin{tabular}{rrrrr}
+\toprule
+$V$ & $t_c$ & $E-E_{\rm ref}$ ($B_c=1$) & $E-E_{\rm ref}$ ($B_c=3$) & $\nu_c$\\
+\midrule
+0 & 0.5 & $+4.4\times10^{-8}$ & $+4.4\times10^{-8}$ & $1.995893$\\
+0 & 0.1 & $+4.4\times10^{-8}$ & $+4.4\times10^{-8}$ & $1.999835$\\
+1 & 0 & $+5\times10^{-14}$ & $+3\times10^{-14}$ & $2$\\
+2 & 0 & $+3\times10^{-14}$ & $+3\times10^{-13}$ & $2$\\
+\bottomrule
+\end{tabular}
+\end{center}
+At $V=0$ the reference is the exact non-interacting energy (two lowest levels of the $3\times3$ one-body problem, times two spins; the
+$4\times10^{-8}$ is the effect of $\varepsilon=10^{-9}$); at $t_c=0$ it is $-2E_c-2\Delta$. At $t_c=0$ the energy and
+$\nu_c=2$ are exact for all $V$, but $R_c$ is not determined by the stationarity conditions ($E$ does not depend on $R_c$ at $t_c=0$),
+so $G_{cc}$ carries no information: $V$ only enters through $(2-\nu_c)$ and $u,w$, which vanish for the product state.
+
+\paragraph{Quality of the solutions.} Throughout Sec.~\ref{sec:results} the accepted $B_c=3$ and $B_c=5$ points have constraint residual
+$\lesssim10^{-9}$ (typically $10^{-14}$) and KKT residual $\le10^{-6}$ unless stated otherwise.
+
+%======================================================================
+\section{Results for $B_c=1$, $3$ and $5$}
+\label{sec:results}
+
+$B_c=3$ and $B_c=5$ mean two and four ghost orbitals on the core, $B_c=1$ none (standard Gutzwiller). The $B_c=3$ and $B_c=5$
+results are from the direct minimization above ($B_c=5$ seeded from the $B_c=3$ solution, plus random starts). The $B_c=1$ results come from converged calculations of the same problem; at $(V,t_c)=(1,0.1)$ the
+direct minimization reproduces them to eight digits in $E$ (and to the printed precision, $10^{-3}$, in the pole).
+
+\subsection{Energy and $\nu_c$}
+\label{sec:energies}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{../cederbaum_energies.png}
+  \caption{Left: $E_{\rm gGut}-E_{\rm ED}$ for $B_c=1$ (full lines), $B_c=3$ (dashed, open squares) and $B_c=5$ (dotted,
+  diamonds); colour is $V$. Middle: energy gained by the ghosts, $E_{B_c=1}-E_{B_c}$, for $B_c=3$ and $B_c=5$ (the two coincide).
+  Right: $|\nu_c-\nu_c^{\rm ED}|$. Log--log axes; $\Delta=1$, $E_c=10$.}
+  \label{fig:energies}
+\end{figure}
+
+Figure~\ref{fig:energies} shows $E_{\rm gGut}-E_{\rm ED}$ (left), the energy gained by the ghosts (middle) and $|\nu_c-\nu_c^{\rm ED}|$ (right) for $B_c=1$, $3$ and $5$
+versus $t_c$, for $V=0.5,1,2$:
+\begin{itemize}
+\item \textbf{$B_c=1$:} $E_{\rm gGut}-E_{\rm ED}\simeq1.3\times10^{-3}\,V^2t_c^2$ over the grid $t_c\in[0.025,0.5]$ (fitted exponent
+in $t_c$: $1.94$--$1.99$; $\Delta E/(V^2t_c^2)$ between $1.25$ and $1.55\times10^{-3}$), and $|\nu_c-\nu_c^{\rm ED}|\propto t_c^2$ as well.
+\item \textbf{$B_c=3$:} $E_{\rm gGut}-E_{\rm ED}\simeq9.4\times10^{-8}$ for all $(V,t_c)$, flat in both, and
+$|\nu_c-\nu_c^{\rm ED}|$ at $10^{-8}$ (up to $8\times10^{-8}$ at $t_c=0.5$). This floor is set by the regularization shift
+($2.6\times10^{-8}$ at $\varepsilon=10^{-12}$), not by the ansatz.
+\item \textbf{$B_c=5$:} at all 30 points $(V,t_c)$ of the grid the converged $B_c=5$ minimum has $E_{\rm gGut}-E_{\rm ED}$ between $8.8$ and
+$9.6\times10^{-8}$ and $E_{B_c=5}-E_{B_c=3}$ between $-2\times10^{-10}$ and $+4\times10^{-11}$; $|\nu_c-\nu_c^{\rm ED}|\le1.8\times10^{-8}$ and the KKT residual is
+$\le5.5\times10^{-6}$. Per point, 4--9 of 14 runs (8 seeded, 6 random) converged, and all converged runs agree to
+$\le10^{-9}$ in energy; of the 180 random $B_c=5$ starts, 8 converged, to the same energy. The two extra ghosts lower the energy by nothing.
+\item The ghosts therefore recover almost all of the $B_c=1$ error: the energy gain $E_{B_c=1}-E_{B_c=3}$ is $64$--$99.99\%$ of it
+($\ge97\%$ for $V=2$, $\ge89\%$ for $V=1$; the smallest fractions are at the smallest $t_c$, where the shift floor
+is comparable to the error).
+\end{itemize}
+Starting each $t_c$ from the previous solution at $V=1$ ended in a poor local minimum at six values of $t_c$ ($E-E_{\rm ED}$ up
+to $7\times10^{-2}$, KKT up to $10^{-2}$); these points were recomputed from 4--13 random starts each and now lie at
+$9.4$--$9.5\times10^{-8}$ with KKT $\le10^{-6}$.
+
+\subsection{Hole spectral function}
+\label{sec:spectra}
+
+\begin{table}[h]
+\centering\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{rr rr rr rr rr}
+\toprule
+ & & \multicolumn{2}{c}{ED main pole} & \multicolumn{2}{c}{gGut $B_c=1$} & \multicolumn{2}{c}{gGut $B_c=3$} & \multicolumn{2}{c}{gGut $B_c=5$}\\
+$V$ & $t_c$ & position & weight & position & weight & position & weight & position & weight\\
+\midrule
+0.5 & 0.1  & $-9.7649$ & 0.8972 & $-10.001$ & 0.9999 & $-9.968$ & 0.9969 & $-9.968$ & 0.9969\\
+0.5 & 0.05 & $-9.7642$ & 0.8972 & $-10.000$ & 0.9999 & $-9.965$ & 0.9968 & $-9.965$ & 0.9968\\
+1   & 0.1  & $-9.1728$ & 0.7287 & $-10.001$ & 0.9999 & $-9.872$ & 0.9882 & $-9.872$ & 0.9882\\
+1   & 0.05 & $-9.1719$ & 0.7286 & $-10.000$ & 0.9999 & $-9.869$ & 0.9881 & $-9.869$ & 0.9881\\
+2   & 0.1  & $-7.5295$ & 0.5238 & $-10.000$ & 0.9999 & $-9.503$ & 0.9547 & $-9.503$ & 0.9547\\
+2   & 0.05 & $-7.5283$ & 0.5237 & $-10.000$ & 0.9999 & $-9.501$ & 0.9546 & $-9.501$ & 0.9546\\
+\bottomrule
+\end{tabular}
+\caption{Dominant hole pole of $G_{cc}$. ED additionally has satellites at about $-12.0$ (total weight $0.10$, $0.25$, $0.40$
+for $V=0.5,1,2$, split into two lines $\sim10^{-4}$ apart) and at $-14.2$, $-14.8$, $-16.5$ (weights $0.003$, $0.02$, $0.08$);
+gGut has none (all other occupied levels have weight $<4\times10^{-6}$ at $B_c=1$, $<2\times10^{-4}$ at $B_c=3$ and
+$\le5\times10^{-6}$ at $B_c=5$).}
+\label{tab:poles}
+\end{table}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{../cederbaum_spectra.png}
+  \caption{Hole spectral function $A^h_{cc}(\omega)=\sum_n w_n\,(\eta/\pi)/[(\omega-\omega_n)^2+\eta^2]$ with
+  $\eta=0.15$: exact (solid), gGut with $B_c=1$ (blue dotted), $B_c=3$ (red dashed) and $B_c=5$ (green dotted; it lies on top of the
+  $B_c=3$ curve). Rows: $t_c=0.1$ and $0.05$; columns: $V=0.5,1,2$ ($\Delta=1$, $E_c=10$).}
+  \label{fig:spectra}
+\end{figure}
+
+\paragraph{Dependence on $B_c$.} Figure~\ref{fig:spectra} compares the exact hole spectral function with the gGut ones, and
+Tab.~\ref{tab:poles} lists the dominant poles. The $B_c=1$ pole sits at $-10.000$ for \emph{every} $V$: it is the bare core level. At
+$B_c=3$ the single pole moves with $V$ ($-9.97$, $-9.87$, $-9.50$ for $V=0.5,1,2$) in the direction of the exact main pole
+($-9.76$, $-9.17$, $-7.53$ at $t_c=0.05$), but covers only $15$--$20\%$ of the exact displacement from $-E_c$ ($0.035$ of
+$0.236$, $0.131$ of $0.828$, $0.499$ of $2.47$), and its weight ($0.997$, $0.988$, $0.955$) stays far above the exact one
+($0.90$, $0.73$, $0.52$). The ghosts bring a $V$ dependence into the pole, but no satellites. Going from $B_c=3$ to $B_c=5$ changes nothing visible: the
+$B_c=5$ pole and weight coincide with the $B_c=3$ ones to the printed digits (Tab.~\ref{tab:poles}).
+
+\paragraph{Why no satellites (interpretation; $B_c=3$ and $B_c=5$).} Of the occupied quasiparticle levels, one is the $o$-like level, one
+carries the main pole, and the remaining ones are ghost levels with essentially no core weight, $|R_c^T\phi^{(c)}|^2<10^{-6}$ for the
+one ghost level at $B_c=3$ and $\le5\times10^{-6}$ for the three at $B_c=5$ (Tab.~\ref{tab:poles}). The constraint Jacobian is rank
+deficient, so some multiplier components are undetermined, and they only move these weightless levels: rank $7$ of $8$ at $B_c=3$ and
+$13$ of $17$ at $B_c=5$ (four singular values $\lesssim2\times10^{-7}$ against $\ge3.7\times10^{-4}$ for the rest; $V=1$, $t_c=0.1$). At
+$B_c=3$ two minima with the same energy put the ghost level at $-11.27$ and $-2.81$ ($V=1$, $t_c=0.5$), and at $B_c=5$ two runs give
+$(-4.99,-4.34,-2.57)$ and $(-2.40,-2.27,-1.37)$ ($V=1$, $t_c=0.1$); in each pair the main pole and its weight are identical
+($-9.892$, $0.98635$ and $-9.872$, $0.9882$). The ghosts appear to carry the correlation through $\nu_c$ and $K$, i.e.\ through the terms
+$-V(\bar\Theta u)R_o^T$ and $-V(\bar\Theta w)R_v^T$ of $H_{qp}$, but not through $R_c$, which is all that Eq.~\eqref{eq:Ghgg} sees. This is
+an interpretation of the numbers, not a proof. Counting: $B_c=3$ has only two occupied core-like levels, so it could give at most two
+hole poles, whereas $B_c=5$ has room for three; the extra ghosts nevertheless carry no weight.
+
+%======================================================================
+\section{Conclusions}
+\label{sec:conclusion}
+
+\begin{enumerate}
+\item \textbf{Main result: gGut does not reproduce the satellite structure of the model}, which was the objective of the test. For $B_c=1$,
+$3$ and $5$, $V=0.5,1,2$ and $t_c=0.05$--$0.5$, the hole spectral function from the quasiparticle Hamiltonian, Eq.~\eqref{eq:Ghgg},
+has a single pole with weight $0.95$--$0.9999$, whereas the exact spectrum has a main pole and satellites near $-12$ and $-14$ to $-16.5$
+that carry $10\%$, $27\%$ and $48\%$ of the weight at $V=0.5,1,2$ (Fig.~\ref{fig:spectra}, Tab.~\ref{tab:poles}). The main pole itself is displaced from the exact one
+($-9.87$ vs.\ $-9.17$ at $V=1$) and, in the strongest coupling, by $2$ ($-9.50$ vs.\ $-7.53$ at $V=2$). Adding ghosts improves the ground
+state (below, Fig.~\ref{fig:energies}) but does not produce satellites.
+\item The Hamiltonian is Eq.~\eqref{eq:Htot} with a core--virtual hopping; the core--occupied hopping would not change the
+ground state ($\ket{220}$ stays exact), so it cannot fix the core quantities of the gGut problem.
+\item The energy functional~\eqref{eq:E} and its analytic gradients are verified (finite differences to $\sim10^{-10}$; the
+$V=0$ and $t_c=0$ limits).
+\item Direct minimization with $B_c=3$ (and $B_c=5$, below) finds stationary points of problem~\eqref{eq:problem} with $E-E_{\rm ED}\approx10^{-7}$
+(vs.\ $\approx1.3\times10^{-3}V^2t_c^2$ at $B_c=1$) and $\nu_c$ equal to the exact one to $\sim10^{-8}$: the ghosts improve the
+ground state.
+\item $B_c=5$ (four ghosts): the minimizer, seeded from the $B_c=3$ solution and from random starts, returns the $B_c=3$ energy, $\nu_c$
+and spectrum at all 30 grid points; the extra ghosts stay asleep.
+\item At $B_c=1$ the single pole is the bare core level for all $V$; at $B_c=3$ and $5$ it moves with $V$ but covers only $15$--$20\%$ of the exact
+displacement, and the ghost levels carry no core weight.
+\end{enumerate}
+
+\end{document}
