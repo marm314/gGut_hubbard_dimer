@@ -29,3 +29,9 @@ outside_code/
 
 # Claude Code session-local runtime state (machine/session-specific, not reproducible elsewhere)
 .claude/scheduled_tasks.lock
+
+# graphify regenerable output (the curated graph files themselves stay tracked)
+graphify-out/cache/ast/
+graphify-out/cache/last_query_stamp
+graphify-out/20*/
+graphify-out/*.sig
