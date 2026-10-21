@@ -1,5 +1,5 @@
 """Hole spectral function of the core orbital, exact (ED of H+H_t^cv) vs gGut (B_c=3, direct minimization,
-Eq. GFgGut), for t_c = 0.1 and 0.05 and V = 0.5, 1, 2 (Delta=1, E_c=10).
+Eq. GFgGut), for t_c = 0.1 and 0.05 and V = 0.5, 1, 2 (g=1, E_c=10).
 Step 1 (compute): python3 plot_cederbaum_spectra.py compute   -> cederbaum_spectra.npz
 Step 1b: python3 plot_cederbaum_spectra.py addbc1 (adds the B_c=1 loop spectra)
 Step 2 (plot):    python3 plot_cederbaum_spectra.py           -> cederbaum_spectra.png
@@ -11,8 +11,8 @@ import numpy as np
 ETA = 0.15
 VS = [0.5, 1.0, 2.0]
 TCS = [0.1, 0.05]
-FILE = "cederbaum_spectra.npz"
-PNG = "cederbaum_spectra.png"
+FILE = "cederbaum_data/cederbaum_spectra.npz"
+PNG = "cederbaum_data/cederbaum_spectra.png"
 
 
 def compute():
@@ -92,10 +92,10 @@ def plot():
             ax.set_xlim(-18.0, -5.5)
             ax.tick_params(labelsize=14)
             if i == len(TCS) - 1:
-                ax.set_xlabel(r"$\omega$", fontsize=17)
+                ax.set_xlabel(r"$\omega/g$", fontsize=17)
             if j == 0:
-                ax.set_ylabel(r"$A^h_{cc}(\omega)$", fontsize=17)
-            ax.text(0.04, 0.92, rf"$V={V:g},\ t_c={tc:g}$", transform=ax.transAxes, fontsize=14, va="top")
+                ax.set_ylabel(r"$g\,A^h_{cc}(\omega)$", fontsize=17)
+            ax.text(0.04, 0.92, rf"$V/g={V:g},\ t_c/g={tc:g}$", transform=ax.transAxes, fontsize=14, va="top")
             if i == 0 and j == 0:
                 ax.legend(fontsize=14, loc="center left")
     plt.tight_layout()

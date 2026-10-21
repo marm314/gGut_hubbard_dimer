@@ -80,7 +80,7 @@ if __name__ == "__main__":
                  for nz in NOISES for k in range(NSEEDS)]
         results = pool.map(run_bc5, tasks, chunksize=1)
     ref = {(V, tc): ed.solve(1.0, 10.0, V, tc, ht="cv") for V, tc in CASES}
-    np.save("bc5_results.npy", np.array(results, dtype=object), allow_pickle=True)
+    np.save("cederbaum_data/bc5_results.npy", np.array(results, dtype=object), allow_pickle=True)
     for V, tc in CASES:
         r = ref[(V, tc)]
         rs = sorted([x for x in results if x["V"] == V and x["tc"] == tc], key=lambda x: x["E"])

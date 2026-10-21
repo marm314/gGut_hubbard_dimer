@@ -65,5 +65,5 @@ if __name__ == "__main__":
         print(f"[{time.time()-t_start:5.0f}s] V={V} t_c={tc}: B3 dE={best3.fun-r['E0']:+.2e} | B5 dE={E5-r['E0']:+.2e} (B5-B3={E5-best3.fun:+.1e}) "
               f"nu-nu_ED={o5['nu']-r['nu_c']:+.1e} KKT={o5['kkt']:.0e} converged {len(runs)}/{2*NSEED+NRAND} (random {nrand_ok}/{NRAND}) "
               f"spread {runs[-1][0]-runs[0][0]:.1e} main pole {o5['poles'][np.argmax(o5['weights'])]:.3f} w={o5['weights'].max():.4f}", flush=True)
-    np.savez(f"cederbaum_bc5_V{V}.npz", **data)
+    np.savez(f"cederbaum_data/cederbaum_bc5_V{V}.npz", **data)
     print("saved", flush=True)

@@ -1,5 +1,5 @@
 """Energy errors of gGut (c-v hopping) vs ED for B_c=1 (fixed-point loop) and B_c=3 (direct minimization).
-compute: python3 plot_cederbaum_energies.py compute -> cederbaum_energies.npz  (V in {0.5,1,2}, t_c grid, Delta=1, E_c=10)
+compute: python3 plot_cederbaum_energies.py compute -> cederbaum_energies.npz  (V in {0.5,1,2}, t_c grid, g=1, E_c=10)
 plot:    python3 plot_cederbaum_energies.py         -> cederbaum_energies.png
 Panels: (a) E_gGut - E_ED vs t_c for B_c=1 and B_c=3; (b) energy gained by the ghosts, E(B_c=1) - E(B_c=3);
 (c) |nu_c - nu_c^ED| for both."""
@@ -9,7 +9,7 @@ import numpy as np
 
 VS = [0.5, 1.0, 2.0]
 TCS = [0.5, 0.35, 0.25, 0.2, 0.15, 0.1, 0.07, 0.05, 0.035, 0.025]
-FILE, PNG = "cederbaum_energies.npz", "cederbaum_energies.png"
+FILE, PNG = "cederbaum_data/cederbaum_energies.npz", "cederbaum_data/cederbaum_energies.png"
 
 
 def compute():
@@ -79,11 +79,11 @@ def plot():
             axs[1].loglog(tcs, e1s - e5, "D:", color=c, lw=2.4, ms=5)
             axs[2].loglog(tcs, np.maximum(np.abs(n5 - nds), 1e-12), "D:", color=c, lw=2.4, ms=5)
     for ax in axs:
-        ax.set_xlabel(r"$t_c$", fontsize=17); ax.tick_params(labelsize=14)
-    axs[0].set_ylabel(r"$E_{\rm gGut}-E_{\rm ED}$", fontsize=17)
-    axs[1].set_ylabel(r"$E_{B_c=1}-E_{B_c}$", fontsize=17)
+        ax.set_xlabel(r"$t_c/g$", fontsize=17); ax.tick_params(labelsize=14)
+    axs[0].set_ylabel(r"$(E_{\rm gGut}-E_{\rm ED})/g$", fontsize=17)
+    axs[1].set_ylabel(r"$(E_{B_c=1}-E_{B_c})/g$", fontsize=17)
     axs[2].set_ylabel(r"$|\nu_c-\nu_c^{\rm ED}|$", fontsize=17)
-    vh = [Line2D([0], [0], color=colors[V], lw=2.2, label=rf"$V={V:g}$") for V in VS]
+    vh = [Line2D([0], [0], color=colors[V], lw=2.2, label=rf"$V/g={V:g}$") for V in VS]
     sh = [Line2D([0], [0], color="k", lw=1.8, marker="o", label=r"$B_c=1$"),
           Line2D([0], [0], color="k", lw=1.8, ls="--", marker="s", mfc="none", label=r"$B_c=3$"),
           Line2D([0], [0], color="k", lw=2.4, ls=":", marker="D", ms=5, label=r"$B_c=5$")]

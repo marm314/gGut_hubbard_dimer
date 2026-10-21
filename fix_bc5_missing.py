@@ -56,7 +56,7 @@ def bc3_chain(V, tc):
 
 if __name__ == "__main__":
     for V in VS:
-        f = f"cederbaum_bc5_V{V}.npz"
+        f = f"cederbaum_data/cederbaum_bc5_V{V}.npz"
         if not os.path.exists(f): continue
         data = dict(np.load(f)); changed = False
         for tc in TCS:
