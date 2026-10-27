@@ -203,6 +203,35 @@ At $\dV=2$ the regions are:
 \end{itemize}
 The $\Ng=4$ departure from $\Ng=2$ starts at $U/t\simeq5.4$, consistent with the $\Ng=4$ energy departing from the $\Ng=2$ one for $U/t\gtrsim6.2$ (Sec.~\ref{sec:energy}).
 
+\subsection{Quasiparticle orbitals and density: the gap closing at $U_c$}
+
+Two more movies per case show the eigenorbitals of $H_{qp}$ and the quasiparticle density as $U/t$ grows ($\Ng=2,4$; $\dV=0,2$; script \texttt{make\_qp\_orbital\_videos.py}).
+They are drawn on the skeleton of the dimer: the two large circles joined left to right are the two states (the direction of $R_s$, the only qp orbital that hops to the other site), and the small outer
+circles are their ghosts (the on-site eigenvectors orthogonal to it). Occupation as in the code (\texttt{gga\_dimer.qp\_state}): the lowest $N/2$ eigenvectors returned by \texttt{eigh} are filled,
+without fractional occupation. In the orbital movies the occupied orbitals are in the first row and the empty ones in the second, each row in order of increasing energy; circle area is $|\text{amplitude}|^2$ and
+the color is the sign (signs are aligned with the previous $U/t$ by maximum overlap). In the density movies the colors give the qp density per orbital (the code's $\rho$), next to the gaps, bond order, $Z$ and double occupancy (or state density
+at $\dV=2$) as functions of $U/t$; the dashed line is $U_c/t$.
+\begin{itemize}[nosep]
+  \item $\Ng=2$, $\dV=0$: \href{run:../scan_ng2_not_imp/qp_orbitals_vs_U.mp4}{orbitals}, \href{run:../scan_ng2_not_imp/qp_density_vs_U.mp4}{density}
+  \item $\Ng=2$, $\dV=2$: \href{run:../scan_ng2_dV2_confirmed/qp_orbitals_vs_U.mp4}{orbitals}, \href{run:../scan_ng2_dV2_confirmed/qp_density_vs_U.mp4}{density}
+  \item $\Ng=4$, $\dV=0$: \href{run:../scan_ng4_not_imp/qp_orbitals_vs_U.mp4}{orbitals}, \href{run:../scan_ng4_not_imp/qp_density_vs_U.mp4}{density}
+  \item $\Ng=4$, $\dV=2$: \href{run:../scan_ng4_dV2_confirmed/qp_orbitals_vs_U.mp4}{orbitals}, \href{run:../scan_ng4_dV2_confirmed/qp_density_vs_U.mp4}{density}
+\end{itemize}
+What can be seen at the critical $U_c/t$ of the weight transfer ($6.56$ for $\dV=0$, $\simeq8.3$ for $\dV=2$):
+\begin{itemize}[nosep]
+  \item \emph{Spectral gap} (first panel of the density movies, lowest positive minus highest negative energy among the levels with weight $\ge10^{-3}$): it decreases smoothly with $U/t$
+  ($2.0$ at $U/t=0.1$, $1.14$ at $4$, $0.27$ at $6$ for $\dV=0$; $4.39$, $2.0$ (at $U/t=4$) and $1.19$ (at $6$) for $\dV=2$, $\Ng=2$) and closes at $U_c$; the next grid point has a large gap
+  ($0.03\to4.94$ between $U/t=6.5$ and $6.6$ at $\dV=0$; $0.001\to4.36$ between $8.5$ and $8.6$ at $\dV=2$, $\Ng=2$; $0.014\to3.30$ between $8.3$ and $8.4$ at $\Ng=4$), and it grows afterwards (at $U/t=10$: $8.59$ and $5.76$).
+  The qp gap (HOMO--LUMO) is zero from $U_c$ on; before $U_c$ it follows the spectral gap, except at small $U/t$, where weightless ghost levels lie inside the gap.
+  \item \emph{Orbitals}: below $U_c$ the HOMO and LUMO have amplitude on the two states and carry $A(\omega)$ weight; from $U_c$ on, the orbitals at $\epsilon=0$ have no amplitude on the states and zero weight, and sit on ghost circles only
+  (two of them at $\Ng=2$, six at $\Ng=4$). Which of these degenerate orbitals are occupied is the choice of \texttt{eigh}, so the occupied ghost orbitals change from frame to frame above $U_c$.
+  \item \emph{Bond order and double occupancy} (center--center density matrix element, per spin): both change slope at $U_c$ (at $\dV=0$: bond order $0.17$, $0.09$, $0.08$ and double occupancy $0.040$, $0.016$, $0.013$ at $U/t=6$, $6.5$, $6.6$).
+  At $\dV=2$ the bond order has a maximum ($0.40$) at $U/t\simeq4.3$ and falls to $0.08$ at $U_c$.
+  \item \emph{State density at $\dV=2$}: the densities of the two states are polarized at small $U/t$ ($0.945$ and $0.055$ at $U/t=0.1$, $0.63$ and $0.37$ at $6$) and become equal at $U_c$ ($0.50$ and $0.50$, $\Ng=2$), staying equal above.
+  \item $Z$ stays $\ge0.975$ for all $U/t$ (no collapse of the renormalization), and at $\dV=0$ the state densities are $0.50$ at all $U/t$; the colors of the ghost circles are not a signature of the transition.
+\end{itemize}
+This is a gap closing and re-opening of the gGA solution. It is not present in the exact dimer, whose spectral gap varies smoothly with $U/t$ (Sec.~\ref{sec:spectra}).
+
 %=====================================================================
 \section{Discussion: \texorpdfstring{$\dV=0$}{dV=0} vs. \texorpdfstring{$\dV=2$}{dV=2}}
 \label{sec:discussion}

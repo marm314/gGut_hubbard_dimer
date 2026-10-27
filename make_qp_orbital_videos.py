@@ -180,6 +180,14 @@ def make_orbitals(fr, title, out, fps=12):
     print("wrote", out, flush=True)
 
 
+def critical_U(ucs, sgap, thr=0.01):
+    """U/t where the spectral gap closes: linear extrapolation to zero of the last two grid points with gap > thr before the jump of the gap."""
+    jump = next(i for i in range(1, len(sgap)) if sgap[i] > sgap[i - 1] + 0.5)
+    ok = [i for i in range(jump) if sgap[i] > thr][-2:]
+    (u1, g1), (u2, g2) = (ucs[ok[0]], sgap[ok[0]]), (ucs[ok[1]], sgap[ok[1]])
+    return u2 - g2 * (u2 - u1) / (g2 - g1)
+
+
 def make_density(fr, title, out, fps=12):
     Neff = fr[0]["Neff"]; N = 2 * Neff; nocc = N // 2; xy = skeleton_xy(Neff)
     cmap = plt.cm.viridis
@@ -194,6 +202,9 @@ def make_density(fr, title, out, fps=12):
     if np.isfinite(dc).any(): axc.plot(ucs, dc, color="C4", label="double occupancy"); axc.legend(fontsize=8)
     else: axc.plot(ucs, [f["rho_star"][0, 0] for f in fr], color="C0", label="state density (site 0)"); axc.plot(ucs, [f["rho_star"][fr[0]["Neff"], fr[0]["Neff"]] for f in fr], color="C1", ls="--", label="state density (site 1)"); axc.legend(fontsize=8)
     axc.set_xlabel("U/t")
+    uc = critical_U(ucs, sgap)
+    for ax in (axa, axb, axc): ax.axvline(uc, color="crimson", ls="--", lw=1.2)
+    axa.text(uc - 0.15, axa.get_ylim()[1] * 0.50, f"$U_c/t$ = {uc:.2f} ", color="crimson", fontsize=9, va="top", ha="right")
     marks = [ax.axvline(ucs[0], color="k", lw=1) for ax in (axa, axb, axc)]
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(0, 1)); fig.colorbar(sm, ax=ax0, fraction=0.04, label="qp density per spin  rho_aa (1 = full)")
     txt = fig.suptitle("")
@@ -231,5 +242,6 @@ if __name__ == "__main__":
                  "scan_ng4_dV2_confirmed": (lambda U: f"scan_ng4_dV2_confirmed/U_{U:.1f}", "Ng=4, dV=2")}
     for d, (gd_, ttl) in cases.items():
         fr = load_frames(gd_)
-        make_orbitals(fr, ttl, f"{d}/qp_orbitals_vs_U.mp4")
+        if len(sys.argv) <= 2 or sys.argv[2] != "density":
+            make_orbitals(fr, ttl, f"{d}/qp_orbitals_vs_U.mp4")
         make_density(fr, ttl, f"{d}/qp_density_vs_U.mp4")
