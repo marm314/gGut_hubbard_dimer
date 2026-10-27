@@ -32,6 +32,9 @@ def gga_weights(d, U, dV):
     V = [gg.hybridization_V(rho, R, t, 1e-9, i) for i in range(2)]
     lamc = [gg.embedding_lambda_c(blocks[i], lam[i], V[i], R[i], 1e-9) for i in range(2)]
     imp = [gg.impurity_solve(V[i], lamc[i], ops[i]) for i in range(2)]
+    Lblk = np.zeros_like(Hqp); Lblk[:Neff, :Neff] = lam[0]; Lblk[Neff:, Neff:] = lam[1]
+    E_var = 2.0 * np.trace(rho @ (Hqp + Lblk)) + imp[0][2] + imp[1][2]       # as gga_dimer.run_gga
+    gga_weights.E_var = E_var
     return imp[0][3] + imp[1][3], imp[0][4], imp[1][4], R
 
 

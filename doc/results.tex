@@ -237,7 +237,7 @@ This is a gap closing and re-opening of the gGA solution. It is not present in t
 As $U/t$ grows (the analogue of stretching H$_2$) the weight of the ionic configurations (one site doubly occupied, H$^-$H$^+$) is expected to go to the covalent ones (one electron on each site).
 The ionic weight is $P_{\rm ion}=\langle n_{0\uparrow}n_{0\downarrow}\rangle+\langle n_{1\uparrow}n_{1\downarrow}\rangle$ and the covalent weight is $1-P_{\rm ion}$. In gGA the double occupancies and the site
 occupations come from the impurity ground state of each fragment (\texttt{gga\_dimer.impurity\_solve}) at the converged $(R,\lambda)$, as in one iteration of the loop (at $\dV=0$ they reproduce the \texttt{docc} of the solver output);
-ED uses the exact ground state ($\Delta V_{\rm ED}=2\,\Delta V_{\rm gGA}$). $\Ng=2$ and $4$ agree to $3$--$4$ digits in $P_{\rm ion}$ (checked at $\dV=2$).
+ED uses the exact ground state ($\Delta V_{\rm ED}=2\,\Delta V_{\rm gGA}$). Figure~\ref{fig:ionic} gives $P_{\rm ion}$ over the whole $U/t$ grid for both $\dV$ and both $\Ng$; the $\Ng=2$ and $\Ng=4$ curves coincide (largest difference $2\times10^{-6}$ at $\dV=0$ and $1.4\times10^{-3}$ at $\dV=2$).
 \begin{table}[H]
 \centering\small
 \begin{tabular}{r rr c rrrr}
@@ -262,6 +262,15 @@ At $\dV=0$ there is no charge transfer ($n=1$ on each site) and the ionic weight
 at intermediate $U/t$ and then drops across $U_c/t\simeq6.56$ ($0.079\to0.022$ between $U/t=6$ and $7$) to an almost purely covalent state ($0.010$ at $U/t=10$). At $\dV=2$ the state is polarized
 (H$^-$H$^+$-like, $1.89$ electrons on the favored site) and becomes covalent as $U/t$ grows; gGA is more ionic than ED up to $U/t\simeq7$ and less ionic after $U_c/t\simeq8.3$ ($n=1.021$ against $1.061$ at $U/t=8.5$).
 The density of the two states in the density movies matches the physical occupation per spin at the two points checked ($0.945$ at $U/t=0.1$ and $0.630$ at $6$ for $\dV=2$).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{../merged_Ng/ionic_weight_vs_U.png}
+  \caption{Ionic weight $P_{\rm ion}$ of the ground state vs.\ $U/t$: ED (black), gGA with $\Ng=2$ (blue) and $\Ng=4$ (orange dashed), for $\dV=0$ (left) and $\dV=2$ (right); the dotted line is $U_c/t$
+  ($6.56$ and $8.34$). At $\dV=0$ the gGA values are $2\,\texttt{docc}$ from the solver output; at $\dV=2$ they are recomputed from the impurity ground state at the converged $(R,\lambda)$ and kept only if that
+  reproduces the energy of the solution (two $\Ng=4$ points, $U/t=5.3$ and $5.5$, do not and are left out). Script: \texttt{plot\_ionic\_weight.py}.}
+  \label{fig:ionic}
+\end{figure}
 
 \paragraph{Link with the spectral weights.} The hole peaks of $A(\omega)$ are photoemission lines: an electron is removed from the dimer and the cation is left in its bonding (lowest) or
 antibonding one-electron orbital; the inner pole is the bonding final state and the outer pole the antibonding one. The intensity of each line is the overlap between that final state and the state obtained by removing an
@@ -300,6 +309,26 @@ $U/t$ & ED & from gGA $P_{\rm ion}$ & gGA peak & & ED & from gGA composition & g
 The qp weight follows the exact value for $U/t\lesssim4$ at $\dV=2$, but at $\dV=0$ the lowest peak is already too light at $U/t=2$ and loses its weight to the other two peaks as it goes to $\epsilon=0$ at $U_c$.
 Above $U_c$ the two remaining peaks are more equal than the exact ones ($0.89$ and $1.10$ at $\dV=0$, $0.96$ and $1.02$ at $\dV=2$, against $1.37$ and $0.63$, $1.22$ and $0.78$ at $U/t=10$), consistent with gGA's ground state being too covalent
 at large $U/t$. The total weight of the positive-energy peaks stays close to $2$.
+
+Figures~\ref{fig:link0} and \ref{fig:link2} show this link, one figure per $\dV$ with the same two panels: the inner weight against $U/t$ (left; ED, the exact relation applied to the ionic/covalent composition of the gGA state, and the lowest gGA peak)
+and against the ionic weight (right; ED, and for gGA its own $P_{\rm ion}$ and the weight of its lowest peak, colored by $U/t$). The gGA curves stop at $U_c$, where the lowest peak vanishes.
+At $\dV=0$ the exact inner weight is a function of $P_{\rm ion}$ only (black curve), so the ED points lie on it; the gGA points start on it at $U/t=0$ ($P_{\rm ion}=\tfrac12$, weight $2$) and then fall below it, down to a weight $0.03$ at $U_c$.
+At $\dV=2$ there is no closed relation with $P_{\rm ion}$ alone (three amplitudes), but ED still gives a curve; the gGA peak stays close to the exact weight up to $U/t\simeq4$
+($1.729$ against $1.760$ at $U/t=4$) and then falls to $0$ at $U_c$, while the exact relation with gGA's own composition stays above ED up to $U/t\simeq7.7$ and below it from there on ($1.175$ against $1.290$ at $U/t=8.3$).
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.97\textwidth]{../merged_Ng/ionic_spectral_link_dV0.png}
+  \caption{$\dV=0$ ($\Ng=2$): weight of the inner hole pole. Left: against $U/t$ for ED, for the exact relation applied to the ionic/covalent composition of the gGA state (dashed), and for the lowest gGA peak; dotted line: $U_c/t=6.56$. Right: against the
+  ionic weight; the black curve is the exact relation $1+2\sqrt{P_{\rm ion}(1-P_{\rm ion})}$, the black points are ED (one per $U/t$) and the blue points are gGA ($P_{\rm ion}$ of gGA and weight of its lowest peak, colored by $U/t$). The gGA curves
+  stop at $U_c$. Script: \texttt{plot\_ionic\_spectral\_link.py}.}
+  \label{fig:link0}
+\end{figure}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.97\textwidth]{../merged_Ng/ionic_spectral_link_dV2.png}
+  \caption{As Fig.~\ref{fig:link0} for $\dV=2$ ($U_c/t=8.34$); there is no closed exact curve against $P_{\rm ion}$ (the weight depends on three amplitudes), so the right panel shows only the ED points and the gGA points.}
+  \label{fig:link2}
+\end{figure}
 
 %=====================================================================
 \section{Discussion: \texorpdfstring{$\dV=0$}{dV=0} vs. \texorpdfstring{$\dV=2$}{dV=2}}
