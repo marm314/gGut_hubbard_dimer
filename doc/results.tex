@@ -232,6 +232,75 @@ What can be seen at the critical $U_c/t$ of the weight transfer ($6.56$ for $\dV
 \end{itemize}
 This is a gap closing and re-opening of the gGA solution. It is not present in the exact dimer, whose spectral gap varies smoothly with $U/t$ (Sec.~\ref{sec:spectra}).
 
+\subsection{Ionic and covalent weights}
+
+As $U/t$ grows (the analogue of stretching H$_2$) the weight of the ionic configurations (one site doubly occupied, H$^-$H$^+$) is expected to go to the covalent ones (one electron on each site).
+The ionic weight is $P_{\rm ion}=\langle n_{0\uparrow}n_{0\downarrow}\rangle+\langle n_{1\uparrow}n_{1\downarrow}\rangle$ and the covalent weight is $1-P_{\rm ion}$. In gGA the double occupancies and the site
+occupations come from the impurity ground state of each fragment (\texttt{gga\_dimer.impurity\_solve}) at the converged $(R,\lambda)$, as in one iteration of the loop (at $\dV=0$ they reproduce the \texttt{docc} of the solver output);
+ED uses the exact ground state ($\Delta V_{\rm ED}=2\,\Delta V_{\rm gGA}$). $\Ng=2$ and $4$ agree to $3$--$4$ digits in $P_{\rm ion}$ (checked at $\dV=2$).
+\begin{table}[H]
+\centering\small
+\begin{tabular}{r rr c rrrr}
+\toprule
+ & \multicolumn{2}{c}{$\dV=0$: $P_{\rm ion}$} & & \multicolumn{4}{c}{$\dV=2$: $P_{\rm ion}$ and electrons on the favored site}\\
+\cmidrule{2-3}\cmidrule{5-8}
+$U/t$ & ED & gGA & & $P_{\rm ion}$ ED & $P_{\rm ion}$ gGA & $n$ ED & $n$ gGA\\
+\midrule
+0.1 & 0.488 & 0.494 & & 0.896 & 0.896 & 1.890 & 1.890\\
+2   & 0.276 & 0.374 & & 0.767 & 0.781 & 1.755 & 1.764\\
+4   & 0.146 & 0.239 & & 0.469 & 0.557 & 1.446 & 1.517\\
+6   & 0.084 & 0.079 & & 0.205 & 0.310 & 1.178 & 1.261\\
+7   & 0.066 & 0.022 & & 0.138 & 0.193 & 1.113 & 1.154\\
+8.5 & 0.048 & 0.015 & & 0.083 & 0.029 & 1.061 & 1.021\\
+10  & 0.036 & 0.010 & & 0.055 & 0.017 & 1.036 & 1.011\\
+\bottomrule
+\end{tabular}
+\caption{Ionic weight (ED and gGA, $\Ng=2$) and, at $\dV=2$, electrons on the favored site ($n=1$ is purely covalent).}
+\label{tab:ionic}
+\end{table}
+At $\dV=0$ there is no charge transfer ($n=1$ on each site) and the ionic weight falls from $0.5$, i.e.\ the weight moves from ionic to covalent, in ED smoothly ($0.036$ at $U/t=10$). gGA does the same but is too ionic
+at intermediate $U/t$ and then drops across $U_c/t\simeq6.56$ ($0.079\to0.022$ between $U/t=6$ and $7$) to an almost purely covalent state ($0.010$ at $U/t=10$). At $\dV=2$ the state is polarized
+(H$^-$H$^+$-like, $1.89$ electrons on the favored site) and becomes covalent as $U/t$ grows; gGA is more ionic than ED up to $U/t\simeq7$ and less ionic after $U_c/t\simeq8.3$ ($n=1.021$ against $1.061$ at $U/t=8.5$).
+The density of the two states in the density movies matches the physical occupation per spin at the two points checked ($0.945$ at $U/t=0.1$ and $0.630$ at $6$ for $\dV=2$).
+
+\paragraph{Link with the spectral weights.} The hole peaks of $A(\omega)$ are photoemission lines: an electron is removed from the dimer and the cation is left in its bonding (lowest) or
+antibonding one-electron orbital; the inner pole is the bonding final state and the outer pole the antibonding one. The intensity of each line is the overlap between that final state and the state obtained by removing an
+electron from the ground state. At $\dV=0$ write the ground state as $\cos\theta\,|{\rm cov}\rangle+\sin\theta\,|{\rm ion}\rangle$ ($P_{\rm ion}=\sin^2\theta$). Removing an electron from the covalent part leaves the other electron on the
+\emph{other} site, with amplitude $\propto\cos\theta$; removing it from the ionic part leaves the remaining electron on the \emph{same} site, with amplitude $\propto\sin\theta$. The two contributions interfere:
+they add in the bonding orbital and subtract in the antibonding one, so that
+\[
+w_{\rm inner}=(\cos\theta+\sin\theta)^2=1+2\sqrt{P_{\rm ion}(1-P_{\rm ion})},\qquad
+w_{\rm outer}=(\cos\theta-\sin\theta)^2=1-2\sqrt{P_{\rm ion}(1-P_{\rm ion})},
+\]
+which are the exact weights $1\pm4t/\Omega$, $\Omega=\sqrt{U^2+16t^2}$ (checked numerically). For example, at $U/t=4$, $\cos\theta=0.924$ and $\sin\theta=0.383$ ($P_{\rm ion}=0.146$) give $1.707$ and $0.293$.
+The imbalance between the two lines is thus the product of the covalent and ionic amplitudes: it is maximal at $U=0$ ($P_{\rm ion}=\tfrac12$, weights $2$ and $0$, the one-electron picture) and it disappears when the state is purely covalent
+(both weights equal to $1$, the two Hubbard-band-like lines). Transferring weight from the inner to the outer pole as $U/t$ grows is the same process as transferring weight from ionic to covalent. At $\dV=2$ the same interference holds but the ionic amplitudes of the two sites differ, so the weights depend on three amplitudes
+(covalent, ionic on each site).
+
+gGA does not compute the weights this way: they come from $R$ and the quasiparticle spectrum, not from the ionic and covalent amplitudes of the ground state, so the link is only partly kept. Inserting gGA's own composition in the exact
+relation gives the inner weight that the gGA state would have; it is compared below with the weight of the lowest-energy peak of the gGA spectrum (nearest to $\epsilon=0$; $\Ng=2$):
+\begin{table}[H]
+\centering\small
+\begin{tabular}{r rrr c rrr}
+\toprule
+ & \multicolumn{3}{c}{$\dV=0$: inner weight} & & \multicolumn{3}{c}{$\dV=2$: inner weight}\\
+\cmidrule{2-4}\cmidrule{6-8}
+$U/t$ & ED & from gGA $P_{\rm ion}$ & gGA peak & & ED & from gGA composition & gGA peak\\
+\midrule
+2  & 1.894 & 1.968 & 1.717 & & 1.965 & 1.971 & 1.963\\
+4  & 1.707 & 1.852 & 1.076 & & 1.760 & 1.830 & 1.729\\
+6  & 1.555 & 1.541 & 0.266 & & 1.472 & 1.596 & 1.095\\
+8  & 1.447 & 1.256 & ---   & & 1.306 & 1.261 & 0.177\\
+10 & 1.371 & 1.203 & ---   & & 1.222 & 1.117 & ---\\
+\bottomrule
+\end{tabular}
+\caption{Weight of the inner pole: exact, predicted from the ionic/covalent composition of the gGA state, and the weight of the gGA peak nearest to $\epsilon=0$ ($\Ng=2$; ---: that peak has vanished above $U_c$).}
+\label{tab:innerweight}
+\end{table}
+The qp weight follows the exact value for $U/t\lesssim4$ at $\dV=2$, but at $\dV=0$ the lowest peak is already too light at $U/t=2$ and loses its weight to the other two peaks as it goes to $\epsilon=0$ at $U_c$.
+Above $U_c$ the two remaining peaks are more equal than the exact ones ($0.89$ and $1.10$ at $\dV=0$, $0.96$ and $1.02$ at $\dV=2$, against $1.37$ and $0.63$, $1.22$ and $0.78$ at $U/t=10$), consistent with gGA's ground state being too covalent
+at large $U/t$. The total weight of the positive-energy peaks stays close to $2$.
+
 %=====================================================================
 \section{Discussion: \texorpdfstring{$\dV=0$}{dV=0} vs. \texorpdfstring{$\dV=2$}{dV=2}}
 \label{sec:discussion}
