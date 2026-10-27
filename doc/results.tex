@@ -16,6 +16,14 @@
 \newcommand{\dg}{^{\dagger}}
 \newcommand{\Ng}{N_{g}}
 \newcommand{\dV}{\Delta V}
+\definecolor{lvA}{HTML}{1F77B4}\definecolor{lvB}{HTML}{FF7F0E}\definecolor{lvC}{HTML}{2CA02C}
+\definecolor{lvD}{HTML}{9467BD}\definecolor{lvE}{HTML}{8C564B}
+\newcommand{\lvA}{\textcolor{lvA}{\textbf{blue}}}\newcommand{\lvB}{\textcolor{lvB}{\textbf{orange}}}
+\newcommand{\lvC}{\textcolor{lvC}{\textbf{green}}}\newcommand{\lvD}{\textcolor{lvD}{\textbf{purple}}}
+\newcommand{\lvE}{\textcolor{lvE}{\textbf{brown}}}
+\newcommand{\pkA}[2]{\textcolor{lvA}{$(#1,\,#2)$}}\newcommand{\pkB}[2]{\textcolor{lvB}{$(#1,\,#2)$}}
+\newcommand{\pkC}[2]{\textcolor{lvC}{$(#1,\,#2)$}}\newcommand{\pkD}[2]{\textcolor{lvD}{$(#1,\,#2)$}}
+\newcommand{\pkE}[2]{\textcolor{lvE}{$(#1,\,#2)$}}\newcommand{\pkED}[2]{\textcolor{red}{$(#1,\,#2)$}}
 
 \title{gGA Dimer Scans: $U/t$ Dependence at $\dV=0$ and $\dV=2$\\
 \large (Ghost Multiplicities $\Ng=2$ and $\Ng=4$, Direct-Minimization Solver)}
@@ -96,30 +104,30 @@ cross-checked solutions.
   \centering
   \begin{subfigure}[b]{0.48\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{../scan_ng2_not_imp/eqp_vs_U_3d.png}
+    \includegraphics[width=\textwidth]{../scan_ng2_not_imp/eqp_vs_U_3d_pos.png}
     \caption{$\Ng=2$, $\dV=0$}
   \end{subfigure}
   \hfill
   \begin{subfigure}[b]{0.48\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{../scan_ng2_dV2_confirmed/eqp_vs_U_3d.png}
+    \includegraphics[width=\textwidth]{../scan_ng2_dV2_confirmed/eqp_vs_U_3d_pos.png}
     \caption{$\Ng=2$, $\dV=2$}
   \end{subfigure}
 
   \medskip
   \begin{subfigure}[b]{0.48\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{../scan_ng4_not_imp/eqp_vs_U_3d.png}
+    \includegraphics[width=\textwidth]{../scan_ng4_not_imp/eqp_vs_U_3d_pos.png}
     \caption{$\Ng=4$, $\dV=0$}
   \end{subfigure}
   \hfill
   \begin{subfigure}[b]{0.48\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{../scan_ng4_dV2_confirmed/eqp_vs_U_3d.png}
+    \includegraphics[width=\textwidth]{../scan_ng4_dV2_confirmed/eqp_vs_U_3d_pos.png}
     \caption{$\Ng=4$, $\dV=2$}
   \end{subfigure}
   \caption{gGA spectral function $A(\omega)$ (filled) vs.\ ED (red) as a function of
-  $U/t$ for $\Ng=2$ (top) and $\Ng=4$ (bottom), at $\dV=0$ (left) and $\dV=2$ (right).}
+  $U/t$ for $\Ng=2$ (top) and $\Ng=4$ (bottom), at $\dV=0$ (left) and $\dV=2$ (right). Only $\omega\ge0$ is shown: $A(\omega)=A(-\omega)$ in both gGA and ED.}
   \label{fig:3d}
 \end{figure}
 
@@ -146,6 +154,54 @@ between $U/t=0.6$ and $0.7$ (Sec.~\ref{sec:discussion}).
 \end{itemize}
 \noindent (Links open the movie with the PDF viewer's associated application,
 if the viewer supports \texttt{run:} links.)
+
+\paragraph{Quasiparticle-weight movies.}
+The same scans are shown level by level: for each $U/t$ the eigenvalues $\epsilon^{qp}_n$ of $H_{qp}$ with the weight carried by each level
+(summed over both sites and spins, so the total weight is that of $A(\omega)$), and the ED poles as red open circles (linear and logarithmic scales;
+script \texttt{make\_qp\_weights\_video.py}). A level with weight $\ge10^{-3}$ is a peak (levels without weight are light gray). At $\Ng=2$ a peak keeps its color along $U/t$ (consecutive $U/t$ points are matched by closeness in energy and weight),
+and the colors \lvA, \lvB, \lvC\ follow the order of increasing energy at the $U/t$ where all the peaks coexist. At $\Ng=4$ a peak that corresponds to an $\Ng=2$ peak (matched at the same $U/t$) has its color,
+so the same physical peak has the same color at $\Ng=2$ and $4$; the extra $\Ng=4$ peaks are \lvD\ and \lvE, in order of increasing energy.
+\begin{itemize}[nosep]
+  \item $\Ng=2$, $\dV=0$: \href{run:../scan_ng2_not_imp/qp_weights_vs_U.mp4}{quasiparticle-weight movie}
+  \item $\Ng=2$, $\dV=2$: \href{run:../scan_ng2_dV2_confirmed/qp_weights_vs_U.mp4}{quasiparticle-weight movie}
+  \item $\Ng=4$, $\dV=0$: \href{run:../scan_ng4_not_imp/qp_weights_vs_U.mp4}{quasiparticle-weight movie}
+  \item $\Ng=4$, $\dV=2$: \href{run:../scan_ng4_dV2_confirmed/qp_weights_vs_U.mp4}{quasiparticle-weight movie}
+\end{itemize}
+\paragraph{Weight transfer.} Positive-energy side. Each peak is written as (weight, energy) in the color of its peak in the movies (weights summed over sites and spins, total $2.0$; ED poles in red).
+At $\dV=0$ the peaks are the blue one, which carries almost all the weight at small $U/t$, and the orange and green ones, which are born at $U/t\simeq0.5$ near $\epsilon=3$. As $U/t$ grows the blue peak loses weight to
+the orange and green ones while its energy goes to zero, and both vanish at a critical $U_c/t$ ($\Ng=2$ and $4$ agree; ED has no such event; the values come from a linear extrapolation of the last grid points);
+the orange and green peaks continue, with the same colors, above $U_c$.
+\begin{itemize}[nosep]
+  \item $\dV=0$, $U/t\lesssim1$ ($U/t=1$): \pkA{1.92}{0.97} carries $\ge96\%$; \pkB{0.02}{2.99} and \pkC{0.06}{3.02} hold the rest. ED: \pkED{1.97}{1.06}, \pkED{0.03}{3.06}.
+  \item $\dV=0$, $1\lesssim U/t<U_c/t\simeq6.56$: the blue peak loses its weight and the other two gain it.
+  $U/t=4$: \pkA{1.08}{0.57}, \pkB{0.27}{2.83}, \pkC{0.66}{3.26}; $U/t=6$: \pkA{0.27}{0.14}, \pkB{0.66}{2.56}, \pkC{1.05}{3.41}; $U/t=6.5$: \pkA{0.03}{0.02}, \pkB{0.80}{2.46}, \pkC{1.13}{3.43}.
+  ED at $U/t=4$: \pkED{1.71}{1.83}, \pkED{0.29}{3.83}.
+  \item $\dV=0$, $U/t>U_c/t$: only the orange and green peaks. $U/t=7$: \pkB{0.83}{2.69}, \pkC{1.13}{3.67}; $U/t=10$: \pkB{0.89}{4.29}, \pkC{1.10}{5.29}. ED at $U/t=10$: \pkED{1.37}{4.39}, \pkED{0.63}{6.39}.
+\end{itemize}
+At $\dV=2$ the blue peak is again the main one; the orange peak is the middle one (born at $U/t\simeq1.5$--$3$) and the green one the upper one (born at $U/t\simeq1$).
+\begin{itemize}[nosep]
+  \item $\dV=2$, $U/t\lesssim3$ ($U/t=3$): \pkA{1.89}{1.25}, \pkB{0.015}{3.59}, \pkC{0.10}{5.99}; ED: \pkED{1.89}{1.34}, \pkED{0.11}{5.81}.
+  \item $\dV=2$, $3\lesssim U/t<U_c/t\simeq8.3$: the blue peak loses weight and the other two gain it.
+  $U/t=5$: \pkA{1.46}{0.81}, \pkB{0.18}{2.57}, \pkC{0.36}{5.90}; $U/t=6$: \pkA{1.10}{0.59}, \pkB{0.37}{2.33}, \pkC{0.53}{5.83}; $U/t=8$: \pkA{0.18}{0.09}, \pkB{0.84}{2.08}, \pkC{0.95}{5.28}.
+  The blue peak has weight $0.02$ at $U/t=8.3$ and $10^{-3}$ at $8.5$ (it stays at $\epsilon\lesssim10^{-3}$).
+  \item $\dV=2$, $U/t>U_c/t$ ($\Ng=2$): only the orange and green peaks. $U/t=9$: \pkB{0.94}{2.38}, \pkC{1.02}{5.66}; $U/t=10$: \pkB{0.96}{2.88}, \pkC{1.02}{6.36}. ED at $U/t=10$: \pkED{1.22}{3.21}, \pkED{0.78}{7.68}.
+\end{itemize}
+Above $U_c$ the two weights approach each other but are not equal up to $U/t=10$; gGA is closer to equal sharing than ED, i.e.\ it puts too much weight on the upper level.
+For $\Ng=4$ there are four more levels, near $\epsilon=0$ and without weight at small $U/t$ (colors as in the movies).
+At $\dV=0$ the peaks are those of $\Ng=2$ (same colors and values, differences $\le2\times10^{-3}$) for all $U/t$, including $U_c/t$: the extra levels never carry weight.
+At $\dV=2$ the regions are:
+\begin{itemize}[nosep]
+  \item $\dV=2$, $U/t\lesssim5.3$: as $\Ng=2$ (the smallest peaks differ by $\lesssim6\times10^{-3}$ in weight).
+  \item $\dV=2$, $5.4\lesssim U/t<7.5$: two extra peaks appear, purple and brown, and come and go with $U/t$. $U/t=6$: \pkA{1.09}{0.59}, \pkB{0.34}{2.27}, \pkD{0.05}{3.01}, \pkE{0.03}{3.26}, \pkC{0.50}{6.15},
+  against \pkA{1.10}{0.59}, \pkB{0.37}{2.33}, \pkC{0.53}{5.83} at $\Ng=2$; $U/t=7$ (brown below the weight threshold): \pkA{0.66}{0.35}, \pkB{0.53}{2.15}, \pkD{0.16}{2.56}, \pkC{0.66}{6.31}, against \pkA{0.66}{0.35}, \pkB{0.60}{2.18}, \pkC{0.73}{5.65}.
+  The purple peak takes its weight from the orange and green ones, and the blue one is not changed.
+  \item $\dV=2$, $U/t=7.5\to7.6$: the solution changes discontinuously (five peaks to four, the energy of the green peak jumps from $6.38$ to $5.48$).
+  \item $\dV=2$, $7.6\lesssim U/t<U_c/t\simeq8.3$: five peaks; $U/t=8$: \pkA{0.17}{0.09}, \pkD{0.38}{1.79}, \pkB{0.43}{2.08}, \pkE{0.18}{3.06}, \pkC{0.85}{6.44}. The blue peak vanishes at about $U_c$ ($0.014$ at $U/t=8.3$), as at $\Ng=2$.
+  \item $\dV=2$, $U/t>U_c/t$: four peaks. $U/t=9$: \pkD{0.35}{2.00}, \pkB{0.46}{2.29}, \pkE{0.27}{3.22}, \pkC{0.92}{6.82}; $U/t=10$: \pkD{0.34}{2.53}, \pkB{0.58}{2.85}, \pkE{0.15}{4.14}, \pkC{0.93}{7.32},
+  against \pkB{0.96}{2.88}, \pkC{1.02}{6.36} at $\Ng=2$ and \pkED{1.22}{3.21}, \pkED{0.78}{7.68} in ED. The weight of the orange peak of $\Ng=2$ ($0.96$) is shared by the orange peak and the two extra ones ($1.07$ in total), and the green peak moves toward ED
+  ($7.32$ against $6.36$ at $\Ng=2$; ED $7.68$) and loses weight ($0.93$, ED $0.78$).
+\end{itemize}
+The $\Ng=4$ departure from $\Ng=2$ starts at $U/t\simeq5.4$, consistent with the $\Ng=4$ energy departing from the $\Ng=2$ one for $U/t\gtrsim6.2$ (Sec.~\ref{sec:energy}).
 
 %=====================================================================
 \section{Discussion: \texorpdfstring{$\dV=0$}{dV=0} vs. \texorpdfstring{$\dV=2$}{dV=2}}

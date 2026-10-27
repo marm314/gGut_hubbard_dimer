@@ -69,9 +69,10 @@ FS_LABEL, FS_TICK, FS_LEGEND = 17, 14, 15  # large fonts: the plots are shrunk i
 SHOW_TITLE = False  # report figures carry no in-plot title (identified by the caption instead)
 
 
-def ridge_plot(get_dir_for_U, Us, title, png_path, ed_fn=ed_Aomega):
+def ridge_plot(get_dir_for_U, Us, title, png_path, ed_fn=ed_Aomega, omega_min=-OMEGA_MAX):
     """ed_fn(omega, U, t, eta): the exact-ED A(omega) overlay; defaults to the Delta V=0
-    closed form above, but e.g. plot_eqp_3d_dV2.py passes a Delta V=2 one instead."""
+    closed form above, but e.g. plot_eqp_3d_dV2.py passes a Delta V=2 one instead.
+    omega_min=0 draws only the non-negative energies (A(omega) is symmetric about 0)."""
     fig = plt.figure(figsize=(8.0, 6.8))
     ax = fig.add_subplot(111, projection="3d")
     cmap = plt.cm.viridis
@@ -81,6 +82,8 @@ def ridge_plot(get_dir_for_U, Us, title, png_path, ed_fn=ed_Aomega):
         R, lam = load_R_lambda(d)
         omega_grid, A = g.compute_spectral_function(R[0], R[1], lam[0], lam[1], t, OMEGA_MAX, ETA, DOMEGA)
         A_ed = ed_fn(omega_grid, U, t, ETA)
+        keep = omega_grid >= omega_min - 1e-12
+        omega_grid, A, A_ed = omega_grid[keep], A[keep], A_ed[keep]
         zmax = max(zmax, A.max(), A_ed.max())
 
         color = cmap(k / max(1, len(Us) - 1))
@@ -89,7 +92,7 @@ def ridge_plot(get_dir_for_U, Us, title, png_path, ed_fn=ed_Aomega):
         ax.add_collection3d(poly, zs=U, zdir="y")
         ax.plot(omega_grid, [U] * len(omega_grid), A_ed, color="red", lw=0.9, alpha=0.9)
 
-    ax.set_xlim(-OMEGA_MAX, OMEGA_MAX)
+    ax.set_xlim(omega_min, OMEGA_MAX)
     ax.set_ylim(min(Us), max(Us))
     ax.set_zlim(0, 1.08 * zmax)
     ax.set_xlabel("quasiparticle energy / t", fontsize=FS_LABEL, labelpad=12)
