@@ -35,3 +35,13 @@ graphify-out/cache/ast/
 graphify-out/cache/last_query_stamp
 graphify-out/20*/
 graphify-out/*.sig
+
+# LaTeX build artifacts and tex backups (doc/)
+doc/cederbaum.aux
+doc/cederbaum.out
+doc/excited_phi_cederbaum.aux
+doc/excited_phi_cederbaum.out
+doc/results.aux
+doc/results.out
+doc/results.toc
+doc/*.tex.bak

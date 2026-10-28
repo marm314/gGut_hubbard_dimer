@@ -64,14 +64,51 @@ then adjust the multipliers to satisfy the constraints. It is equivalent to the 
 %======================================================================
 \section{Numerical check}
 
-At $V=1$, $t_c=0.5$, $B_c=3$ ($\Delta=1$, $E_c=10$), with the multipliers recovered from the direct-minimization point:
-\begin{itemize}
-\item $\Phi_c$ is an exact eigenstate of $H^c_{\rm imp}$ (overlap$^2=1.000000$), as Eq.~\eqref{eq:eig} requires.
-\item It is the $15$th eigenstate (index $14$): $\braket{\Phi_c|H^c_{\rm imp}|\Phi_c}=-22.04$ against a lowest eigenvalue of $-42.58$.
-\item $\Phi_o$ and $\Phi_v$ are ground states of their embedding Hamiltonians.
-\item The bath levels of $\lambda^c_c$ are $-11.27$, $-2.23$ and $+2.24$ (eigenvalues of the $3\times3$ matrix); the core has ${}^c\Delta$
-eigenvalues $1.2\times10^{-5}$, $0.9979$ and $1.0000$.
-\end{itemize}
+At $t_c=0.5$, $B_c=3$ ($\Delta=1$, $E_c=10$), for the two couplings $V/g=1/\sqrt2=0.707$ and $\sqrt2=1.414$ ($\rho/\Omega=V/(\sqrt2g)=0.5$ and $1.0$, the ratios of Kockl\"auner and Golze;
+see \texttt{cederbaum.tex}), with the multipliers recovered from the direct-minimization point (shift $\varepsilon=10^{-9}$;
+\texttt{excited\_check\_golze.py}):
+\begin{center}\footnotesize
+\begin{tabular}{p{7.6cm} rr}
+\toprule
+ & $V/g=0.707$ & $V/g=1.414$\\
+\midrule
+overlap$^2$ of $\Phi_c$ with the selected eigenstate of $H^c_{\rm imp}$ & $1.000000$ & $1.000000$\\
+index of that eigenstate (0 = lowest; $H^c_{\rm imp}$ has $36$ states) & $3$ & $5$\\
+$\braket{\Phi_c|H^c_{\rm imp}|\Phi_c}$ & $-22.04$ & $-22.04$\\
+lowest eigenvalue of $H^c_{\rm imp}$ & $-24.32$ & $-30.19$\\
+index of $\Phi_o$, $\Phi_v$ in their $H_{\rm imp}$ ($4$ states each) & $0$, $0$ & $0$, $0$\\
+bath levels of $\lambda^c_c$ (eigenvalues of the $3\times3$ matrix) & $-2.14$, $-1.73$, $+1.73$ & $-5.07$, $-3.00$, $+3.00$\\
+eigenvalues of ${}^c\Delta$ & $6.0\times10^{-6}$, $0.9979$, $1.0000$ & $2.5\times10^{-5}$, $0.9978$, $1.0000$\\
+\bottomrule
+\end{tabular}
+\end{center}
+That is: $\Phi_c$ is an exact eigenstate of $H^c_{\rm imp}$, as Eq.~\eqref{eq:eig} requires; it is not the lowest one (the fourth and the sixth of the $36$ eigenstates, with the
+lowest eigenvalue $2.3$ and $8.1$ below it), whereas $\Phi_o$ and $\Phi_v$ are ground states. The dimensions are those of the half-filled sector $N_\uparrow=N_\downarrow=(1+B)/2$ of the fragment (physical orbital plus $B$ bath orbitals per spin):
+for the core, $4$ orbitals per spin with $2$ electrons of each spin, $\binom42^2=36$; for $o$ and $v$, $2$ orbitals per spin with $1$ electron of each spin, $\binom21^2=4$.
+
+\paragraph{How the size of $H^I_{\rm imp}$ is obtained.} The embedding problem of fragment $I$ has the physical orbital $c$ and $B_I$ bath orbitals $d_a$ per spin
+(the bath orbitals include the ghosts: $B_c=3$ is one bath level plus two ghosts), i.e.\ $M=B_I+1$ orbitals per spin and $2M$ spin orbitals. The full Fock space has dimension $2^{2M}$.
+The Hamiltonian $H^I_{\rm imp}$ conserves $N_\uparrow$ and $N_\downarrow$, and the code (\texttt{Fragment} in \texttt{gga\_cederbaum.py}) projects it on the sector with
+$N_\uparrow=N_\downarrow=M/2$ (half filling, which requires $B_I$ odd). Spin up and spin down are independent in the counting, so
+\begin{equation}
+\dim H^I_{\rm imp}=\binom{M}{M/2}^2,\qquad M=B_I+1 .
+\end{equation}
+The operators are built in the full Fock space with sparse Jordan--Wigner matrices and then restricted to this sector (stored dense), and the dimension printed above is the shape of the projected
+\texttt{Hloc}. The values are
+\begin{center}\small
+\begin{tabular}{c c c c}
+\toprule
+$B_I$ & $M$ & full Fock space $2^{2M}$ & sector $N_\uparrow=N_\downarrow=M/2$\\
+\midrule
+1 & 2 & $16$ & $4$\\
+3 & 4 & $256$ & $36$\\
+5 & 6 & $4096$ & $400$\\
+\bottomrule
+\end{tabular}
+\end{center}
+so $B_c=3$ and $B_c=5$ give $36$ and $400$ states for the core, and $4$ for each of $o$ and $v$ ($B_o=B_v=1$). The number of states grows much faster than the number of ghosts, but
+the solution only needs the one eigenstate $\Phi_I$ that satisfies the constraint, not all of them. The index of the excited state is not a property of the model alone: it
+depends on the multipliers recovered at the point, and these contain one direction that the stationarity conditions leave undetermined (Sec.~\emph{Absence of satellites} of \texttt{cederbaum.tex}).
 
 %======================================================================
 \section{Why it can be excited}
@@ -83,7 +120,7 @@ eigenvalues $1.2\times10^{-5}$, $0.9979$ and $1.0000$.
 quasiparticle state. With one bath electron per spin, this fixes \emph{which} bath orbital is filled: the one that corresponds to the empty
 quasiparticle orbital. The multipliers $\lambda_I$ are then adjusted so that this state is stationary.
 \item \textbf{That need not be the lowest state at the recovered multipliers.} At these multipliers the lowest state of $H^c_{\rm imp}$ would put the
-bath electron in the $-11.27$ bath level (and, with it, change the core occupation), which contradicts the constraint satisfied by $\Phi_c$. The state that
+bath electron in the lowest bath level ($-2.14$ and $-5.07$ at the two couplings) (and, with it, change the core occupation), which contradicts the constraint satisfied by $\Phi_c$. The state that
 satisfies the constraint is a different, higher eigenstate.
 \item \textbf{Non-convexity.} The constraint is quadratic in $\Phi$ and the energy functional is nonlinear in the quantities extracted from $\Phi$
 (through $R_I=S^{-1}D$ and $\bar\Theta$), so the problem is not convex and a duality gap is possible: the minimum of $\mathcal L$ over $\Phi$ at the
@@ -95,35 +132,42 @@ Points 1 and 2 follow directly from the equations; points 3 and 4 are my reading
 \section{Consequences for the impurity loop}
 
 \paragraph{Lowest-state selection.} Started from the full direct-minimization state (\texttt{state0}), one loop iteration already moves away: the residual
-$\|\rho^{II}-(1-\Delta^{bb}_I)\|$ is $1.4$, and the loop collapses to $\nu_c\approx0$ (shift $\varepsilon=10^{-9}$).
+$\|\rho^{II}-(1-\Delta^{bb}_I)\|$ is $1.41$ at both couplings (shift $\varepsilon=10^{-9}$), and after 300 iterations no mixing ($1$, $0.5$, $0.2$) has converged. The loop ends either in
+the $B_c=1$-like state ($\nu_c=1.9959$, single pole at $-10.02$, $E$ higher than the direct minimum by $1.6\times10^{-4}$ and $6.4\times10^{-4}$) or in a state with $R_c=0$.
 
 \paragraph{Maximum-overlap (MOM-like) selection.} In each embedding solve, the eigenstate with the largest overlap with the previous
 $\Phi_I$ is taken instead of the lowest one (\texttt{follow=True}; degenerate subspaces are projected). One step from the direct-minimization
-state then gives a residual of $7.6\times10^{-3}$ (instead of $1.4$), but it is still not a fixed point at $\varepsilon=10^{-9}$, for two reasons: (i) a
-filled ghost orbital has ${}^c\Delta$ eigenvalue $1.0000$, so $S_c\sim\sqrt\varepsilon$ and $\lambda^c$ is ill conditioned: a change of $\rho$ of
-$2\times10^{-6}$ changes $\lambda^c$ by $\approx3$; (ii) the followed state sits in a dense stretch of the embedding spectrum (level spacing $\lesssim2\times10^{-3}$).
-After that the loop drifts to the $B_c=1$-like state or to the trivial product state ($E=-22$, $R_c=0$).
+state then gives a residual of $6.1\times10^{-2}$ ($V/g=0.707$) and $2.2\times10^{-3}$ ($V/g=1.414$), instead of $1.41$, but it is still not a fixed point at $\varepsilon=10^{-9}$.
+A filled ghost orbital has ${}^c\Delta$ eigenvalue $1.0000$, so $S_c\sim\sqrt\varepsilon$ and $\lambda^c$, obtained from $S_c^{-1}$, is ill conditioned
+for small $\varepsilon$ (this is my reading of the mechanism). The followed state is not in a dense part of the spectrum here: its nearest neighbours are $1.1$ and $0.9$
+($V/g=0.707$), $2.0$ and $0.14$ ($V/g=1.414$) away, apart from degenerate pairs at lower energy, which are projected.
+After that the loop drifts to the $B_c=1$-like state (at $V/g=1.414$, mixing $0.2$ stays there, $E$ higher by $6.4\times10^{-4}$, pole $-10.01$) or to the trivial product state ($E=-22$, $R_c=0$).
 
-\paragraph{Dependence on the shift} (300 iterations, started from the direct-minimization state):
+\paragraph{Dependence on the shift} (300 iterations, mixings $1.0$, $0.5$, $0.2$, started from the direct-minimization state; ``none'' means no convergence to $10^{-10}$ in the residual):
 \begin{center}\footnotesize
-\begin{tabular}{rp{3.6cm}p{8.2cm}}
+\begin{tabular}{rp{2.6cm}p{4.6cm}p{4.6cm}}
 \toprule
-shift $\varepsilon$ & lowest-state selection & max-overlap selection\\
+shift $\varepsilon$ & lowest-state selection & max-overlap, $V/g=0.707$ & max-overlap, $V/g=1.414$\\
 \midrule
-$10^{-9}$ & no convergence & no convergence or product state\\
-$10^{-8}$, $10^{-7}$ & no convergence & some mixings converge, to the product state ($R_c=0$)\\
-$10^{-6}$ & no convergence & no convergence\\
-$10^{-5}$ & no convergence (residual $2.4$) & \textbf{converges} (residual $\sim10^{-13}$) to a nearby minimum, $E$ higher by $1.0\times10^{-4}$\\
+$10^{-9}$ & none & none (ends in the $B_c=1$-like or the product state) & none\\
+$10^{-8}$ & none & mixings $0.5$, $0.2$ converge to the product state ($R_c=0$) & same\\
+$10^{-7}$ & none & none & mixings $0.5$, $0.2$ converge to the product state\\
+$10^{-6}$ & none & \textbf{mixings $1.0$, $0.2$ converge} (residual $\le3\times10^{-12}$) to a nearby minimum, $E$ higher by $1.2\times10^{-4}$, pole $-10.017$ & mixings $0.5$, $0.2$ converge to the product state\\
+$10^{-5}$ & none & none (stays at the $B_c=1$-like state, residual $0.7$--$1.4$) & \textbf{mixing $0.2$ converges} (residual $6\times10^{-13}$) to a nearby minimum, $E$ higher by $3.5\times10^{-4}$, pole $-9.970$\\
+$10^{-4}$ & none & none (residual $4\times10^{-7}$--$2\times10^{-6}$ after 300 iterations, $E$ higher by $0.9$--$4\times10^{-6}$) & none\\
+$10^{-3}$ & none & mixing $0.2$ converges to the product state & none (product state)\\
 \bottomrule
 \end{tabular}
 \end{center}
-The shifts $10^{-4}$ and $10^{-3}$ were not completed. At $\varepsilon=10^{-5}$ the loop point is itself a constrained local minimum (restarting
-the direct minimizer from it lowers $E$ by $<10^{-12}$), with the same single pole in $G^h_{cc}$.
+The shift also changes the problem, so the direct-minimization energy used as reference changes with $\varepsilon$ (at $10^{-4}$ and $10^{-3}$ it is $-22.0412$ and $-22.0195$ at $V/g=0.707$).
+At the converged nearby minima ($\varepsilon=10^{-6}$, $V/g=0.707$, mixing $0.2$, and $\varepsilon=10^{-5}$, $V/g=1.414$, mixing $0.2$) restarting the direct minimizer from the loop point lowers $E$ by
+$4\times10^{-11}$ and $4\times10^{-11}$ (by $\le10^{-14}$ for mixing $1.0$ at $V/g=0.707$): the loop point is itself a constrained local minimum, with the same single pole in $G^h_{cc}$.
 
-\paragraph{Conclusion.} The impurity loop reproduces a solution of this kind only with maximum-overlap state selection and a large regularization shift; and then
-it finds a different, higher local minimum. The direct minimization needs no choice of eigenstate and is the more reliable solver.
+\paragraph{Conclusion.} The impurity loop reproduces a solution of this kind only with maximum-overlap state selection and a large regularization shift ($10^{-6}$ at $\rho/\Omega=0.5$, $10^{-5}$ at $\rho/\Omega=1.0$; the other shifts give no
+convergence or the trivial product state); and then it finds a different, higher local minimum. The direct minimization needs no choice of eigenstate and is the more reliable solver.
 
-\paragraph{Scope.} The numbers are for $V=1$, $t_c=0.5$, $B_c=3$ (shift sweep: $V=1$, $t_c=0.5$). The explanation in Sec.~3, points 3--4, is an interpretation of
+\paragraph{Scope.} The numbers are for $V/g=0.707$ and $1.414$, $t_c=0.5$, $B_c=3$ (\texttt{excited\_check\_golze.py} and \texttt{shift\_sweep.py}; logs in \texttt{cederbaum\_data/logs}). Which mixing converges depends on the starting point and on the one direct-minimization solution found
+(best of $5$ random starts, $30$ at $\varepsilon=10^{-3}$, $V/g=0.707$), so the table is a sample, not a map of all behaviour. The explanation in Sec.~4, points 3--4, is an interpretation of
 those numbers.
 
 \end{document}

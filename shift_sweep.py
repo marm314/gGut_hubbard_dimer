@@ -1,15 +1,16 @@
 """Does the impurity loop (gga_cederbaum.run) stay at / converge near the direct-minimization solution?
-Sweep the regularization shift; for each shift: direct minimization (best of NS starts), then the loop started
+Usage: python3 shift_sweep.py V [shifts...]. Sweep the regularization shift; for each shift: direct minimization (best of NS starts), then the loop started
 from the full direct state (state0) with follow in {False, True} and mix in {1.0, 0.5, 0.2}. For converged loop
 points the direct minimizer is restarted from the loop point to see whether the energy can still decrease."""
+import os
 import sys
 import numpy as np
 import gga_cederbaum as g
 import not_imp_gga_cederbaum as N
 
-V, tc, Bc = 1.0, 0.5, 3
-SHIFTS = [float(x) for x in sys.argv[1:]] or [1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3]
-NS, NIT = 5, 300
+V, tc, Bc = float(sys.argv[1]), 0.5, 3
+SHIFTS = [float(x) for x in sys.argv[2:]] or [1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3]
+NS, NIT = int(os.environ.get("NS", 5)), 300
 
 for shift in SHIFTS:
     m = g.Model(1.0, 10.0, V, tc, Bc, shift, "cv"); P = N.Problem(m); rng = np.random.default_rng(0)

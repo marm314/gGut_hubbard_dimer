@@ -1,5 +1,5 @@
 """Energy errors of gGut (c-v hopping) vs ED for B_c=1 (fixed-point loop) and B_c=3 (direct minimization).
-compute: python3 plot_cederbaum_energies.py compute -> cederbaum_energies.npz  (V in {0.5,1,2}, t_c grid, g=1, E_c=10)
+compute: python3 plot_cederbaum_energies.py compute V -> cederbaum_energies_V<V>.npz  (V = 1/sqrt2, sqrt2; t_c grid, g=1, E_c=10)
 plot:    python3 plot_cederbaum_energies.py         -> cederbaum_energies.png
 Panels: (a) E_gGut - E_ED vs t_c for B_c=1 and B_c=3; (b) energy gained by the ghosts, E(B_c=1) - E(B_c=3);
 (c) |nu_c - nu_c^ED| for both."""
@@ -7,18 +7,29 @@ import os
 import sys
 import numpy as np
 
-VS = [0.5, 1.0, 2.0]
+VS = [0.7071067811865476, 1.4142135623730951]       # V/g = 1/sqrt2, sqrt2: rho/Omega = V/(sqrt2 g) = 0.5, 1.0 (Golze ratios)
 TCS = [0.5, 0.35, 0.25, 0.2, 0.15, 0.1, 0.07, 0.05, 0.035, 0.025]
 FILE, PNG = "cederbaum_data/cederbaum_energies.npz", "cederbaum_data/cederbaum_energies.png"
 
 
-def compute():
+def fileV(V):
+    return f"cederbaum_data/cederbaum_energies_V{V}.npz"
+
+
+def load_all():
+    d = {}
+    for V in VS:
+        d.update(dict(np.load(fileV(V))))
+    return d
+
+
+def compute(Vsel):
     import gga_cederbaum as g
     import exact_cederbaum as ed
     import not_imp_gga_cederbaum as N
     rng = np.random.default_rng(5)
     out = {}
-    for V in VS:
+    for V in [Vsel]:
         zprev = None
         for tc in TCS:
             r = ed.solve(1.0, 10.0, V, tc, ht="cv")
@@ -41,14 +52,14 @@ def compute():
                                  float(s1["converged"]), np.abs(P.constraints(best.x)).max(), o3["kkt"]])
             print(key, "ED E,nu", r["E0"], r["nu_c"], "| Bc=1 dE %.2e conv %s | Bc=3 dE %.2e cons %.0e kkt %.0e" %
                   (s1["E_var"] - r["E0"], s1["converged"], best.fun - r["E0"], out[key][7], out[key][8]), flush=True)
-    np.savez(FILE, **out)
+    np.savez(fileV(Vsel), **out)
 
 
 def load_bc5():
     """B_c=5 data from compute_bc5_data.py: key V{V}_tc{tc}_E = [E_ED, nu_ED, E_B3, nu_B3, E_B5, nu_B5, KKT, n_conv, spread, n_rand]."""
     out = {}
     for V in VS:
-        f = f"cederbaum_bc5_V{V}.npz"
+        f = f"cederbaum_data/cederbaum_bc5_V{V}.npz"
         if os.path.exists(f):
             out.update({k: v for k, v in np.load(f).items()})
     return out
@@ -59,9 +70,9 @@ def plot():
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.lines import Line2D
-    d = np.load(FILE); d5 = load_bc5()
+    d = load_all(); d5 = load_bc5()
     fig, axs = plt.subplots(1, 3, figsize=(15.5, 4.8))
-    colors = {0.5: "tab:blue", 1.0: "tab:green", 2.0: "tab:purple"}
+    colors = dict(zip(VS, ["tab:blue", "tab:purple"]))
     for V in VS:
         tcs = np.array([t for t in TCS if f"V{V}_tc{t}_E" in d5]); c = colors[V]
         rows = np.array([d[f"V{V}_tc{t}"] for t in TCS]); all_t = np.array(TCS)
@@ -83,7 +94,7 @@ def plot():
     axs[0].set_ylabel(r"$(E_{\rm gGut}-E_{\rm ED})/g$", fontsize=17)
     axs[1].set_ylabel(r"$(E_{B_c=1}-E_{B_c})/g$", fontsize=17)
     axs[2].set_ylabel(r"$|\nu_c-\nu_c^{\rm ED}|$", fontsize=17)
-    vh = [Line2D([0], [0], color=colors[V], lw=2.2, label=rf"$V/g={V:g}$") for V in VS]
+    vh = [Line2D([0], [0], color=colors[V], lw=2.2, label=rf"$\rho/\Omega={np.sqrt(2)*V/2:.1f}$ ($V/g={V:.3f}$)") for V in VS]
     sh = [Line2D([0], [0], color="k", lw=1.8, marker="o", label=r"$B_c=1$"),
           Line2D([0], [0], color="k", lw=1.8, ls="--", marker="s", mfc="none", label=r"$B_c=3$"),
           Line2D([0], [0], color="k", lw=2.4, ls=":", marker="D", ms=5, label=r"$B_c=5$")]
@@ -96,4 +107,4 @@ def plot():
 
 
 if __name__ == "__main__":
-    compute() if len(sys.argv) > 1 and sys.argv[1] == "compute" else plot()
+    compute(float(sys.argv[2])) if len(sys.argv) > 2 and sys.argv[1] == "compute" else plot()
