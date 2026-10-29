@@ -15522,9 +15522,9 @@
     "semantic_hash": ""
   },
   "doc/cederbaum.pdf": {
-    "mtime": 1793268874.960374,
-    "seen": 1793268962.9291553,
-    "ast_hash": "96959583a4b33f670376aebea92e4c94",
+    "mtime": 1793270588.6061447,
+    "seen": 1793270738.0752316,
+    "ast_hash": "aacec898ff33b6099ef3088f9dec1d08",
     "semantic_hash": ""
   },
   "doc/excited_phi_cederbaum.pdf": {
@@ -16191,6 +16191,18 @@
     "mtime": 1793265813.8763194,
     "seen": 1793266073.1023898,
     "ast_hash": "cba0a375f41bed480833dfa8dc617d91",
+    "semantic_hash": ""
+  },
+  "test_pole_weight_constraint.py": {
+    "mtime": 1793269879.8246381,
+    "seen": 1793270738.0724237,
+    "ast_hash": "fe8d40e91d48a741ded6a963bd7b0ed0",
+    "semantic_hash": ""
+  },
+  "test_rc_ghost_weight.py": {
+    "mtime": 1793269595.8564954,
+    "seen": 1793270738.072427,
+    "ast_hash": "0583ac36910da556192d58d0f50be335",
     "semantic_hash": ""
   }
 }
