@@ -1,24 +1,24 @@
 # Graph Report - gGut_mau  (2026-10-29)
 
 ## Corpus Check
-- 675 files · ~451,717 words
+- 676 files · ~452,237 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 10244 file(s) not represented in the graph (top: .dat 5500, .in 2602, .out 1500)
+- Unclassified: 10246 file(s) not represented in the graph (top: .dat 5500, .in 2602, .out 1500)
 
 ## Summary
-- 1853 nodes · 2024 edges · 639 communities (37 shown, 602 thin omitted)
+- 1857 nodes · 2034 edges · 643 communities (39 shown, 604 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 24 edges (avg confidence: 0.84)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `15887fc7`
+- Built from commit: `4a1c6589`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - numpy
 - check_hessian.py
-- plot_eqp_3d.py
+- make_qp_orbital_videos.py
 - gga_cederbaum.py
 - gga_cederbaum_inner.py
 - scan_ng2_not_imp_dV2_U.py
@@ -30,13 +30,13 @@
 - gga_dimer.py
 - Exact Spectral Function of the Half-Filled Hubbard Dimer with Site-Splitting Potential DeltaV (ED_deltaV.pdf)
 - matplotlib
-- Model
+- check_cederbaum.py
 - plot_cederbaum_fullspectra.py
 - plot_ng2_dV2_confirmed.py
-- cross_check_ng2_dV2.py
+- solve
 - cross_check_ng4_dV2.py
 - plot_ng4_dV2_confirmed.py
-- make_qp_orbital_videos.py
+- cross_check_ng2_dV2.py
 - Problem
 - make_plot.py
 - plot_cederbaum_spectra.py
@@ -651,10 +651,14 @@
 - measure_golze_fig2.py
 - sys
 - apply_S_inv
-- embedding_lambda_c
+- build_impurity_ops
 - os
 - scan_ng4_imp_dV2_U.py
-- test_bo_bv_seeded.py
+- Model
+- Model
+- Fragment
+- Fragment
+- embed
 
 ## God Nodes (most connected - your core abstractions)
 1. `Ghost Gutzwiller Approximation for the Half-Filled Hubbard Dimer (code.pdf)` - 33 edges
@@ -688,7 +692,7 @@
 - **Sections building the exact DeltaV spectral-function derivation** — concept_molecular_orbitals_gu, concept_ph_symmetry_deltav, concept_exact_spectral_function_lehmann [EXTRACTED 1.00]
 - **Worked examples validating gga_dimer.py against the C++ reference** — examples_u10_readme, examples_u2_backward_readme, examples_u2_forward_readme, gga_dimer_run_gga, ext_cpp_reference_ggut [INFERRED 0.85]
 
-## Communities (639 total, 602 thin omitted)
+## Communities (643 total, 604 thin omitted)
 
 ### Community 0 - "numpy"
 Cohesion: 0.13
@@ -698,13 +702,13 @@ Nodes (12): Step 4: gGut (c-v hopping) vs ED hole poles / weights of G_cc, Delta
 Cohesion: 0.07
 Nodes (49): analyse(), basis_sym(), build(), constraint_values(), constraint_vector(), curve_test(), energy(), feasible_curve_energy() (+41 more)
 
-### Community 2 - "plot_eqp_3d.py"
-Cohesion: 0.08
-Nodes (26): Delta V/t=2.0 analogue of make_A_omega_video.py, for scan_ng2_imp_dV2/,…, make_video(), Animations of the evolution of A(omega) with U/t: one frame per U-point (the…, ed_fn(omega, U, t, eta): the exact-ED A(omega) overlay; defaults to the Delta…, make_video(), match_to_ref(), qp_levels(), Videos of the spectral weight carried by each quasiparticle level as U/t… (+18 more)
+### Community 2 - "make_qp_orbital_videos.py"
+Cohesion: 0.06
+Nodes (42): Delta V/t=2.0 analogue of make_A_omega_video.py, for scan_ng2_imp_dV2/,…, make_video(), Animations of the evolution of A(omega) with U/t: one frame per U-point (the…, ed_fn(omega, U, t, eta): the exact-ED A(omega) overlay; defaults to the Delta…, align_frames(), bonds_from(), critical_U(), draw_sk() (+34 more)
 
 ### Community 3 - "gga_cederbaum.py"
-Cohesion: 0.16
-Nodes (11): At a direct-minimization solution: build H_qp (multipliers lam from recover),…, default_guess(), hole_poles(), noisy(), Ghost Gutzwiller (gGut) for the Cederbaum model, three fragments c, o, v.…, Start consistent with the sign structure of the stationarity conditions (bath…, Self-consistency loop, steps 1-5 of Sec. "Self-consistency loop". State…, Occupied qp levels and their core weights |R_c^T phi_n^(c)|^2, Eq. (GFgGut). (+3 more)
+Cohesion: 0.20
+Nodes (10): default_guess(), hole_poles(), noisy(), Ghost Gutzwiller (gGut) for the Cederbaum model, three fragments c, o, v.…, Start consistent with the sign structure of the stationarity conditions (bath…, Self-consistency loop, steps 1-5 of Sec. "Self-consistency loop". State…, Occupied qp levels and their core weights |R_c^T phi_n^(c)|^2, Eq. (GFgGut)., lambda + small symmetric random noise. (+2 more)
 
 ### Community 4 - "gga_cederbaum_inner.py"
 Cohesion: 0.16
@@ -735,8 +739,8 @@ Cohesion: 0.60
 Nodes (5): DeltaV site-splitting potential (Hubbard dimer), Exact diagonalization (ED) spectral-function poles, ED pole energy vs U (DeltaV=0 vs DeltaV=2), ED quasi-particle pole branch (DeltaV=0 and DeltaV=2), ED satellite pole branch (DeltaV=0 and DeltaV=2)
 
 ### Community 11 - "gga_dimer.py"
-Cohesion: 0.20
-Nodes (11): build_c_ops(), build_impurity_ops(), _kron_list(), Ghost Gutzwiller Approximation (gGA) for the half-filled 2-site Hubbard dimer.…, Precompute all fixed operators/matrices once per (Neff, U) -- nothing here…, Read R guess(es) from a text file. One row (Neff numbers) is used as a…, Read lambda guess(es) from a text file. Neff rows (a single Neff x Neff matrix)…, read_lambda_guess() (+3 more)
+Cohesion: 0.22
+Nodes (9): build_c_ops(), _kron_list(), Ghost Gutzwiller Approximation (gGA) for the half-filled 2-site Hubbard dimer.…, Read R guess(es) from a text file. One row (Neff numbers) is used as a…, Read lambda guess(es) from a text file. Neff rows (a single Neff x Neff matrix)…, read_lambda_guess(), read_R_guess(), save_spectral_function() (+1 more)
 
 ### Community 12 - "Exact Spectral Function of the Half-Filled Hubbard Dimer with Site-Splitting Potential DeltaV (ED_deltaV.pdf)"
 Cohesion: 0.25
@@ -746,9 +750,9 @@ Nodes (9): Exact 4-pole spectral function via Lehmann representation, Bonding/an
 Cohesion: 0.17
 Nodes (10): Overlay the exact (ED) spectral poles of the half-filled Hubbard dimer on the…, Are the lowest-energy solutions of the direct minimization (scan_ng2_not_imp/)…, contextlib, glob, io, matplotlib, matplotlib_pyplot, gga_dimer.py started from the direct-minimization (not-impurity) solutions. For… (+2 more)
 
-### Community 14 - "Model"
-Cohesion: 0.05
-Nodes (36): solve_bc3(), solve_bc3(), check_A(), f(), check_B(), ell(), fd(), SI Sec. S5 checks for the Cederbaum gGut implementation (gga_cederbaum.py), c-v… (+28 more)
+### Community 14 - "check_cederbaum.py"
+Cohesion: 0.21
+Nodes (14): check_A(), f(), check_B(), ell(), fd(), SI Sec. S5 checks for the Cederbaum gGut implementation (gga_cederbaum.py), c-v…, nu, K, <Hloc>, D, Dbb, <sum lam dd> from the FULL Fock-space sparse operators., raw_phi_quantities() (+6 more)
 
 ### Community 15 - "plot_cederbaum_fullspectra.py"
 Cohesion: 0.22
@@ -758,9 +762,9 @@ Nodes (13): bobv_muted(), draw_muted(), ed_poles(), gut_poles(), label_ed(), lor
 Cohesion: 0.33
 Nodes (3): ed_poles(), Ng=2 analogue of plot_ng4_dV2_confirmed.py: generates eqp_vs_U.png and…, deltaV_ed = 2*deltaV -- see scan_ng2_not_imp_dV2_U.py's ed_ground_state_energy…
 
-### Community 17 - "cross_check_ng2_dV2.py"
-Cohesion: 0.20
-Nodes (7): not_imp_converge(), Ng=2 analogue of cross_check_ng4_dV2.py: systematic cross-check of…, Saves R.dat/lambda.dat (plain record) AND R.in/L.in -- gga_dimer.py's and…, gga_check: (E_landed, iters, converged) from seeding gga_dimer at not_imp's…, save_point(), save_RL(), tangent_grad()
+### Community 17 - "solve"
+Cohesion: 0.23
+Nodes (12): solve_bc3(), solve_bc3(), accepted(), build_hamiltonian(), ht: 'co' = t_c(c^dag_c c_o + h.c.) (main.tex); 'cv' = t_c(c^dag_c c_v + h.c.)., Ground state and hole spectrum of G_cc. Returns dict with E0, the number of…, solve(), bc3_chain() (+4 more)
 
 ### Community 18 - "cross_check_ng4_dV2.py"
 Cohesion: 0.20
@@ -770,9 +774,9 @@ Nodes (7): not_imp_converge(), Systematic cross-check of scan_ng4_imp_dV2/ (gga_
 Cohesion: 0.33
 Nodes (3): ed_poles(), Generates eqp_vs_U.png and E_vs_U.png for scan_ng4_dV2_confirmed/ -- purely…, deltaV_ed = 2*deltaV -- see scan_ng2_not_imp_dV2_U.py's ed_ground_state_energy…
 
-### Community 20 - "make_qp_orbital_videos.py"
+### Community 20 - "cross_check_ng2_dV2.py"
 Cohesion: 0.06
-Nodes (47): build_c_ops(), build_hamiltonian(), eigensectors(), _kron_list(), Exact diagonalization of the 2-site Hubbard dimer WITH an extra site-splitting…, Delta V = 0 check against gGut.tex Eq. (eq:Aw_exact)., Mode order: 0=site0-up, 1=site0-dn, 2=site1-up, 3=site1-dn., Block-diagonalize H by total particle number N. N is diagonal in the… (+39 more)
+Nodes (34): not_imp_converge(), Ng=2 analogue of cross_check_ng4_dV2.py: systematic cross-check of…, Saves R.dat/lambda.dat (plain record) AND R.in/L.in -- gga_dimer.py's and…, gga_check: (E_landed, iters, converged) from seeding gga_dimer at not_imp's…, save_point(), save_RL(), tangent_grad(), build_c_ops() (+26 more)
 
 ### Community 22 - "make_plot.py"
 Cohesion: 0.25
@@ -795,16 +799,16 @@ Cohesion: 0.19
 Nodes (10): _R, Numbers for the 'absence of satellites' paragraph of doc/cederbaum.tex at V/g =…, Numerical check of Sec. 3 of doc/excited_phi_cederbaum.tex at V/g = 1/sqrt2,…, compute(), fileV(), load_all(), load_bc5(), plot() (+2 more)
 
 ### Community 27 - "Ghost Gutzwiller Approximation for the Half-Filled Hubbard Dimer (code.pdf)"
-Cohesion: 0.14
-Nodes (22): check_hessian.py (Hessian / second-order test of converged points), check_stationarity.py (checks Euler-Lagrange stationarity of converged points), Bath-potential operator-ordering sign convention in H_imp (annihilation-before-creation fix), Constrained variational Lagrangian (five Lagrange multipliers), Embedding/impurity Hamiltonian H_imp(V, lambda^c), FCIDUMP text-quantization emulation for V and lambda^c (determinism vs reference), Ghost-assisted solution (active ghost orbitals), Ghost Gutzwiller Approximation (gGA) (+14 more)
+Cohesion: 0.13
+Nodes (23): check_hessian.py (Hessian / second-order test of converged points), check_stationarity.py (checks Euler-Lagrange stationarity of converged points), Bath-potential operator-ordering sign convention in H_imp (annihilation-before-creation fix), Constrained variational Lagrangian (five Lagrange multipliers), DeltaV placement convention: undressed H_loc shift vs dressed H_qp field, and why undressed was kept, Site-splitting potential DeltaV (mu0=U/2+DeltaV, mu1=U/2-DeltaV), Embedding/impurity Hamiltonian H_imp(V, lambda^c), Ghost-assisted solution (active ghost orbitals) (+15 more)
 
 ### Community 28 - "not_imp_gga_cederbaum.py"
-Cohesion: 0.21
-Nodes (10): analyse(), Weightless ghost poles of the hole Green's function (only those that come from…, resid(), check_gradients(), random_start(), Ghost Gutzwiller for the Cederbaum model by DIRECT minimization of the energy…, phi_I from the ground states of random embedding Hamiltonians, X from a random…, Multipliers of the density constraints from the stationarity of E + sum_c mu_c… (+2 more)
+Cohesion: 0.17
+Nodes (10): At a direct-minimization solution: build H_qp (multipliers lam from recover),…, check_gradients(), random_start(), Ghost Gutzwiller for the Cederbaum model by DIRECT minimization of the energy…, phi_I from the ground states of random embedding Hamiltonians, X from a random…, Multipliers of the density constraints from the stationarity of E + sum_c mu_c…, recover(), add_ghost_pair() (+2 more)
 
 ### Community 630 - "test_rc_ghost_weight.py"
-Cohesion: 0.38
-Nodes (5): frac(), frac_and_grad(), Test: can R_c have weight on a ghost? (why gGut has no satellites, B_c=3,…, f = 1 - (R_c.w0)^2/(R_c.R_c) with w0 the fixed core direction (frozen from the…, run()
+Cohesion: 0.19
+Nodes (9): scipy_optimize, Test 2 (gauge-invariant): put weight on a non-main hole pole of G_cc and see…, run(), w_off(), frac(), frac_and_grad(), Test: can R_c have weight on a ghost? (why gGut has no satellites, B_c=3,…, f = 1 - (R_c.w0)^2/(R_c.R_c) with w0 the fixed core direction (frozen from the… (+1 more)
 
 ### Community 631 - "run_gga"
 Cohesion: 0.19
@@ -815,42 +819,50 @@ Cohesion: 0.40
 Nodes (4): Measure peak positions in the rendered Fig. 2b,c (G0W0 green, exact red, GW+C…, pil, scipy_signal, subprocess
 
 ### Community 633 - "sys"
-Cohesion: 0.15
-Nodes (12): embed(), B_c=5 by direct minimization, made cheap by seeding from the B_c=3 solution.…, B_c=3 solution z3 -> feasible B_c=5 point (same energy)., run_bc5(), Impurity loop (gga_cederbaum.run, ground-state selection, follow=False) from…, multiprocessing, sys, Compare the standard loop (inner=1) with an inner loop on rho (inner>1) for the… (+4 more)
+Cohesion: 0.19
+Nodes (7): B_c=5 by direct minimization, made cheap by seeding from the B_c=3 solution.…, Impurity loop (gga_cederbaum.run, ground-state selection, follow=False) from…, multiprocessing, Search 1: other stationary solutions with core-ghost entanglement in Phi_c…, sys, Compare the standard loop (inner=1) with an inner loop on rho (inner>1) for the…, time
 
 ### Community 634 - "apply_S_inv"
-Cohesion: 0.16
-Nodes (11): one_iteration(), apply_S_inv(), fcidump_round(), hybridization_V(), Eq. 7: S(Delta_i) V_i = X_i, with X_i = -t rho_ij R_j (the other fragment's R)., Emulate the C++ hand-over of the impurity Hamiltonian to the ED solver through…, S(Delta)^-1 @ B, with B a vector or a matrix., Pack (+3 more)
+Cohesion: 0.24
+Nodes (6): apply_S_inv(), S(Delta)^-1 @ B, with B a vector or a matrix., Pack, Root-finder on the stationarity conditions of the Cederbaum gGut Lagrangian.…, residual(), tri()
 
-### Community 635 - "embedding_lambda_c"
-Cohesion: 0.40
-Nodes (5): DeltaV placement convention: undressed H_loc shift vs dressed H_qp field, and why undressed was kept, Site-splitting potential DeltaV (mu0=U/2+DeltaV, mu1=U/2-DeltaV), Reference C++ gGut implementation (GhostGutzwiller::Run et al.), embedding_lambda_c(), Eq. 8: lambda^c = -lambda + G(Delta, V R) (V column, R row).
+### Community 635 - "build_impurity_ops"
+Cohesion: 0.19
+Nodes (15): one_iteration(), FCIDUMP text-quantization emulation for V and lambda^c (determinism vs reference), build_impurity_ops(), embedding_lambda_c(), fcidump_round(), hybridization_V(), impurity_solve(), Eq. 7: S(Delta_i) V_i = X_i, with X_i = -t rho_ij R_j (the other fragment's R). (+7 more)
 
 ### Community 636 - "os"
-Cohesion: 0.19
-Nodes (13): embed(), B_c=5 by direct minimization, made cheap by seeding from the B_c=3 solution.…, B_c=3 solution z3 -> feasible B_c=5 point (same energy)., run_bc5(), case(), line(), Sequential B_c=5 search by direct minimization, one run at a time, one log line…, Poles/weights of ALL occupied qp levels for the cached minimizer solutions… (+5 more)
+Cohesion: 0.16
+Nodes (16): embed(), B_c=5 by direct minimization, made cheap by seeding from the B_c=3 solution.…, B_c=3 solution z3 -> feasible B_c=5 point (same energy)., run_bc5(), case(), line(), Sequential B_c=5 search by direct minimization, one run at a time, one log line…, Poles/weights of ALL occupied qp levels for the cached minimizer solutions… (+8 more)
 
 ### Community 637 - "scan_ng4_imp_dV2_U.py"
 Cohesion: 0.47
 Nodes (5): branch_color(), ed_poles(), U-continuation scans (Ng=4, Delta V/t=2.0) with gga_dimer.py's iterative…, deltaV_ed = 2*deltaV -- see scan_ng2_not_imp_dV2_U.py's ed_ground_state_energy…, write_branch()
 
-### Community 638 - "test_bo_bv_seeded.py"
-Cohesion: 0.50
-Nodes (3): add_ghost_pair(), Ghosts on o and v: seed (B_c,B_o,B_v)=(3,3,3) from the cached B_c=3 solutions…, phi in the sector of a fragment with B bath orbitals -> sector of the fragment…
+### Community 640 - "Fragment"
+Cohesion: 0.29
+Nodes (3): Fragment, Embedding problem of one orbital: physical c + B bath orbitals per spin,…, Ground state of H_imp (Eq. Himp0, or Eq. Himpc if Xi is given), in normal…
+
+### Community 641 - "Fragment"
+Cohesion: 0.29
+Nodes (3): Fragment, Embedding problem of one orbital: physical c + B bath orbitals per spin,…, Ground state of H_imp (Eq. Himp0, or Eq. Himpc if Xi is given), in normal…
+
+### Community 642 - "embed"
+Cohesion: 0.67
+Nodes (3): embed(), B_c=3 solution z3 -> feasible B_c=5 point (same energy)., run_bc5()
 
 ## Knowledge Gaps
 - **616 isolated node(s):** `_R`, `restart.sh script`, `restart.sh script`, `restart.sh script`, `restart.sh script` (+611 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1444 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **602 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1447 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **604 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Model` connect `Model` to `sys`, `gga_cederbaum.py`, `os`?**
+- **Why does `Model` connect `Model` to `Fragment`, `embed`, `gga_cederbaum.py`, `check_cederbaum.py`, `solve`, `os`?**
   _High betweenness centrality (0.009) - this node is a cross-community bridge._
-- **Why does `Ghost Gutzwiller Approximation for the Half-Filled Hubbard Dimer (code.pdf)` connect `Ghost Gutzwiller Approximation for the Half-Filled Hubbard Dimer (code.pdf)` to `gga_dimer.py`, `Exact Spectral Function of the Half-Filled Hubbard Dimer with Site-Splitting Potential DeltaV (ED_deltaV.pdf)`, `Model`, `run_gga`, `not_imp_gga_dimer.py`, `apply_S_inv`, `embedding_lambda_c`?**
-  _High betweenness centrality (0.007) - this node is a cross-community bridge._
-- **Why does `apply_S_inv()` connect `apply_S_inv` to `gga_cederbaum.py`, `gga_cederbaum_inner.py`, `embedding_lambda_c`, `gga_dimer.py`, `Model`, `Problem`, `run_gga`, `Ghost Gutzwiller Approximation for the Half-Filled Hubbard Dimer (code.pdf)`, `not_imp_gga_cederbaum.py`?**
+- **Why does `Ghost Gutzwiller Approximation for the Half-Filled Hubbard Dimer (code.pdf)` connect `Ghost Gutzwiller Approximation for the Half-Filled Hubbard Dimer (code.pdf)` to `Exact Spectral Function of the Half-Filled Hubbard Dimer with Site-Splitting Potential DeltaV (ED_deltaV.pdf)`, `check_cederbaum.py`, `run_gga`, `not_imp_gga_dimer.py`, `apply_S_inv`, `build_impurity_ops`?**
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
+- **Why does `apply_S_inv()` connect `apply_S_inv` to `gga_cederbaum.py`, `gga_cederbaum_inner.py`, `build_impurity_ops`, `gga_dimer.py`, `check_cederbaum.py`, `Problem`, `run_gga`, `Ghost Gutzwiller Approximation for the Half-Filled Hubbard Dimer (code.pdf)`, `not_imp_gga_cederbaum.py`, `Model`, `Model`?**
   _High betweenness centrality (0.007) - this node is a cross-community bridge._
 - **What connects `_R`, `restart.sh script`, `restart.sh script` to the rest of the system?**
   _616 weakly-connected nodes found - possible documentation gaps or missing edges._
@@ -858,5 +870,5 @@ _Questions this graph is uniquely positioned to answer:_
   _Cohesion score 0.13157894736842105 - nodes in this community are weakly interconnected._
 - **Should `check_hessian.py` be split into smaller, more focused modules?**
   _Cohesion score 0.06734006734006734 - nodes in this community are weakly interconnected._
-- **Should `plot_eqp_3d.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.08258258258258258 - nodes in this community are weakly interconnected._
+- **Should `make_qp_orbital_videos.py` be split into smaller, more focused modules?**
+  _Cohesion score 0.05870020964360587 - nodes in this community are weakly interconnected._
