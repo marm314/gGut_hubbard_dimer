@@ -7,7 +7,7 @@ converged solution is symmetric, R0 = R1). They are used as the initial guess.
 Run from this directory:
 
 ```
-python3 ../../gga_dimer.py --U 10.0 --Ng 2
+python3 ../../scripts/gga_dimer.py --U 10.0 --Ng 2
 ```
 
 Expected result (matches the reference to 6 significant figures; the seed is
@@ -28,7 +28,7 @@ The same seed can be used with `not_imp_gga_dimer.py`
 (see `doc/not_impurity.tex`):
 
 ```
-PYTHONPATH=../.. python3 ../../not_imp_gga_dimer.py --U 10 --Ng 2
+PYTHONPATH=../../scripts python3 ../../scripts/not_imp_gga_dimer.py --U 10 --Ng 2
 ```
 
 Expected: `E_var/t = -10.10131406`, constraints satisfied to ~5e-15, KKT
@@ -44,8 +44,8 @@ Both codes accept `--omega`, `--eta`, `--domega` (all three, or none) and then w
 `A_omega.txt` (columns `omega`, `A(omega)`):
 
 ```
-python3 ../../gga_dimer.py --U 10.0 --Ng 2 --omega 15 --eta 0.05 --domega 0.05
-PYTHONPATH=../.. python3 ../../not_imp_gga_dimer.py --U 10 --Ng 2 --omega 15 --eta 0.05 --domega 0.05
+python3 ../../scripts/gga_dimer.py --U 10.0 --Ng 2 --omega 15 --eta 0.05 --domega 0.05
+PYTHONPATH=../../scripts python3 ../../scripts/not_imp_gga_dimer.py --U 10 --Ng 2 --omega 15 --eta 0.05 --domega 0.05
 ```
 
 For this seed both give `integral A d(omega) = 3.96` (sum rule 4 = 2 sites x 2 spins) and the

@@ -8,7 +8,7 @@ loop" and "Are the converged points solutions?").
 Run from this directory:
 
 ```
-python3 ../../gga_dimer.py --U 2.0 --Ng 2
+python3 ../../scripts/gga_dimer.py --U 2.0 --Ng 2
 ```
 
 Expected result: converges in 5 iterations to `E_var/t = -3.125661`

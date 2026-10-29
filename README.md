@@ -7,14 +7,14 @@ reference (C++) implementation.
 
 ## Contents
 
-- `gga_dimer.py` -- the gGA self-consistency solver (two independent
+- `scripts/gga_dimer.py` -- the gGA self-consistency solver (two independent
   fragments; the self-consistency cycle mirrors the reference C++ code
   step by step -- lambda from lambda^c, shifted matrix square roots,
   analytic lambda^c derivative, linear mixing -- with our own impurity
   solver; quasiparticle Green's function / spectral function
   post-processing). Run
-  `python3 gga_dimer.py --help` for CLI options.
-- `exact_dimer.py` -- exact diagonalization of the 2-site Hubbard dimer,
+  `python3 scripts/gga_dimer.py --help` for CLI options.
+- `scripts/exact_dimer.py` -- exact diagonalization of the 2-site Hubbard dimer,
   used as ground truth.
 - `examples/Ng2_U2/`, `examples/Ng2_U10/` -- worked examples with
   reference-seeded initial guesses (`R.in`, `L.in`) and expected results
@@ -23,15 +23,19 @@ reference (C++) implementation.
   theory (the constrained variational Lagrangian), the equations actually
   implemented, the numerical algorithm, and the CLI/file conventions.
 
+All Python scripts live in `scripts/`. Run them from the repository root (`python3 scripts/<name>.py`): data and output directories
+(`cederbaum_data/`, `merged_Ng/`, `scan_*/`) are taken relative to the working directory, while the scripts find each other (and
+`scan_ed_deltaV/`) by their own location.
+
 ## Quick start
 
 ```
-python3 gga_dimer.py --U 10.0 --Ng 2
+python3 scripts/gga_dimer.py --U 10.0 --Ng 2
 ```
 
 or, from one of the example directories, seeded with a known-good guess:
 
 ```
 cd examples/Ng2_U10
-python3 ../../gga_dimer.py --U 10.0 --Ng 2
+python3 ../../scripts/gga_dimer.py --U 10.0 --Ng 2
 ```

@@ -434,11 +434,11 @@ $(x^I,X)$ from the previous $U$) has \emph{not} been done.
 \label{sec:usage}
 
 \begin{lstlisting}[language=bash]
-python3 not_imp_gga_dimer.py --U <U/t> --Ng <even>   [--t 1.0] [--nstarts 10] [--seed 0]
+python3 scripts/not_imp_gga_dimer.py --U <U/t> --Ng <even>   [--t 1.0] [--nstarts 10] [--seed 0]
                              [--R-file R.in --lam-file L.in]   # seeded start (else random)
                              [--max-iter 1000] [--shift 1e-9] [--quiet]
                              [--omega <w_max> --eta <eta> --domega <step>]   # spectral function
-python3 not_imp_gga_dimer.py --check-gradients [--Ng 2 --U 2]  # analytic vs finite diff.
+python3 scripts/not_imp_gga_dimer.py --check-gradients [--Ng 2 --U 2]  # analytic vs finite diff.
 \end{lstlisting}
 It prints $Z^I$, $E_{\mathrm{var}}/t$, the double occupancy, the constraint violation, the three
 KKT residuals and \texttt{eqp}, and writes \texttt{not\_imp\_Ng*\_U*\_\{R,lambda,lambda\_c\}.dat}
