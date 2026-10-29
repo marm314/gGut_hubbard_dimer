@@ -105,18 +105,19 @@ class Fragment:
 # ---------------------------------------------------------------------------
 
 class Model:
-    def __init__(self, Delta, Ec, Vint, tc, Bc, shift=1e-9, hop="cv"):
+    def __init__(self, Delta, Ec, Vint, tc, Bc, shift=1e-9, hop="cv", Bo=1, Bv=1):
         # hop: which weak hopping H_t = t_c (c^dag_c c_x + h.c.) is added: x = o ('co', main.tex)
         # or x = v ('cv', doc/cederbaum.tex: the c-o hopping is Pauli-blocked in |220>)
         if hop not in ("co", "cv"):
             raise ValueError("hop must be 'co' or 'cv'")
         self.hop = hop
         self.Delta, self.Ec, self.Vint, self.tc, self.Bc, self.shift = Delta, Ec, Vint, tc, Bc, shift
-        self.B = [Bc, 1, 1]
-        self.n = Bc + 2
-        self.sl = [slice(0, Bc), slice(Bc, Bc + 1), slice(Bc + 1, Bc + 2)]
-        self.Nocc = 2 + (Bc + 1 + 1 - 3) // 2
-        self.frag = [Fragment(Bc, Ec), Fragment(1, Delta), Fragment(1, -Delta)]
+        self.Bo, self.Bv = Bo, Bv                    # ghosts on o and v (default 1 = none); used by the direct-minimization solver only
+        self.B = [Bc, Bo, Bv]
+        self.n = Bc + Bo + Bv
+        self.sl = [slice(0, Bc), slice(Bc, Bc + Bo), slice(Bc + Bo, Bc + Bo + Bv)]
+        self.Nocc = 2 + (Bc + Bo + Bv - 3) // 2
+        self.frag = [Fragment(Bc, Ec), Fragment(Bo, Delta), Fragment(Bv, -Delta)]
 
     # -- Thetabar, Eq. (ThetaBar):  1/2 S^-1 K S^-1 - nu (1 - Delta + eps)^-1
     def Cmat(self, Dc):

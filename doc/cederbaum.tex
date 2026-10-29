@@ -384,7 +384,7 @@ Poor local minima from continuation ($(V/g,t_c/g)=(0.707,0.025)$, $(1.414,0.07)$
   \centering
   \includegraphics[width=\textwidth]{../cederbaum_data/cederbaum_spectra.png}
   \caption{Hole spectral function $A^h_{cc}(\omega)=\sum_n w_n\,(\eta/\pi)/[(\omega-\omega_n)^2+\eta^2]$, $\eta=0.15$: exact (solid), gGut $B_c=1$ (blue dotted), $B_c=3$ (red dashed), $B_c=5$ (green dotted, on top of $B_c=3$).
-  Rows: $t_c/g=0.1$, $0.05$; columns: $\rho/\Omega=0.5$ ($V/g=0.707$), $1.0$ ($V/g=1.414$); $E_c/g=10$. Muted dots below zero: the zero-weight poles that the ghosts introduce (occupied ghost levels of $H_{qp}$), as returned by the minimizer:
+  Rows: $t_c/g=0.1$, $0.05$; columns: $\rho/\Omega=0.5$ ($V/g=0.707$), $1.0$ ($V/g=1.414$); $E_c/g=10$. Dots below zero: the occupied muted poles (zero-weight ghost levels of $H_{qp}$, defined in the text), as returned by the minimizer:
   one at $B_c=3$ (small, rose), two at $B_c=5$ (large, green); $B_c=1$ has none. Their positions are not fixed by the solution (see text) and they carry no weight.}
   \label{fig:spectra}
 \end{figure}
@@ -416,21 +416,28 @@ and $R_c$ lies entirely along the core orbital (components along the others $\le
 Mixing the two filled core orbitals by hand in $\lambda_c$ does split the weight (e.g.\ $0.57/0.42$ at $V/g=0.707$, $\delta=1$), but $\|[H_{qp},\rho]\|$ then grows from $\le2.6\times10^{-5}$ to $10^{-2}$--$4\times10^{-2}$: these points are not stationary, and their poles and weights do not match the exact ones.
 The ghosts appear to carry the correlation through $\nu_c$ and $K$ (the terms $-V(\bar\Theta u)R_o^T$, $-V(\bar\Theta w)R_v^T$ of $H_{qp}$) but not through $R_c$, which is all that Eq.~\eqref{eq:Ghgg} sees.
 
-\paragraph{The zero-weight ghost poles.} A level of $H_{qp}$ is a ghost pole if it is occupied in $\rho$ ($\ge0.5$), lies on the core-and-ghost block ($>0.99$) and has core weight $<10^{-4}$ (classified by occupation, not by energy order: a free ghost level can cross the valence level $o$).
-There is one at $B_c=3$ and two at $B_c=5$; none at $B_c=1$. The other occupied level is the valence orbital $o$ (core weight $\le3\times10^{-6}$, at $\epsilon\simeq-g$), and $v$ is empty. As returned by the minimizer the ghost poles lie \emph{above} the QP peak,
-at $+0.2$ to $+4.6\,\Omega$ (Figs.~\ref{fig:spectra}, \ref{fig:golze}). Their positions carry no information: the constraint Jacobian has rank $7$ of $8$ ($B_c=3$) and $13$ of $17$ ($B_c=5$), and shifting the multipliers along the undetermined directions moves them
-(for example to the exact satellite energies) without changing $E$, the main pole, its weight or $\|[H_{qp},\rho]\|$, while their weights stay $\le8\times10^{-9}$, so no satellite appears; different minimizer solutions of the same point place them differently
-(at $B_c=3$, $t_c/g=0.05$ the ghost level is at $-2.98$ and $-5.93$ in the solutions of the figures, $-2.20$ and $-9.53$ in earlier ones). The returned positions are the minimum-norm multipliers of the least-squares recovery.
-Why they lie where they do: in gGut every pole of $G^h_{cc}$ is an eigenvalue of $H_{qp}$. The exact satellites are \emph{below} the main peak, at $-12$ and $-14.5$ ($V/g=0.707$) or $-15.5$ ($V/g=1.414$), against a main pole at $-9.6$ (exact) or $-9.9$ (gGut).
-A ghost level could therefore only produce a satellite if it lay at $-12$ or lower, deeper than the core QP level and than every other level of $H_{qp}$. The energy of a ghost level, however, is not set by the core energy $E_c$: it comes from the multipliers of the density constraint, which are of valence-scale magnitude
-(the bath levels of $\lambda^c_c$ at $t_c/g=0.5$ are $-2.1$ to $+1.7$ and $-5.1$ to $+3.0$; \texttt{excited\_phi\_cederbaum.tex}). The ghost levels therefore lie between the core level ($\approx-10$) and the valence region ($\approx-1$), i.e.\ \emph{above} the main peak, not below it.
-Since the weight is set by $R_c$, which the energy minimization fixes along the core orbital, a solution with satellite weight would differ from the minimum; none was found.
+\paragraph{Muted poles.} In gGut every pole of the spectral function is an eigenvalue of $H_{qp}$, which has $B_c+B_o+B_v$ levels. Three of them are the quasiparticle (QP) levels of $c$, $o$ and $v$, the levels where the orbital $c$, $o$ or $v$ has its largest weight: the core hole near $-10$, the occupied level near $-g$ and the virtual level near $+g$.
+The remaining $B_c+B_o+B_v-3$ levels are the \emph{muted poles}: two at $B_c=3$ (with $B_o=B_v=1$) and four at $B_c=5$. Occupied ones are hole poles, empty ones particle poles. Their weight $|R_I^T\phi^{(I)}_n|^2$ is $\le2.2\times10^{-6}$ on every orbital, so they are invisible in $A(\omega)$.
+They matter because they are the only place where gGut could put a satellite: a satellite needs a pole of $H_{qp}$ at $\omega\simeq-12$ or lower, with weight.
+\begin{itemize}
+\item \emph{Character.} The hole-side ones are ghost levels of the core block ($>0.99$), with core weight $<10^{-4}$. They are counted by occupation, not by energy order, since a free ghost level can cross the level $o$ (in the $B_c=5$ solution at $t_c/g=0.05$, $V/g=1.414$ the $o$ level is empty and a ghost level is occupied). The Fig.~\ref{fig:spectra} dots are the occupied ones: one at $B_c=3$, two at $B_c=5$.
+The empty level at $\omega\simeq+12$ (Fig.~\ref{fig:fullspec}) is not a ghost: its weight sits on $o$ ($\simeq10^{-7}$--$10^{-6}$) and it matches the exact $o$ particle peak at $12.003$.
+\item \emph{Position.} It is not fixed by the solution: the constraint Jacobian has rank $7$ of $8$ ($B_c=3$) and $13$ of $17$ ($B_c=5$), and shifting the multipliers along the undetermined directions moves the ghost levels, for example to the exact satellite energies, without changing $E$, the main pole, its weight or $\|[H_{qp},\rho]\|$; their weights stay $\le8\times10^{-9}$.
+Different minimizer solutions of the same point place them differently ($-2.98$ and $-5.93$ in the figures, $-2.20$ and $-9.53$ in earlier solutions, at $B_c=3$, $t_c/g=0.05$); the returned values are the minimum-norm multipliers. They lie between the core level ($\approx-10$) and the valence region ($\approx-1$), because the ghost levels come from the multipliers of the density constraint, which are of valence-scale magnitude (the bath levels of $\lambda^c_c$ at $t_c/g=0.5$ are $-2.1$ to $+1.7$ and $-5.1$ to $+3.0$; \texttt{excited\_phi\_cederbaum.tex}), and not from $E_c$.
+\item \emph{Weight.} It is set by $R_c$, which the energy minimization fixes along the core orbital. A solution with weight on a muted pole would have a different $R_c$ and so differ from the minimum; none was found.
+\item \emph{Ghosts on $o$ and $v$.} With $B_c=B_o=B_v=3$ ($9$ levels, $6$ muted poles) I seeded the minimization from the $B_c=3$ solution plus a sleeping ghost pair on $o$ and on $v$ (same energy), perturbed it ($15$ runs per case), and also tried random starts. No run went below the seed energy; the random starts mostly fell to the trivial product state ($R_c=0$).
+In three of the four cases of Fig.~\ref{fig:fullspec} a run returns to the $B_c=3$ point ($E-E_{\rm ED}\simeq9.5\times10^{-8}$, same main pole and weight); at $V/g=0.707$, $t_c/g=0.1$ the best point found is $B_c=1$-like ($6.4\times10^{-6}$). The extra poles again carry no weight (purple row of Fig.~\ref{fig:fullspec}). The search is limited (SLSQP, seeds from $B_c=3$ only).
+\end{itemize}
+The exact satellites lie \emph{below} the main peak ($-12$ and $-14.5$ at $V/g=0.707$, $-15.5$ at $V/g=1.414$, against $-9.6$ exact, $-9.9$ gGut), whereas the muted poles lie above it, so none of them can play the role of a satellite.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{../cederbaum_data/cederbaum_fullspectra.png}
-  \caption{Full spectral function $A(\omega)=\sum_{I=c,o,v}A_{II}(\omega)$ (hole and particle sides, per spin, $\eta=0.15$, $E_c/g=10$): exact (black), gGut $B_c=3$ (red dashed) and $B_c=5$ (green dotted), from the cached solutions of Fig.~\ref{fig:spectra}.
-  Rows: $t_c/g=0.1$, $0.05$; columns: $\rho/\Omega=0.5$, $1.0$. Dots below the axis: ED peaks of weight $>10^{-3}$, coloured by orbital ($c$ red, $o$ blue, $v$ green).}
+  \caption{Full spectral function $A(\omega)=\sum_{I=c,o,v}A_{II}(\omega)$ (hole side $\omega<0$, particle side $\omega>0$; per spin, $\eta=0.15$, $E_c/g=10$). Rows: $t_c/g=0.1$, $0.05$; columns: $\rho/\Omega=0.5$, $1.0$.
+  \emph{Curves:} exact (black), gGut $B_c=3$ (red dashed) and $B_c=5$ (green dotted; both with $B_o=B_v=1$, from the cached solutions of Fig.~\ref{fig:spectra}).
+  \emph{Labels:} $\varepsilon_{\rm QP}^{I}$ is the quasiparticle peak of the exact spectrum for the orbital $I=c,o,v$ and $\varepsilon_{s1}^{c}$, $\varepsilon_{s2}^{c}$ are the exact core satellites, numbered by increasing distance from $\varepsilon_{\rm QP}^{c}$; $\varepsilon_{\rm QP}^{I,{\rm Gut}}$ are the gGut quasiparticle peaks (the core one is single, with no satellites).
+  \emph{Dots below the axis:} the muted poles of gGut, i.e.\ all eigenvalues of $H_{qp}$ except the three quasiparticle levels. One row per solution: $B_c=3$ (rose, $2$ poles), $B_c=5$ (green, $4$) and $B_c=B_o=B_v=3$ (purple, $6$; the lowest-energy run seeded from the $B_c=3$ solution with sleeping ghosts on $o$ and $v$; in the panel $\rho/\Omega=0.5$, $t_c/g=0.1$ no run returned to the seed and the best point is $B_c=1$-like).
+  Poles closer than $0.02$ share one dot, with the multiplicity written above it when it is larger than $1$. The muted poles carry no weight ($\le2.2\times10^{-6}$) and none lies near the exact satellites.}
   \label{fig:fullspec}
 \end{figure}
 
@@ -439,7 +446,7 @@ Fig.~\ref{fig:fullspec} shows all peaks of $A=A_{cc}+A_{oo}+A_{vv}$, hole side (
 In gGut every eigenvalue of $H_{qp}$ is a pole, occupied ones on the hole side and empty ones on the particle side, with weight $|R_I^T\phi^{(I)}_n|^2$ on orbital $I$.
 The three main peaks are the core hole near $-10$ ($c$), the occupied level near $-g$ ($o$) and the virtual level near $+g$ ($v$); gGut reproduces the last two, and the core pole only approximately (position and weight as in Tab.~\ref{tab:poles}).
 What gGut misses are the exact core satellites at $-12$ and $-14.5$ ($-15.5$); the remaining ED peaks ($\omega\simeq3$ for $c$ and $\omega\simeq12$ for $o$, particle side) have weight $\lesssim10^{-6}$ and are not visible.
-The extra gGut levels ($B_c=3$: one at $-5.9$ to $-3.0$, $B_c=5$: several between $-4.7$ and $+1.4$, plus the empty level at $\simeq+12$) are ghost levels with weight $\le10^{-4}$.
+The remaining levels are the muted poles defined above ($B_c=3$: one hole pole at $-5.9$ to $-3.0$ and the empty level at $\simeq+12$; $B_c=5$: several between $-4.7$ and $+1.4$ besides that one), all with weight $\le10^{-6}$.
 
 \subsection{Comparison with the three-level model of Cederbaum and of Kockl\"auner and Golze}
 \label{sec:golze}
@@ -498,7 +505,7 @@ while the gGut $B_c=3$ pole is at $-9.93$, $-9.74$ (errors $0.38$, $1.21$) and t
 \item \textbf{gGut does not reproduce the satellite structure of the model.} For $B_c=1$, $3$, $5$, $\rho/\Omega=0.5$, $1.0$ ($V/g=0.707$, $1.414$) and $t_c/g=0.05$--$0.5$, the hole spectral function has a single pole with weight $0.977$--$0.9999$, whereas the exact spectrum has satellites near $-12$ and at $-14.45$, $-15.47$ carrying $17.5\%$ and $37.8\%$ of the weight.
 The main pole is displaced from the exact one ($-9.93$ vs.\ $-9.55$; $-9.74$ vs.\ $-8.54$).
 \item The ghosts improve the ground state: $E-E_{\rm ED}\approx10^{-7}$ at $B_c=3$ and $5$ (vs.\ $1.3\times10^{-3}V^2t_c^2$ at $B_c=1$), $\nu_c$ to $\sim10^{-8}$; $B_c=5$ returns the $B_c=3$ energy and spectrum (the extra ghosts stay asleep).
-\item The extra occupied ghost levels have zero weight ($R_c$ lies along the core orbital) and arbitrary energy (free multiplier directions): moving them to the exact satellite energies leaves $E$ and the weights unchanged, so they give no satellite. A solution with satellite weight would have to change $R_c$, i.e.\ differ from the energy minimum; none was found.
+\item The muted poles (the levels of $H_{qp}$ beyond the three QP levels) have zero weight ($R_c$ lies along the core orbital) and arbitrary energy (free multiplier directions): moving them to the exact satellite energies leaves $E$ and the weights unchanged, so they give no satellite. A solution with satellite weight would have to change $R_c$, i.e.\ differ from the energy minimum; none was found.
 \item The model uses a core--virtual hopping: a core--occupied hopping leaves $\ket{220}$ exact for every $t_c$ and cannot make $R_c$ determined. The energy functional and its gradients are verified (finite differences $\sim10^{-10}$), and the limits $V=0$, $t_c=0$ are reproduced.
 \item The model is the three-level model of Cederbaum \emph{et al.}~\cite{Cederbaum1980} with $\rho=\sqrt2V$; for $\rho/\Omega=0.5$, $1.0$ the exact spectrum has the QP peak and two satellites, G$_0$W$_0$ one satellite at too high a binding energy, GW+C satellites at $-n\Omega$, and gGut a single pole (Fig.~\ref{fig:golze}, Tab.~\ref{tab:golze}).
 \end{enumerate}
