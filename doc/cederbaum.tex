@@ -6,6 +6,7 @@
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{xcolor}
 \usepackage{hyperref}
 
 \newcommand{\dg}{^{\dagger}}
@@ -306,7 +307,7 @@ h_I=S_I^{-1}X_I,\qquad\lambda^c_I=\Lambda_I-\lambda_I,\qquad\alpha=\beta=4V\big(
 with $X_I$, $\Lambda_I$, $\Pi$, $\beta$ as in Eq.~\eqref{eq:dE} and below. Each term is the coefficient of one expectation value in the first group of Eq.~\eqref{eq:dL}:
 $h_{I,a}$ multiplies $\braket{\sum_\sigma(d\dg_{Ia\sigma}c_{I\sigma}+\mathrm{h.c.})}=4D_{I,a}$; $\lambda^c_{I,ab}$ multiplies $\braket{\sum_\sigma d\dg_{Ia\sigma}d_{Ib\sigma}}=2\Delta^{bb}_{I,ab}$;
 $\alpha+2\Tr\Xi$ multiplies $\nu_c$; and $-\Xi_{\gamma\delta}$ multiplies $\braket{n_c\sum_\sigma d\dg_{c\gamma\sigma}d_{c\delta\sigma}}=2\nu_c\delta_{\gamma\delta}-K_{\gamma\delta}$, which with the
-$2\Tr\Xi\,\nu_c$ part reproduces $\Tr[\Xi\,dK]$. A constant from normal ordering, $-2\Tr\lambda^c_I$, is dropped. Its vanishing for all $d\Phi_I\perp\Phi_I$ means that $\Phi_I$ is an eigenstate of $H^{imp}_I$.
+$2\Tr\Xi\,\nu_c$ part reproduces $\Tr[\Xi\,dK]$. A constant from normal ordering, $-2\Tr\lambda^c_I$, is dropped. Its vanishing for all $d\Phi_I\perp\Phi_I$ means that $\Phi_I$ is an eigenstate of $H^{imp}_I$. It is not the lowest one: for $B_c=3$, $t_c/g=0.5$ the direct-minimization $\Phi_c$ is the fourth ($V/g=0.707$) and the sixth ($V/g=1.414$) of the $36$ eigenstates of $H^{imp}_c$ in energy order, with the lowest eigenvalue $2.3$ and $8.1$ below it, whereas $\Phi_o$ and $\Phi_v$ are ground states (\texttt{excited\_phi\_cederbaum.tex}, \texttt{excited\_check\_golze.py}). The impurity loop, which takes the lowest state, cannot follow it.
 \end{itemize}
 The self-consistency loop enforces these conditions one after the other (diagonalizing $H_{qp}$, solving for $\Phi_I$); the direct minimization does not diagonalize either. It passes $E$, $dE$ (Eq.~\eqref{eq:dE}) and the constraints $\kappa=\rho^{II}-{}^I\Delta(\Phi_I)$
 with their Jacobian ($d\kappa=d\rho^{II}+d\Delta^{bb}_I$) to SLSQP, which drives the gradient to a constrained stationary point. The multipliers are recovered afterwards from the first group of Eq.~\eqref{eq:dL}: stationarity in $\Phi_I$
