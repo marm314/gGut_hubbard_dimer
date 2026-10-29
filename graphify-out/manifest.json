@@ -15522,9 +15522,9 @@
     "semantic_hash": ""
   },
   "doc/cederbaum.pdf": {
-    "mtime": 1793268455.8869185,
-    "seen": 1793268526.2308812,
-    "ast_hash": "252de74a0da4c773bc3ff96a31c21cbb",
+    "mtime": 1793268874.960374,
+    "seen": 1793268962.9291553,
+    "ast_hash": "96959583a4b33f670376aebea92e4c94",
     "semantic_hash": ""
   },
   "doc/excited_phi_cederbaum.pdf": {
@@ -15942,9 +15942,9 @@
     "semantic_hash": ""
   },
   "plot_golze_units.py": {
-    "mtime": 1793267598.180692,
-    "seen": 1793268526.2273786,
-    "ast_hash": "f8509a0d76a258b2f3c5c102f7f37ff6",
+    "mtime": 1793268790.6777165,
+    "seen": 1793268962.9256659,
+    "ast_hash": "cee930385edd3f8fc66b5ed84f31e5e4",
     "semantic_hash": ""
   },
   "plot_ionic_spectral_link.py": {
@@ -15984,9 +15984,9 @@
     "semantic_hash": ""
   },
   "cederbaum_data/golze_units.png": {
-    "mtime": 1793267598.9237866,
-    "seen": 1793268526.2309082,
-    "ast_hash": "50e642f883e6ecd778ae556b953a0f53",
+    "mtime": 1793268791.3551497,
+    "seen": 1793268962.9291728,
+    "ast_hash": "4f54297ee1f0c6a166b12d31f7754462",
     "semantic_hash": ""
   },
   "merged_Ng/ionic_spectral_link.png": {
@@ -16158,9 +16158,9 @@
     "semantic_hash": ""
   },
   "measure_golze_fig2.py": {
-    "mtime": 1793267288.724441,
-    "seen": 1793268526.2273664,
-    "ast_hash": "6b667ca9c0df4ea685deed598e014fca",
+    "mtime": 1793268736.1636677,
+    "seen": 1793268962.925652,
+    "ast_hash": "a2e8aa3485c4bc8b023456cf773c0d1b",
     "semantic_hash": ""
   },
   "plot_cederbaum_fullspectra.py": {
