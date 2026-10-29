@@ -485,9 +485,8 @@ $\rho/\Omega$ & & satellite positions $/\Omega$ (from QP) & weights (QP, satelli
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=\textwidth]{../cederbaum_data/golze_units.png}
-  \caption{$G^h_{cc}$ in the units of Fig.~2 of Ref.~\cite{Kocklauner2024} (Lorentzian width $0.06\,\Omega$; each row normalized to its tallest peak); left $\rho/\Omega=0.5$ ($V/g=0.707$), right $\rho/\Omega=1.0$ ($V/g=1.414$), $E_c/g=10$.
-  Rows: GW+C; G$_0$W$_0$ (computed here from the model, Eqs.\ below, to match the G$_0$W$_0$ of Ref.~\cite{Kocklauner2024}); exact at $t_c=0$ and $0.05$; gGut $B_c=1$, $3$, $5$ ($t_c/g=0.05$). Dotted lines: the exact poles at $t_c=0$. Crosses ($\times$): the G$_0$W$_0$ of Kockl\"auner and Golze (QP peak and satellite), positions measured from their rendered Fig.~2 ($-1.42\,\Omega$ and $-2.23\,\Omega$; accuracy $\sim2\%$, \texttt{measure\_golze\_fig2.py}); our computed G$_0$W$_0$ reproduces them. gGut has a single peak at every $B_c$. Muted dots: the zero-weight ghost poles as returned by the minimizer (one at $B_c=3$, two at $B_c=5$, none at $B_c=1$),
-  at positive $(\omega-\epsilon_{\rm QP})/\Omega$ and without weight.}
+  \caption{$G^h_{cc}$ in the units of Fig.~2 of Ref.~\cite{Kocklauner2024} (Lorentzian half-width $0.018\,\Omega$, from a Lorentzian fit to the peaks of the G$_0$W$_0$ curve of Golze; each row normalized to its tallest peak); left $\rho/\Omega=0.5$ ($V/g=0.707$), right $\rho/\Omega=1.0$ ($V/g=1.414$), $E_c/g=10$.
+  Rows: GW+C; G$_0$W$_0$ (computed here from the model, Eqs.\ below, to match the G$_0$W$_0$ of Ref.~\cite{Kocklauner2024}); exact at $t_c=0$ and $0.05$; gGut $B_c=1$, $3$, $5$ ($t_c/g=0.05$). Dotted lines: the exact poles at $t_c=0$. Dashed black line: the G$_0$W$_0$ curve of Kockl\"auner and Golze, digitized from their rendered Fig.~2b,c (\texttt{measure\_golze\_fig2.py}; accuracy a few per cent in energy), with the QP peak at $0$, normalized to its maximum; at $\rho/\Omega=1.0$ their QP peak is clipped by the frame, so the heights there are only indicative; our computed G$_0$W$_0$ reproduces its peak positions and width. gGut has a single peak at every $B_c$.}
   \label{fig:golze}
 \end{figure}
 
@@ -495,7 +494,7 @@ $\rho/\Omega$ & & satellite positions $/\Omega$ (from QP) & weights (QP, satelli
 ($-1.41\,\Omega$ against $-1.23\,\Omega$ at $\rho/\Omega=0.5$; $-2.24\,\Omega$ against $-1.73\,\Omega$ at $1.0$); GW+C puts satellites at $-n\Omega$ (closer to the exact ones at $\rho/\Omega=0.5$ than at $1.0$) and shows spurious higher satellites at larger $\rho/\Omega$; all as stated in Ref.~\cite{Kocklauner2024}. The hopping $t_c$ moves the exact poles by at most $0.06$ at $t_c/g=0.5$.
 
 \paragraph{What does not match.} gGut gives a single pole at both ratios (weight $0.977$--$0.9999$): it reproduces neither the exact satellites nor the GW+C or G$_0$W$_0$ ones, and does worse than G$_0$W$_0$ for this model, whose QP pole is within $0.04$ and $0.23$ of the exact one ($-9.59$, $-8.76$ against $-9.55$, $-8.54$)
-while the gGut $B_c=3$ pole is at $-9.93$, $-9.74$ (errors $0.38$, $1.21$) and the $B_c=1$ pole at $-10.00$. The ghost poles (muted dots) are not satellites: no weight and arbitrary positions, as discussed above.
+while the gGut $B_c=3$ pole is at $-9.93$, $-9.74$ (errors $0.38$, $1.21$) and the $B_c=1$ pole at $-10.00$. The muted poles (dots of Fig.~\ref{fig:spectra}) are not satellites: no weight and arbitrary positions, as discussed above.
 
 %======================================================================
 \section{Conclusions}

@@ -8,7 +8,7 @@ from PIL import Image
 from scipy.signal import find_peaks
 
 PDF = "/home/marm314/C_MEJUTO/gGut_notes/gGut/gGut_on_models/GhostSatellites_Cederbaum/Kocklauner_Golze_2412.17132.pdf"
-tmp = "/tmp/claude-1000/-home-marm314-Installers-gGut-mau/2980e19e-fea1-48ff-81c1-a33e0ec6e9b9/scratchpad/golze_fig2"
+tmp = os.path.join(os.environ.get("TMPDIR", "/tmp"), "golze_fig2")
 subprocess.run(["pdftoppm", "-f", "7", "-l", "7", "-r", "400", "-png", PDF, tmp], check=True)
 im = np.array(Image.open(tmp + "-07.png").convert("RGB")).astype(int); H, W, _ = im.shape
 y0, y1 = int(0.04 * H), int(0.2 * H)
@@ -31,4 +31,22 @@ for pname, rho in (("b", 0.5), ("c", 1.0)):
         rel = (pk - pk[0]) / Om_c
         out[f"rho{rho}_{lab}_rel"] = rel
         print(f"rho/Omega={rho} {lab}: positions relative to QP (Omega) {np.round(rel,3)}  [using panel-b spacing: {np.round((pk-pk[0])/Om_b,3)}]")
+np.savez("cederbaum_data/golze_fig2_measured.npz", **out, Omega_px_c=Om_c, Omega_px_b=Om_b)
+
+# full digitized G0W0 (green) curve: topmost green pixel of each column, intensity = baseline - row (px); x as above (QP green peak = 0, units of Omega)
+for pname, rho in (("b", 0.5), ("c", 1.0)):
+    a, b = {"b": (0.37, 0.63), "c": (0.64, 0.91)}[pname]
+    yy0, yy1 = int(0.04 * H), int(0.2 * H)
+    sub = im[yy0:yy1, int(a * W):int(b * W)]
+    m = np.abs(sub - np.array(cols["green"])).sum(2) < 60
+    if pname == "b":
+        m[:int(0.0525 * H), :int(0.1 * W)] = False             # legend line of panel b
+    ok = m.any(0)
+    top = np.where(ok, m.argmax(0), -1)
+    base = np.median(top[ok])                                  # flat part of the curve
+    xs = np.arange(m.shape[1])[ok]
+    qp = np.sort(res[(pname, "green")][0])[::-1][0]
+    out[f"rho{rho}_g0w0_curve_x"] = (xs - qp) / Om_c
+    out[f"rho{rho}_g0w0_curve_y"] = base - top[ok]
+    print(f"rho/Omega={rho}: green curve {ok.sum()} columns, baseline row {base}, max height {np.max(base - top[ok])} px")
 np.savez("cederbaum_data/golze_fig2_measured.npz", **out, Omega_px_c=Om_c, Omega_px_b=Om_b)

@@ -11,7 +11,7 @@ TCS = [0.1, 0.05]
 PNG = "cederbaum_data/cederbaum_fullspectra.png"
 ORB = ("c", "o", "v")
 MROW = {3: -0.10, 5: -0.26, "ov": -0.52}                      # y of the rows of muted poles
-MS = {3: 8, 5: 8, "ov": 8}
+MS = {3: 10, 5: 10, "ov": 10}
 MC = {3: "#e8a0a0", 5: "#a6d6a6", "ov": "#c3a6e0"}
 
 
@@ -105,7 +105,7 @@ def draw_muted(ax, poles, y, color, ms, label=None, tol=0.02):
     ax.plot([np.mean(g) for g in groups], np.full(len(groups), y), "o", ms=ms, color=color, mec="white", mew=0.8, alpha=0.95, zorder=2, label=label)
     for g in groups:
         if len(g) > 1:
-            ax.annotate(str(len(g)), (np.mean(g), y), xytext=(0, 4), textcoords="offset points", ha="center", va="bottom", fontsize=7.5, zorder=7)
+            ax.annotate(str(len(g)), (np.mean(g), y), xytext=(0, 4), textcoords="offset points", ha="center", va="bottom", fontsize=10, zorder=7)
 
 
 def main():
@@ -113,7 +113,7 @@ def main():
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     Z = np.load("cederbaum_data/ghost_solutions.npz")
-    fig, axs = plt.subplots(len(TCS), len(VS), figsize=(13, 7.4), sharex=True, sharey=True)
+    fig, axs = plt.subplots(len(TCS), len(VS), figsize=(13, 8.8), sharex=True, sharey=True)
     w = np.linspace(-18.0, 14.0, 9000)
     for i, tc in enumerate(TCS):
         for j, V in enumerate(VS):
@@ -123,10 +123,10 @@ def main():
             ax.plot(w, lorentz(w, ep, ew), "-", lw=2.2, color="black", label="exact (ED)")
             for Bc, ls, lc, lw in ((3, "--", "red", 2.0), (5, ":", "tab:green", 3.0)):
                 eps, W, nocc, comm = gut_poles(V, tc, Bc, Z[f"V{V}_tc{tc}_z{Bc}"])
-                ax.plot(w, lorentz(w, eps, W.sum(axis=0)), ls, lw=lw, color=lc, label=rf"gGut ($B_c={Bc}$)")
+                ax.plot(w, lorentz(w, eps, W.sum(axis=0)), ls, lw=lw, color=lc, label=rf"gGut" + "\n" + rf"($B_c={Bc}$)")
                 qpk = [np.argmax(W[I]) for I in range(3)]                     # the levels of the c, o, v quasiparticle peaks (they carry the weight)
                 mu = np.ones(eps.size, bool); mu[qpk] = False                 # muted poles: every other eigenvalue of H_qp, no weight threshold
-                draw_muted(ax, eps[mu], MROW[Bc], MC[Bc], MS[Bc], rf"muted poles ($B_c={Bc}$)" if (i, j) == (0, 0) else None)
+                draw_muted(ax, eps[mu], MROW[Bc], MC[Bc], MS[Bc], rf"muted poles" + "\n" + rf"($B_c={Bc}$, $B_{{o,v}}=1$)" if (i, j) == (0, 0) else None)
                 if Bc == 3:
                     k = np.argmax(W[0])
                     ax.annotate(r"$\varepsilon_{\rm QP}^{c,{\rm Gut}}$", (eps[k], W[0, k] / (np.pi * ETA)), xytext=(-7, 0), textcoords="offset points",
@@ -137,7 +137,7 @@ def main():
                                     textcoords="offset points", ha="right" if sg < 0 else "left", va="center", fontsize=11, zorder=7)
                 print(f"V={V:.3f} tc={tc} Bc={Bc} comm={comm:.1e}  poles", np.round(eps, 3), " weights/orbital", np.round(W, 5).tolist(), flush=True)
             pv, dE = bobv_muted(V, tc)
-            draw_muted(ax, pv, MROW["ov"], MC["ov"], MS["ov"], r"muted poles ($B_{c,o,v}=3$)" if (i, j) == (0, 0) else None)
+            draw_muted(ax, pv, MROW["ov"], MC["ov"], MS["ov"], "muted poles\n($B_{c,o,v}=3$)" if (i, j) == (0, 0) else None)
             print(f"V={V:.3f} tc={tc}: (3,3,3) lowest run E-E_ED={dE:+.2e}, muted poles {np.round(np.sort(pv), 3)}", flush=True)
             label_ed(ax, ed, -18.0, 14.0)
             ax.axvline(0, color="0.7", lw=0.8)
@@ -148,9 +148,11 @@ def main():
             if j == 0:
                 ax.set_ylabel(r"$g\,A(\omega)$", fontsize=17)
             ax.text(0.03, 0.93, rf"$\rho/\Omega={np.sqrt(2)*V/2:.1f},\ t_c/g={tc:g}$", transform=ax.transAxes, fontsize=14, va="top")
-            if (i, j) == (0, 0):
-                ax.legend(fontsize=8, loc="upper right", borderaxespad=0.3, handlelength=1.6)
-    plt.tight_layout(w_pad=1.5)
+    h, l = axs[0, 0].get_legend_handles_labels()
+    o = [0, 2, 1, 4, 3, 5]                                              # top row: exact and the gGut curves; bottom row: the muted poles
+    h, l = [h[k] for k in o], [l[k] for k in o]
+    fig.legend(h, l, loc="lower center", ncol=3, fontsize=13, frameon=False, handlelength=2.2, markerscale=1.2, columnspacing=2.0)
+    plt.tight_layout(w_pad=1.5, rect=(0, 0.15, 1, 1))
     plt.savefig(PNG, dpi=150); plt.close()
     print("wrote", PNG)
 
