@@ -15522,9 +15522,9 @@
     "semantic_hash": ""
   },
   "doc/cederbaum.pdf": {
-    "mtime": 1793266012.756027,
-    "seen": 1793266073.1051733,
-    "ast_hash": "ac2b40c8e8a09bffce677b4a838dc648",
+    "mtime": 1793268455.8869185,
+    "seen": 1793268526.2308812,
+    "ast_hash": "252de74a0da4c773bc3ff96a31c21cbb",
     "semantic_hash": ""
   },
   "doc/excited_phi_cederbaum.pdf": {
@@ -15942,9 +15942,9 @@
     "semantic_hash": ""
   },
   "plot_golze_units.py": {
-    "mtime": 1793123191.668534,
-    "seen": 1793206940.215756,
-    "ast_hash": "b838e9195b8209d71e8d04fb82e40d8b",
+    "mtime": 1793267598.180692,
+    "seen": 1793268526.2273786,
+    "ast_hash": "f8509a0d76a258b2f3c5c102f7f37ff6",
     "semantic_hash": ""
   },
   "plot_ionic_spectral_link.py": {
@@ -15984,9 +15984,9 @@
     "semantic_hash": ""
   },
   "cederbaum_data/golze_units.png": {
-    "mtime": 1793123192.4765642,
-    "seen": 1793206940.2190156,
-    "ast_hash": "398c97e62ec11e332fc7708447fafde9",
+    "mtime": 1793267598.9237866,
+    "seen": 1793268526.2309082,
+    "ast_hash": "50e642f883e6ecd778ae556b953a0f53",
     "semantic_hash": ""
   },
   "merged_Ng/ionic_spectral_link.png": {
@@ -16158,15 +16158,15 @@
     "semantic_hash": ""
   },
   "measure_golze_fig2.py": {
-    "mtime": 1793122896.2756426,
-    "seen": 1793206940.215744,
-    "ast_hash": "280308ceaecd361fa905107f3bebc850",
+    "mtime": 1793267288.724441,
+    "seen": 1793268526.2273664,
+    "ast_hash": "6b667ca9c0df4ea685deed598e014fca",
     "semantic_hash": ""
   },
   "plot_cederbaum_fullspectra.py": {
-    "mtime": 1793266009.031634,
-    "seen": 1793266073.1015441,
-    "ast_hash": "68931aba273e1af8dfa9356da80c5c0e",
+    "mtime": 1793268448.1298382,
+    "seen": 1793268526.2273722,
+    "ast_hash": "dde947da061e6b155314bf975c75c758",
     "semantic_hash": ""
   },
   "test_inner_loop.py": {
@@ -16176,9 +16176,9 @@
     "semantic_hash": ""
   },
   "cederbaum_data/cederbaum_fullspectra.png": {
-    "mtime": 1793266011.2188742,
-    "seen": 1793266073.1051877,
-    "ast_hash": "e2cf52b487f76fd5f4bb6606d8a1d4d0",
+    "mtime": 1793268450.225029,
+    "seen": 1793268526.230905,
+    "ast_hash": "3d9989244c452b68ebe0157962d17f08",
     "semantic_hash": ""
   },
   "test_bo_bv.py": {
