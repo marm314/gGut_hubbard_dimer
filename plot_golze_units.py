@@ -49,31 +49,34 @@ x = np.linspace(-5.2, 5.6, 6000)
 for ax, V in zip(axs, VS):
     kx = MEAS[f"rho{round(np.sqrt(2) * V / OMEGA, 1)}_g0w0_curve_x"]
     XL = (kx.min(), kx.max())                       # same x range as the frame of Golze's Fig. 2b,c
-    ax.set_xlim(*XL)
-    for i, ((p, w), (lab, col)) in enumerate(zip(rows(V), ROWS)):
+    ax.set_xlim(*XL); ax.set_ylim(-0.1, 1.35 * len(ROWS) - 0.1)       # same y scale in both panels
+    RW = rows(V)
+    for i, ((p, w), (lab, col)) in enumerate(zip(RW, ROWS)):
         if i < 2:
             pu = p                                   # already in units of Omega, QP at 0
         else:
             pu = (p - p[np.argmax(w)]) / OMEGA       # gGut/ED poles: QP = strongest pole
         off = 1.35 * (len(ROWS) - 1 - i)
-        y = lor(x, pu, w)
-        y = y / y.max() if y.max() > 0 else y
+        y = lor(x, pu, w) * np.pi * ETA                  # common scale for all rows: peak height = pole weight (equal widths)
         ax.plot(x, off + y, color=col, lw=1.4)
-        ax.vlines(pu, off, off + w / w.max(), color=col, lw=1, alpha=0.5)
+        ax.vlines(pu, off, off + w, color=col, lw=1, alpha=0.5)
         ax.axhline(off, color="0.85", lw=0.6, zorder=0)
         if lab.startswith("G$_0$W$_0$"):                       # reference G0W0 positions of Kocklauner & Golze (measured from their Fig. 2)
             kk = f"rho{round(np.sqrt(2) * V / OMEGA, 1)}_g0w0_curve_"
             xc, yc = MEAS[kk + "x"], MEAS[kk + "y"]
-            ax.plot(xc, off + yc / yc.max(), "--", color="0.15", lw=1.1, zorder=5)      # digitized curve of Kocklauner & Golze
+            wex = RW[2][1].max()                           # QP weight of our exact (t_c=0) row: the exact QP peak of Golze (same y scale in a panel) calibrates pixels -> weight
+            ax.plot(xc, off + yc / MEAS[f"rho{round(np.sqrt(2) * V / OMEGA, 1)}_exact_hpx"] * wex, "--", color="0.15", lw=1.1, zorder=5)      # digitized curve of Kocklauner & Golze
         ax.text(XL[0] + 0.1, off + 0.55, lab, ha="left", fontsize=9, color=col)
     r0 = ed.solve(1.0, 10.0, V, 0.0, ht="cv")                     # vertical lines at the exact pole positions (t_c=0)
     for xe in (r0["poles"][r0["weights"] > 1e-3] - r0["poles"][0]) / OMEGA:
         ax.axvline(xe, color="0.6", lw=0.8, ls=":", zorder=0)
+    xe = np.sort((r0["poles"][r0["weights"] > 1e-3] - r0["poles"][0]) / OMEGA)[::-1]            # QP, Sat1, Sat2 of the exact spectrum (as the ticks of Golze's Fig. 2)
+    ax.set_xticks(xe); ax.set_xticklabels([r"$\epsilon_c^{\rm QP}$", r"$\epsilon_c^{\rm Sat1}$", r"$\epsilon_c^{\rm Sat2}$"][:len(xe)], fontsize=12)
     ax.set_title(rf"$\rho/\Omega={np.sqrt(2)*V/OMEGA:.1f}$  ($V/g={V:.3f}$)")
-    ax.set_xlabel(r"$(\omega-\epsilon_{QP})/\Omega$"); ax.set_yticks([])
-axs[0].set_ylabel("intensity (each row normalized to its tallest peak)")
+    ax.set_xlabel(r"$\omega$", fontsize=13); ax.set_yticks([])
+axs[0].set_ylabel("Intensity / a.u.", fontsize=12)
 fig.suptitle(r"$G^h_{cc}$ in the units of Golze's Fig. 2 ($\Omega=2g$)", y=0.995)
-fig.text(0.5, 0.004, "dashed: G$_0$W$_0$ curve of Kockl\u00e4uner and Golze (digitized from their Fig. 2, normalized to its maximum)", ha="center", fontsize=9)
+fig.text(0.5, 0.004, "dashed: G$_0$W$_0$ curve of Kockl\u00e4uner and Golze (digitized from their Fig. 2, scaled with their exact QP peak)", ha="center", fontsize=9)
 fig.subplots_adjust(left=0.055, right=0.995, top=0.91, bottom=0.105, wspace=0.03)
 fig.savefig("cederbaum_data/golze_units.png", dpi=160)
 for V in VS:

@@ -48,5 +48,10 @@ for pname, rho in (("b", 0.5), ("c", 1.0)):
     qp = np.sort(res[(pname, "green")][0])[::-1][0]
     out[f"rho{rho}_g0w0_curve_x"] = (xs - qp) / Om_c
     out[f"rho{rho}_g0w0_curve_y"] = base - top[ok]
+    mr = np.abs(sub - np.array(cols["red"])).sum(2) < 60
+    if pname == "b":
+        mr[:int(0.0525 * H), :int(0.1 * W)] = False             # legend line
+    okr = mr.any(0); topr = np.where(okr, mr.argmax(0), -1)
+    out[f"rho{rho}_exact_hpx"] = np.median(topr[okr]) - topr[okr].min()      # height of the (unclipped) exact QP peak in px: calibrates the intensity scale (same y scale for all curves of a panel)
     print(f"rho/Omega={rho}: green curve {ok.sum()} columns, baseline row {base}, max height {np.max(base - top[ok])} px")
 np.savez("cederbaum_data/golze_fig2_measured.npz", **out, Omega_px_c=Om_c, Omega_px_b=Om_b)

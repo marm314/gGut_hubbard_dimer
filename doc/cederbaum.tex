@@ -458,7 +458,7 @@ With $\Omega=\epsilon_v-\epsilon_o=2g$ and the transition moment $\rho$ (GW+C ex
 \rho=\sqrt2\,V,\qquad \frac{\rho}{\Omega}=\frac{V}{\sqrt2\,g},
 \end{equation}
 confirmed by the small-$V$ limit of the exact satellite-to-QP weight ratio ($2.00\times10^{-4}=(\sqrt2V)^2/\Omega^2$ at $V/g=0.02$, \texttt{g0w0\_cederbaum.py}). Their ratios $\rho/\Omega=0.5$, $1.0$ are $V/g=0.707$, $1.414$, the values used throughout this note.
-Their figure gives only the ratio, no energy axis, so $E_c$ cannot be taken from it (it only shifts the poles rigidly); Fig.~\ref{fig:golze} plots $(\omega-\epsilon_{\rm QP})/\Omega$.
+Their figure gives only the ratio, no energy axis, so $E_c$ cannot be taken from it (it only shifts the poles rigidly); Fig.~\ref{fig:golze} therefore uses $\omega$ with ticks at the exact $\epsilon_c^{\rm QP}$, $\epsilon_c^{\rm Sat1}$, $\epsilon_c^{\rm Sat2}$.
 
 \paragraph{G$_0$W$_0$ and GW+C for the model (computed here).} We computed G$_0$W$_0$ and GW+C for this model ourselves (\texttt{g0w0\_cederbaum.py}) from the expressions below, in order to compare with the G$_0$W$_0$ and GW+C of Ref.~\cite{Kocklauner2024} (not taken from it). With $G_0$ the bare core level and one bosonic mode, $\Sigma_c(\omega)=\rho^2/(\omega-\epsilon_c+\Omega)$ (no exchange or Hedin shift), the poles of $[\omega-\epsilon_c-\Sigma_c]^{-1}$ solve $x(x+\Omega)=\rho^2$: a QP pole and one satellite at $-\Omega\sqrt{1+4\rho^2/\Omega^2}$,
 against the exact satellites at $-\Omega\sqrt{1+2\rho^2/\Omega^2}$ and twice that. GW+C has Poisson satellites at $\epsilon_{\rm QP}-n\Omega$ with weights $e^{-\gamma}\gamma^n/n!$. These expressions agree with Eqs.~(11), (14), (16)--(17), (33), (36), (44)--(47) of Ref.~\cite{Kocklauner2024} (the exchange constant $\Sigma^x-v^{xc}$ is absorbed in $\epsilon_c$),
@@ -485,8 +485,7 @@ $\rho/\Omega$ & & satellite positions $/\Omega$ (from QP) & weights (QP, satelli
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=\textwidth]{../cederbaum_data/golze_units.png}
-  \caption{$G^h_{cc}$ in the units of Fig.~2 of Ref.~\cite{Kocklauner2024} (Lorentzian half-width $0.018\,\Omega$, from a Lorentzian fit to the peaks of the G$_0$W$_0$ curve of Golze; each row normalized to its tallest peak); left $\rho/\Omega=0.5$ ($V/g=0.707$), right $\rho/\Omega=1.0$ ($V/g=1.414$), $E_c/g=10$.
-  Rows: GW+C; G$_0$W$_0$ (computed here from the model, Eqs.\ below, to match the G$_0$W$_0$ of Ref.~\cite{Kocklauner2024}); exact at $t_c=0$ and $0.05$; gGut $B_c=1$, $3$, $5$ ($t_c/g=0.05$). Dotted lines: the exact poles at $t_c=0$. Dashed black line: the G$_0$W$_0$ curve of Kockl\"auner and Golze, digitized from their rendered Fig.~2b,c (\texttt{measure\_golze\_fig2.py}; accuracy a few per cent in energy), with the QP peak at $0$, normalized to its maximum; at $\rho/\Omega=1.0$ their QP peak is clipped by the frame, so the heights there are only indicative; our computed G$_0$W$_0$ reproduces its peak positions and width. gGut has a single peak at every $B_c$.}
+  \caption{$G^h_{cc}$ in the units of Fig.~2 of Ref.~\cite{Kocklauner2024}; left $\rho/\Omega=0.5$ ($V/g=0.707$), right $\rho/\Omega=1.0$ ($V/g=1.414$), $E_c/g=10$. Rows: GW+C; G$_0$W$_0$; exact at $t_c=0$ and $0.05$; gGut $B_c=1$, $3$, $5$ ($t_c/g=0.05$). All rows share one scale (peak height $=$ pole weight) and a Lorentzian half-width $0.018\,\Omega$, fitted to the G$_0$W$_0$ peaks of Golze. Ticks: exact $t_c=0$ QP and satellite energies (dotted lines). Dashed: the G$_0$W$_0$ curve of Ref.~\cite{Kocklauner2024}, digitized from their Fig.~2 and scaled with their exact QP peak (\texttt{measure\_golze\_fig2.py}); its QP peak at $\rho/\Omega=1.0$ is cut off by their frame.}
   \label{fig:golze}
 \end{figure}
 
