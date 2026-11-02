@@ -45,3 +45,4 @@ doc/results.aux
 doc/results.out
 doc/results.toc
 doc/*.tex.bak
+*.orig
