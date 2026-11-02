@@ -13,6 +13,7 @@
 \usepackage{caption}
 \usepackage{subcaption}
 
+\newcommand{\hl}[1]{\par\medskip\noindent\fcolorbox{lvA}{lvA!7}{\parbox{0.955\linewidth}{#1}}\par\medskip}
 \newcommand{\dg}{^{\dagger}}
 \newcommand{\Ng}{N_{g}}
 \newcommand{\dV}{\Delta V}
@@ -256,7 +257,6 @@ at $\dV=2$) as functions of $U/t$; the dashed line is $U_c/t$.
   \item $\Ng=2$, $\dV=0$: \href{run:../scan_ng2_not_imp/qp_orbitals_vs_U.mp4}{orbitals}, \href{run:../scan_ng2_not_imp/qp_density_vs_U.mp4}{density}
   \item $\Ng=2$, $\dV=2$: \href{run:../scan_ng2_dV2_confirmed/qp_orbitals_vs_U.mp4}{orbitals}, \href{run:../scan_ng2_dV2_confirmed/qp_density_vs_U.mp4}{density}
 \end{itemize}
-\noindent Note. At each $U/t$ the part of the $\Ng=2$ HOMO and LUMO that sits on the two states has the same shape as the $\Ng=0$ occupied and virtual orbital (same relative amplitudes and signs; the global signs of the $\Ng=0$ orbitals are chosen to match them). The rest of the $\Ng=2$ orbitals sits on the ghosts; this takes weight away from the state part, so the weight of the $\Ng=2$ HOMO and LUMO vanishes at a lower $U_c/t$ than the $\Ng=0$ one ($6.56$ and $8.33$ against $8.00$ and $9.66$ at $\dV=0$ and $2$). At $\dV=2$ and $U/t\lesssim1.5$ the $\Ng=2$ HOMO and LUMO are weightless ghost levels, and the orbitals that carry the state weight are the deeper ones.
 What can be seen at the critical $U_c/t$ of the weight transfer ($6.56$ for $\dV=0$, $\simeq8.3$ for $\dV=2$):
 \begin{itemize}[nosep]
   \item \emph{Spectral gap} (first panel of the density movies, lowest positive minus highest negative energy among the levels with weight $\ge10^{-3}$): it decreases smoothly with $U/t$
@@ -271,6 +271,38 @@ What can be seen at the critical $U_c/t$ of the weight transfer ($6.56$ for $\dV
   \item $Z$ stays $\ge0.975$ for all $U/t$ (no collapse of the renormalization), and at $\dV=0$ the state densities are $0.50$ at all $U/t$; the colors of the ghost circles are not a signature of the transition.
 \end{itemize}
 This is a gap closing and re-opening of the gGA solution. It is not present in the exact dimer, whose spectral gap varies smoothly with $U/t$ (Sec.~\ref{sec:spectra}).
+
+\subsection{$\Ng=0$ orbitals versus the $\Ng=2$ HOMO and LUMO}
+\label{sec:orbcomp}
+
+\hl{\textbf{Relation between the two.} At each $U/t$ the part of the $\Ng=2$ HOMO and LUMO that sits on the two states has the same shape as the $\Ng=0$ occupied and virtual orbital: the same relative amplitudes and signs (the global signs of the $\Ng=0$ orbitals are chosen to match). The rest of the $\Ng=2$ orbitals sits on the ghosts; it takes weight away from the state part, so the weight of the $\Ng=2$ HOMO and LUMO vanishes at a lower $U_c/t$ than the $\Ng=0$ one ($6.56$ and $8.33$ against $8.00$ and $9.66$ at $\dV=0$ and $2$). The transition does \emph{not} take place at the same $U/t$, but the orbitals are the same.}
+
+Table~\ref{tab:orbcomp} gives, for the $\Ng=2$ HOMO, the weight $n_s$ on the two states, the overlap between its state part and the $\Ng=0$ occupied orbital, the level energies and the $A(\omega)$ weights of both (the LUMO has the same values with the opposite energy; script \texttt{ng0\_vs\_ng2\_orbitals.py}). The overlap is $1.000$ over the whole range ($0.996$ at $U/t=8$, $\dV=2$, where $n_s$ is already $0.09$), $n_s$ falls to zero at $U_c$, and the weight is $A\simeq2n_s$ for $\Ng=2$ against $2Z$ for $\Ng=0$. At $\dV=2$ and $U/t\lesssim1.5$ the $\Ng=2$ HOMO and LUMO are weightless ghost levels, and the orbitals that carry the state weight are the deeper ones.
+
+\begin{table}[H]
+\centering\small
+\begin{tabular}{r rr rr rr}
+\toprule
+ & \multicolumn{2}{c}{$\Ng=2$ HOMO: state part} & \multicolumn{2}{c}{$|\epsilon|/t$} & \multicolumn{2}{c}{$A(\omega)$ weight}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+$U/t$ & $n_s$ & overlap with $\Ng=0$ & $\Ng=2$ & $\Ng=0$ & $\Ng=2$ & $\Ng=0$\\
+\midrule
+\multicolumn{7}{l}{$\dV=0$}\\
+2 & 0.86 & 1.000 & 0.88 & 0.94 & 1.72 & 1.88\\
+4 & 0.54 & 1.000 & 0.57 & 0.75 & 1.08 & 1.50\\
+5 & 0.35 & 1.000 & 0.36 & 0.61 & 0.69 & 1.22\\
+6 & 0.13 & 1.000 & 0.14 & 0.44 & 0.27 & 0.88\\
+\midrule
+\multicolumn{7}{l}{$\dV=2$}\\
+2 & 0.98 & 1.000 & 1.52 & 1.54 & 1.96 & 1.99\\
+4 & 0.86 & 1.000 & 1.02 & 1.08 & 1.73 & 1.85\\
+6 & 0.55 & 1.000 & 0.59 & 0.75 & 1.09 & 1.45\\
+8 & 0.09 & 0.996 & 0.09 & 0.38 & 0.18 & 0.76\\
+\bottomrule
+\end{tabular}
+\caption{$\Ng=2$ HOMO against the $\Ng=0$ occupied orbital: weight $n_s$ on the two states, overlap of the state part with the $\Ng=0$ orbital, level energy and $A(\omega)$ weight.}
+\label{tab:orbcomp}
+\end{table}
 
 \subsection{Ionic and covalent weights}
 

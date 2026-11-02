@@ -1,0 +1,2 @@
+wrote scan_ng2_not_imp/qp_orbitals_vs_U.mp4
+wrote scan_ng2_dV2_confirmed/qp_orbitals_vs_U.mp4
