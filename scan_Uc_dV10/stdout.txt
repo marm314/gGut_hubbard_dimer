@@ -1,0 +1,5 @@
+dV=5 start solutions: 201
+chain done
+sweep 0: improved 85
+sweep 1: improved 78
+all done

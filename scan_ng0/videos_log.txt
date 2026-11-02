@@ -1,0 +1,4 @@
+wrote merged_Ng/ng0_3d_dV0.png
+wrote merged_Ng/ng0_3d_dV2.png
+wrote scan_ng0/dV_0.0/A_omega_vs_U.mp4  (100 frames @ 12 fps = 8.3s)
+wrote scan_ng0/dV_2.0/A_omega_vs_U.mp4  (100 frames @ 12 fps = 8.3s)

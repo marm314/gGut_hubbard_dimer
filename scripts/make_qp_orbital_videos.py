@@ -6,7 +6,7 @@ eigenvectors of the on-site block H_s = -lambda_s projected on the orthogonal co
 Half filling, as in gga_dimer.qp_state: the lowest N/2 of the N = 2(1+Ng) eigenvectors returned by eigh are filled (per spin), no fractional
 occupation; the density is the code's own 1-RDM rho in the star basis.
 
-orbitals video : one panel per eigenorbital of H_qp (top row occupied, bottom row empty): circle area ~ |amplitude|^2, color = sign.
+orbitals video : one panel per eigenorbital of H_qp (top row occupied, bottom row virtual): circle area ~ |amplitude|^2, color = sign.
 density video  : qp density rho_aa = sum_occ |phi(a)|^2 on the skeleton, bond order between centers, and gaps / Z / double occupancy vs U/t.
 Writes <scan_dir>/qp_orbitals_vs_U.mp4 and <scan_dir>/qp_density_vs_U.mp4 (ffmpeg)."""
 import re
@@ -114,30 +114,75 @@ def load_frames(get_dir):
     return fr
 
 
+SAT_DEG_TOL = 0.05      # satellites of a site closer than this (in t) are treated as degenerate
+DEG_TOL = 0.06          # levels closer than this (in t) are treated as one degenerate group when aligning the orbitals
+
+
 def align_frames(fr):
     """Make the orbitals continuous in U/t. (i) Satellites: the star satellites of a site are re-identified between consecutive U/t
     (Hungarian on |d e| + |d v|) so a satellite keeps its position on the skeleton; the eigenvector components are permuted accordingly.
     (ii) Signs: maximum-overlap partner in the previous frame, positive overlap (panels stay in energy order)."""
     from scipy.optimize import linear_sum_assignment
     Neff = fr[0]["Neff"]; Ng = Neff - 1
-    for k in range(1, len(fr)):
-        p, c_ = fr[k - 1], fr[k]
-        perm = np.arange(2 * Neff)
-        for s_ in range(2):
-            ep, vp = p["info"][s_][1], np.abs(p["info"][s_][2]); ec, vc = c_["info"][s_][1], np.abs(c_["info"][s_][2])
-            cost = np.abs(ep[:, None] - ec[None, :]) + np.abs(vp[:, None] - vc[None, :])
-            r, cc = linear_sum_assignment(cost)                 # previous satellite r <-> current satellite cc
-            for a, b in zip(r, cc): perm[s_ * Neff + 1 + a] = s_ * Neff + 1 + b
+    # Start from the frame where the levels are best separated (largest minimum gap between neighbouring levels): there the orbitals are canonical eigenstates. Where the levels are
+    # (nearly) degenerate eigh returns an arbitrary basis, so these frames must inherit their orbitals from the well-defined ones, not the other way round: propagate outwards from
+    # the reference frame, upwards and downwards in U/t.
+    ref = int(np.argmax([np.diff(np.sort(f["eps"])).min() for f in fr]))
+    pairs = [(fr[k - 1], fr[k]) for k in range(ref + 1, len(fr))] + [(fr[k + 1], fr[k]) for k in range(ref - 1, -1, -1)]
+    for p, c_ in pairs:
+        # satellite identity between consecutive frames: among all assignments of the satellites of each site (Ng! per site), take the one that makes the orbitals most continuous
+        # (largest sum of the maximum-overlap assignment between the previous and the current orbitals); cheaper and more robust than matching satellite energies.
+        import itertools
+        best_sc, perm = -1.0, np.arange(2 * Neff)
+        for q0 in itertools.permutations(range(Ng)):
+            for q1 in itertools.permutations(range(Ng)):
+                pm = np.arange(2 * Neff)
+                for a_ in range(Ng): pm[1 + a_] = 1 + q0[a_]; pm[Neff + 1 + a_] = Neff + 1 + q1[a_]
+                ovc = np.abs(p["ph"].T @ c_["ph"][pm, :]); r_, c2_ = linear_sum_assignment(-ovc); sc_ = ovc[r_, c2_].sum()
+                if sc_ > best_sc + 1e-12: best_sc, perm = sc_, pm
         # new position i of a component = old index perm[i]
         c_["ph"] = c_["ph"][perm, :]
         c_["info"] = [(c_["info"][s_][0], c_["info"][s_][1][perm[s_ * Neff + 1:(s_ + 1) * Neff] - s_ * Neff - 1],
                        c_["info"][s_][2][perm[s_ * Neff + 1:(s_ + 1) * Neff] - s_ * Neff - 1]) for s_ in range(2)]
-        # phases: orbital n (energy order) takes the sign that makes its overlap with its maximum-overlap partner of the previous frame
-        # positive (MOM for the signs only; the panels stay in energy order)
-        ov = p["ph"].T @ c_["ph"]                               # <prev_m | cur_n>
-        for n in range(ov.shape[1]):
-            m = np.argmax(np.abs(ov[:, n]))
-            if ov[m, n] < 0: c_["ph"][:, n] *= -1
+        # (ii b) degenerate satellites: if the satellites of a site have (nearly) the same energy, their basis inside that subspace is arbitrary (eigh gives a different rotation
+        # at every U/t). Rotate them (orthogonal Procrustes, one rotation per site) so that the satellite components of the orbitals stay as close as possible to the previous frame;
+        # the coupling vector to the centre (used for the bonds) is rotated with them.
+        if Ng >= 2:
+            for s_ in range(2):
+                if np.ptp(c_["info"][s_][1]) < SAT_DEG_TOL:
+                    rows = list(range(s_ * Neff + 1, (s_ + 1) * Neff)); A_s = p["ph"][rows, :]; B_s = c_["ph"][rows, :]
+                    Uu, _, Vt = np.linalg.svd(A_s @ B_s.T); Rot = Uu @ Vt
+                    c_["ph"][rows, :] = Rot @ B_s
+                    c_["info"][s_] = (c_["info"][s_][0], c_["info"][s_][1], Rot @ c_["info"][s_][2])
+        # (iii) orbital tracking. Each panel follows one orbital: the current orbitals are matched to the previous frame's by maximum overlap (Hungarian on |<prev|cur>|) and
+        # permuted into the previous slots (eps, w, occupation move with them), so an orbital never jumps to another panel when levels cross or split.
+        # Near-degenerate levels (closer than DEG_TOL): eigh returns an arbitrary basis of the subspace, so the orbitals of each such group are first rotated
+        # (orthogonal Procrustes) onto the previous orbitals they overlap most with.
+        N_ = c_["ph"].shape[1]; e_ = c_["eps"]; g0 = 0
+        for n in range(1, N_ + 1):
+            if n == N_ or e_[n] - e_[n - 1] > DEG_TOL:
+                if n - g0 >= 2:
+                    G = list(range(g0, n)); M = c_["ph"][:, G]
+                    S_ = p["ph"].T @ M                                  # <prev_slot | cur_member>
+                    rr, cc2 = linear_sum_assignment(-np.abs(S_.T))      # member r <-> previous slot cc2[r]
+                    P = p["ph"][:, cc2]; Uu, _, Vt = np.linalg.svd(M.T @ P); c_["ph"][:, G] = M @ (Uu @ Vt)
+                g0 = n
+        ov = p["ph"].T @ c_["ph"]                                       # <prev_slot m | cur_n>
+        slot, cur = linear_sum_assignment(-np.abs(ov))                  # previous slot <-> current orbital
+        order = np.empty(N_, dtype=int); order[slot] = cur              # new column m = current orbital order[m]
+        for key in ("eps", "w", "occf"): c_[key] = c_[key][order]
+        c_["ph"] = c_["ph"][:, order]
+        # phases. Two kinds of sign freedom, both fixed against the previous frame: the sign of each orbital (column), and the sign of each satellite basis vector of the star basis
+        # (row; eigh/the star construction may flip it from frame to frame, which would recolour that ghost circle in every orbital at once). Alternate: row signs from the
+        # current column signs, column signs from the current row signs (the centre rows are not flipped: global sign fixed by the columns).
+        A_ = c_["ph"]; B_ = p["ph"]; sat = [r for r in range(A_.shape[0]) if r % Neff != 0]
+        sig = np.array([1.0 if B_[:, n] @ A_[:, n] >= 0 else -1.0 for n in range(N_)]); rs = np.ones(A_.shape[0])
+        for _ in range(6):
+            for r in sat:
+                v = float((A_[r, :] * sig) @ B_[r, :]); rs[r] = 1.0 if v >= 0 else -1.0
+            for n in range(N_):
+                v = float((rs * A_[:, n]) @ B_[:, n]); sig[n] = 1.0 if v >= 0 else -1.0
+        c_["ph"] = (A_ * rs[:, None]) * sig[None, :]
 
 
 def bonds_from(f):
@@ -152,8 +197,8 @@ def bonds_from(f):
 
 def make_orbitals(fr, title, out, fps=12):
     Neff = fr[0]["Neff"]; N = 2 * Neff; xy = skeleton_xy(Neff); nocc = N // 2
-    fig, axs = plt.subplots(2, nocc, figsize=(3.4 * nocc, 6.2)); axs = np.atleast_2d(axs)
-    txt = fig.suptitle("", fontsize=14)
+    fig, axs = plt.subplots(2, nocc, figsize=(3.4 * nocc, 6.2), squeeze=False)
+    txt = fig.suptitle("", fontsize=12)
 
     def update(i):
         f = fr[i]
@@ -162,7 +207,7 @@ def make_orbitals(fr, title, out, fps=12):
             amp = f["ph"][:, n] ** 2 * np.sign(f["ph"][:, n])
             draw_sk(ax, xy, Neff, amp, bonds=bonds_from(f))
             fo = f["occf"][n]
-            lab = "occ" if fo > 0.5 else "empty"
+            lab = "occ" if fo > 0.5 else "virt"
             ax.set_title(f"{lab}  eps={f['eps'][n]:+.2f}\nA(w) weight {f['w'][n]:.3f}", fontsize=9,
                          color="k" if f["w"][n] >= 1e-3 else "0.5")
             if fo > 1e-3:
@@ -171,11 +216,11 @@ def make_orbitals(fr, title, out, fps=12):
         pos = [e for e, ww in zip(f["eps"], f["w"]) if e > 1e-9 and ww >= 1e-3]; neg = [e for e, ww in zip(f["eps"], f["w"]) if e < -1e-9 and ww >= 1e-3]
         sg = (min(pos) - max(neg)) if pos and neg else float("nan")
         txt.set_text(f"{title}    U/t = {f['U']:.1f}    Z = {f['z']:.3f}\nqp gap (HOMO-LUMO) = {gap:.2f}     spectral gap = {sg:.2f}\n"
-                     f"large circles joined left-right = the two states; small outer circles = their ghosts")
+                     f"large circles joined left-right = the two states; small outer circles = their ghosts\neach panel follows one orbital (matched to the previous U/t; phases aligned)")
         return []
 
     ani = animation.FuncAnimation(fig, update, frames=len(fr), blit=False)
-    fig.tight_layout(rect=(0, 0, 1, 0.87))
+    fig.tight_layout(rect=(0, 0, 1, 0.83))
     ani.save(out, writer=animation.FFMpegWriter(fps=fps, bitrate=2500)); plt.close(fig)
     print("wrote", out, flush=True)
 
