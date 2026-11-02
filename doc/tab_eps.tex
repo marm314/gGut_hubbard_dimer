@@ -1,0 +1,15 @@
+\begin{table}[h]
+\centering\small
+\begin{tabular}{r r r r l}
+\toprule
+$\varepsilon$ & $E-E_{\rm ED}$ & projected gradient & $\|[H_{qp},\rho]\|$ & outcome\\
+\midrule
+$1\times10^{-9}$ & $9.1\times10^{-8}$ & $9.7\times10^{-4}$ & $3.4\times10^{-3}$ & stalls\\
+$1\times10^{-7}$ & $9.1\times10^{-6}$ & $1.1\times10^{-7}$ & $1.8\times10^{-7}$ & converged\\
+$1\times10^{-5}$ & $8.5\times10^{-4}$ & $4.1\times10^{-7}$ & $1.1\times10^{-7}$ & converged\\
+$1\times10^{-12}$ & $-5.6\times10^{-10}$ & $1.2\times10^{0}$ & $4.3\times10^{0}$ & no convergence\\
+\bottomrule
+\end{tabular}
+\caption{Re-minimization of the stored $\varepsilon=10^{-9}$ solution at other shifts ($V/g=\sqrt2$, $t_c/g=1$, $B_c=3$; \texttt{eps\_dependence.py}). The projected gradient is the part of $\nabla E$ not cancelled by the constraint normals.}
+\label{tab:eps}
+\end{table}

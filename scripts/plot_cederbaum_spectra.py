@@ -1,4 +1,4 @@
-"""Hole spectral function of the core orbital, exact (ED of H+H_t^cv) vs gGut (B_c=3, direct minimization,
+"""Hole spectral function of the core orbital, exact (ED of H+H_t^cv) vs gGut (B_c=3, 5, direct minimization at eps=1e-9, ghost poles placed on the ED satellites;
 Eq. GFgGut), for t_c = 0.1 and 0.05 and V = 0.5, 1, 2 (g=1, E_c=10).
 Step 1 (compute): python3 scripts/plot_cederbaum_spectra.py compute   -> cederbaum_spectra.npz
 Step 1b: python3 scripts/plot_cederbaum_spectra.py addbc1 (adds the B_c=1 loop spectra)
@@ -87,8 +87,8 @@ def plot():
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     d = load_all(); d5 = load_bc5()
-    CP = np.load("cederbaum_data/ghost_solution_poles.npz")      # poles/weights of the cached B_c=3, 5 solutions (cache_poles.py)
-    GL = np.load("cederbaum_data/golze_ghost_levels.npz")       # ghost poles as returned by the minimizer (ghost_levels_golze.py, *_orig)
+    CP = np.load("cederbaum_data/ghost_solution_poles.npz")                                    # poles/weights of the eps=1e-9 B_c=3, 5 solutions (cache_poles.py)
+    PL = {V: np.load(f"cederbaum_data/ghost_placed_eps1e-09/V{V}.npz") for V in VS}            # ghost poles placed on the ED satellites (place_ghosts_scan.py, GHOST_EPS=1e-9)
     fig, axs = plt.subplots(len(TCS), len(VS), figsize=(13, 7.2), sharex=True)
     w = np.linspace(-18.0, 0.8, 3500)
     for i, tc in enumerate(TCS):
@@ -102,11 +102,10 @@ def plot():
             ax.plot(w, lorentz(w, gg_p, gg_w), "--", lw=2.2, color="red", label="gGut ($B_c=3$)")
             k5 = f"V{V}_tc{tc}"
             ax.plot(w, lorentz(w, CP[k5 + "_B5_poles"], CP[k5 + "_B5_w"]), ":", lw=3.2, color="tab:green", label="gGut ($B_c=5$)")
-            # zero-weight ghost poles (occupied ghost levels of H_qp, as returned by the minimizer) as muted dots below zero
-            for Bc, pk, wk, mc, msz in ((3, gg_p, gg_w, "#e8a0a0", 7), (5, CP[key + "_B5_poles"], CP[key + "_B5_w"], "#a6d6a6", 13)):
-                if pk is None: continue
-                rel = GL[f"V{V}_tc{tc}_B{Bc}_ghost_rel_orig"]
-                ax.plot(pk[np.argmax(wk)] + 2.0 * rel, -0.13 + 0 * rel, "o", color=mc, ms=msz, alpha=0.95, mec="none", zorder=1 if Bc == 5 else 2)
+            # zero-weight ghost poles (occupied ghost levels of H_qp) placed on the ED satellites by the gauge shift, as muted dots below zero
+            for Bc, mc, msz in ((3, "#e8a0a0", 7), (5, "#a6d6a6", 13)):
+                gl = PL[V][f"tc{tc}_B{Bc}_ghost_after"]
+                ax.plot(gl, -0.13 + 0 * gl, "o", color=mc, ms=msz, alpha=0.95, mec="none", zorder=1 if Bc == 5 else 2)
             ax.set_xlim(-18.0, 0.8)
             ax.set_ylim(bottom=-0.26)
             ax.tick_params(labelsize=14)
@@ -119,7 +118,7 @@ def plot():
                 from matplotlib.lines import Line2D
                 hh, ll = ax.get_legend_handles_labels()
                 hh += [Line2D([0], [0], marker="o", ls="", color="#e8a0a0", ms=7, mec="none"), Line2D([0], [0], marker="o", ls="", color="#a6d6a6", ms=11, mec="none")]
-                ll += ["ghost poles ($B_c=3$)", "ghost poles ($B_c=5$)"]
+                ll += ["ghost poles ($B_c=3$), placed", "ghost poles ($B_c=5$), placed"]
                 ax.legend(hh, ll, fontsize=12, loc="center left")
     plt.tight_layout()
     plt.savefig(PNG, dpi=150); plt.close()

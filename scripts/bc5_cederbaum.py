@@ -37,10 +37,10 @@ def solve_bc3(args):
     return (V, tc, best.x if best is not None else None)
 
 
-def embed(z3, V, tc):
+def embed(z3, V, tc, eps=1e-9):
     """B_c=3 solution z3 -> feasible B_c=5 point (same energy)."""
-    m3 = g.Model(1.0, 10.0, V, tc, 3, 1e-9, "cv"); P3 = N.Problem(m3)
-    m5 = g.Model(1.0, 10.0, V, tc, 5, 1e-9, "cv"); P5 = N.Problem(m5)
+    m3 = g.Model(1.0, 10.0, V, tc, 3, eps, "cv"); P3 = N.Problem(m3)
+    m5 = g.Model(1.0, 10.0, V, tc, 5, eps, "cv"); P5 = N.Problem(m5)
     st = P3.state(z3)
     f3, f5 = m3.frag[0], m5.frag[0]
     full3 = np.zeros(f3.Hloc.shape[0] * 0 + 2 ** 8); full3[f3.sec] = st["phis"][0]

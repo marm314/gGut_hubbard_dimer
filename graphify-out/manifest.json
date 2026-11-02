@@ -15270,9 +15270,9 @@
     "semantic_hash": ""
   },
   "doc/cederbaum.pdf": {
-    "mtime": 1793279619.2727096,
-    "seen": 1793625618.3208323,
-    "ast_hash": "4194f48f65db9bc49f701a79cb6ea971",
+    "mtime": 1793658832.383508,
+    "seen": 1793658875.4865766,
+    "ast_hash": "c3dbf4c6557532e19e949a974110a368",
     "semantic_hash": ""
   },
   "doc/excited_phi_cederbaum.pdf": {
@@ -15282,9 +15282,9 @@
     "semantic_hash": ""
   },
   "doc/results.pdf": {
-    "mtime": 1793634610.782053,
-    "seen": 1793634646.2377794,
-    "ast_hash": "a2be24384fcfc3b6a7b373be01ccc7cc",
+    "mtime": 1793634769.9066885,
+    "seen": 1793657970.0345948,
+    "ast_hash": "d7aeb07d804bbe81f8bc5400a4a569ba",
     "semantic_hash": ""
   },
   "cederbaum_data/cederbaum_energies.png": {
@@ -15294,9 +15294,9 @@
     "semantic_hash": ""
   },
   "cederbaum_data/cederbaum_spectra.png": {
-    "mtime": 1793279619.2657096,
-    "seen": 1793625618.3208456,
-    "ast_hash": "f7258a1b737bd3dd6bb39d8f45af4fef",
+    "mtime": 1793658679.8562415,
+    "seen": 1793658875.4865928,
+    "ast_hash": "0e79e2ba840c4834f4af1618553b8619",
     "semantic_hash": ""
   },
   "merged_Ng/E_vs_U_dV0.png": {
@@ -15660,8 +15660,8 @@
     "semantic_hash": ""
   },
   "cederbaum_data/golze_units.png": {
-    "mtime": 1793279619.2677097,
-    "seen": 1793625618.3208468,
+    "mtime": 1793657525.1637337,
+    "seen": 1793657970.034614,
     "ast_hash": "4f54297ee1f0c6a166b12d31f7754462",
     "semantic_hash": ""
   },
@@ -15792,9 +15792,9 @@
     "semantic_hash": ""
   },
   "cederbaum_data/cederbaum_fullspectra.png": {
-    "mtime": 1793279619.2647097,
-    "seen": 1793625618.3208442,
-    "ast_hash": "3d9989244c452b68ebe0157962d17f08",
+    "mtime": 1793658682.593229,
+    "seen": 1793658875.4865916,
+    "ast_hash": "a56862ac879a87ba85c382d9c729f35b",
     "semantic_hash": ""
   },
   "scripts/add_ed_spectral.py": {
@@ -15810,9 +15810,9 @@
     "semantic_hash": ""
   },
   "scripts/bc5_cederbaum.py": {
-    "mtime": 1793279619.3607085,
-    "seen": 1793625618.3182642,
-    "ast_hash": "30094a17c460abc0fd46a39b131f9e4d",
+    "mtime": 1793653757.2083187,
+    "seen": 1793657970.0288699,
+    "ast_hash": "8715d87d8ed0eea5277c45b8ee5bae3a",
     "semantic_hash": ""
   },
   "scripts/bc5_cederbaum_logged.py": {
@@ -16038,15 +16038,15 @@
     "semantic_hash": ""
   },
   "scripts/plot_cederbaum_fullspectra.py": {
-    "mtime": 1793279619.3647084,
-    "seen": 1793625618.3183122,
-    "ast_hash": "ab19155c8e1068f8630dad5055dccaf5",
+    "mtime": 1793657520.7915573,
+    "seen": 1793657970.028959,
+    "ast_hash": "9542ccd6ad0f32747cc7c731eea2df0b",
     "semantic_hash": ""
   },
   "scripts/plot_cederbaum_spectra.py": {
-    "mtime": 1793279619.3647084,
-    "seen": 1793625618.3183134,
-    "ast_hash": "0ee182d3e0ab05df89f8dcf60b57ce1c",
+    "mtime": 1793657520.7914307,
+    "seen": 1793657970.02896,
+    "ast_hash": "492f4cae8be907d4be861b1b92f8f2aa",
     "semantic_hash": ""
   },
   "scripts/plot_eqp_3d.py": {
@@ -16068,8 +16068,8 @@
     "semantic_hash": ""
   },
   "scripts/plot_golze_units.py": {
-    "mtime": 1793279619.3647084,
-    "seen": 1793625618.3183184,
+    "mtime": 1793657520.7916455,
+    "seen": 1793657970.0289695,
     "ast_hash": "8996375a76b262bcda4ca54fad0eda07",
     "semantic_hash": ""
   },
@@ -30087,6 +30087,192 @@
     "mtime": 1793633197.5785306,
     "seen": 1793634646.2378967,
     "ast_hash": "e787ecf396eaf1f58b712cfb48184f57",
+    "semantic_hash": ""
+  },
+  "scripts/check_full_kkt.py": {
+    "mtime": 1793656674.2663927,
+    "seen": 1793657970.0288792,
+    "ast_hash": "e8aaf3ed1eed91598fb59a072fc56207",
+    "semantic_hash": ""
+  },
+  "scripts/check_gauge_observables.py": {
+    "mtime": 1793654469.691287,
+    "seen": 1793657970.0288808,
+    "ast_hash": "17662f33d988d37e3629716b910dcf4b",
+    "semantic_hash": ""
+  },
+  "scripts/check_ghost_occ.py": {
+    "mtime": 1793653127.7057076,
+    "seen": 1793657970.0288825,
+    "ast_hash": "edf6028ce9d36a56339357e7ba55922f",
+    "semantic_hash": ""
+  },
+  "scripts/check_himp_gauge.py": {
+    "mtime": 1793654901.8157325,
+    "seen": 1793657970.028885,
+    "ast_hash": "b3ef8e41fca8debb917b40c8bf9edb09",
+    "semantic_hash": ""
+  },
+  "scripts/comm_scan.py": {
+    "mtime": 1793656674.2663398,
+    "seen": 1793657970.0288892,
+    "ast_hash": "7b47528db56b50f1eed96aa443ed949c",
+    "semantic_hash": ""
+  },
+  "scripts/eps_dependence.py": {
+    "mtime": 1793656674.2592387,
+    "seen": 1793657970.028898,
+    "ast_hash": "db6862670592aa2b464bad41ad2e244d",
+    "semantic_hash": ""
+  },
+  "scripts/eps_levels.py": {
+    "mtime": 1793657367.0948691,
+    "seen": 1793657970.028899,
+    "ast_hash": "fc5981ce0bbe80454bb56ca10892ef9f",
+    "semantic_hash": ""
+  },
+  "scripts/gauge_structure.py": {
+    "mtime": 1793657634.5556035,
+    "seen": 1793657970.0289106,
+    "ast_hash": "a89d21dc815bc49648f87a9d1ab1ff70",
+    "semantic_hash": ""
+  },
+  "scripts/gauge_tools.py": {
+    "mtime": 1793658728.5211766,
+    "seen": 1793658875.481247,
+    "ast_hash": "7e6ad30e491e32c54d8f674098bb71cc",
+    "semantic_hash": ""
+  },
+  "scripts/ghost_in_gs_window.py": {
+    "mtime": 1793655641.579348,
+    "seen": 1793657970.0289166,
+    "ast_hash": "5885a005a7333334c9ba6dcf67468ae7",
+    "semantic_hash": ""
+  },
+  "scripts/ghost_range_tc.py": {
+    "mtime": 1793653757.208495,
+    "seen": 1793657970.0289187,
+    "ast_hash": "91a18169e50c21cff79e9b0d5fdd04ab",
+    "semantic_hash": ""
+  },
+  "scripts/loop_at_gauge.py": {
+    "mtime": 1793655288.9105246,
+    "seen": 1793657970.0289223,
+    "ast_hash": "b03e06de25a905bbb6def0eb9949f014",
+    "semantic_hash": ""
+  },
+  "scripts/loop_trajectory.py": {
+    "mtime": 1793656937.8923662,
+    "seen": 1793657970.028925,
+    "ast_hash": "9ac89aeea95b6999b919cf773d0e0312",
+    "semantic_hash": ""
+  },
+  "scripts/make_gauge_tables.py": {
+    "mtime": 1793658828.4688635,
+    "seen": 1793658875.4812708,
+    "ast_hash": "0328615cb1d950b421bd8aee73516a7b",
+    "semantic_hash": ""
+  },
+  "scripts/ng0_vs_ng2_orbitals.py": {
+    "mtime": 1793634747.3677545,
+    "seen": 1793657970.028947,
+    "ast_hash": "093cdf3f345d1bb89247f5c6200ea37f",
+    "semantic_hash": ""
+  },
+  "scripts/place_ghost_at_ed.py": {
+    "mtime": 1793656295.1702595,
+    "seen": 1793657970.028954,
+    "ast_hash": "3ab676fe82e442e92001fb37a2ceb142",
+    "semantic_hash": ""
+  },
+  "scripts/place_ghosts_scan.py": {
+    "mtime": 1793658612.647714,
+    "seen": 1793658875.4812992,
+    "ast_hash": "d2822112134a67c5573187d6399983b0",
+    "semantic_hash": ""
+  },
+  "scripts/plot_ghost_placed.py": {
+    "mtime": 1793658663.073434,
+    "seen": 1793658875.4813116,
+    "ast_hash": "31e97a678619414908cbfb708003be7f",
+    "semantic_hash": ""
+  },
+  "scripts/plot_ghost_range.py": {
+    "mtime": 1793657313.9631114,
+    "seen": 1793657970.028967,
+    "ast_hash": "286b35ca4bdc2e410298c7523b42fbbc",
+    "semantic_hash": ""
+  },
+  "scripts/plot_ghost_tc.py": {
+    "mtime": 1793651482.3658633,
+    "seen": 1793657970.0289679,
+    "ast_hash": "fd573bdd1b32c7119f61d537916acae7",
+    "semantic_hash": ""
+  },
+  "scripts/retry_ghost_tc.py": {
+    "mtime": 1793653757.2085557,
+    "seen": 1793657970.028978,
+    "ast_hash": "f27b90dd7492f6855fef7c24fe2fc059",
+    "semantic_hash": ""
+  },
+  "scripts/scan_ghost_tc.py": {
+    "mtime": 1793657113.1090384,
+    "seen": 1793657970.0289848,
+    "ast_hash": "7542ae79b2a75f94cfeb27d55ed7ca88",
+    "semantic_hash": ""
+  },
+  "scripts/summarize_placed.py": {
+    "mtime": 1793658633.9076478,
+    "seen": 1793658875.4813464,
+    "ast_hash": "a9cb62ed044360c8e85e08eff7d59896",
+    "semantic_hash": ""
+  },
+  "scripts/summarize_ranges.py": {
+    "mtime": 1793657316.3282373,
+    "seen": 1793657970.029,
+    "ast_hash": "fefb42de973461af225c6f120474a20f",
+    "semantic_hash": ""
+  },
+  "merged_Ng/orbital_comparison_ng0_ng2.txt": {
+    "mtime": 1793634750.1737466,
+    "seen": 1793657970.0290165,
+    "ast_hash": "2c70b1e31ec7083d711549a7c323056b",
+    "semantic_hash": ""
+  },
+  "cederbaum_data/ghost_placed_vs_tc.png": {
+    "mtime": 1793658664.4683108,
+    "seen": 1793658875.4865947,
+    "ast_hash": "b0ff941a8511e56fa1e754d9b917e2bc",
+    "semantic_hash": ""
+  },
+  "cederbaum_data/ghost_poles_vs_tc.png": {
+    "mtime": 1793651851.0812383,
+    "seen": 1793657970.0346086,
+    "ast_hash": "f0dcc34960b5aec1ab03d8f8902d6e51",
+    "semantic_hash": ""
+  },
+  "cederbaum_data/ghost_range_noaufbau_vs_tc.png": {
+    "mtime": 1793657316.233238,
+    "seen": 1793657970.0346107,
+    "ast_hash": "a580630184f7fee240c5a78cabdaae3b",
+    "semantic_hash": ""
+  },
+  "cederbaum_data/ghost_range_vs_tc.png": {
+    "mtime": 1793657315.0692465,
+    "seen": 1793657970.0346127,
+    "ast_hash": "0a3f25177805113947c335e47c892f5e",
+    "semantic_hash": ""
+  },
+  "scripts/verify_placed.py": {
+    "mtime": 1793658728.5240161,
+    "seen": 1793658875.4813566,
+    "ast_hash": "5ae3639a90ef927cde99a721796f3a71",
+    "semantic_hash": ""
+  },
+  "scripts/which_levels_move.py": {
+    "mtime": 1793658170.7221963,
+    "seen": 1793658875.481358,
+    "ast_hash": "6a465f32ff5b46ff967920af80c552fe",
     "semantic_hash": ""
   }
 }

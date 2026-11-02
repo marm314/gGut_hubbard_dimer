@@ -1,5 +1,5 @@
 """Full spectral function A = A_cc + A_oo + A_vv (hole and particle sides), exact (ED of H + H_t^cv) vs gGut B_c=3, 5
-(cached direct-minimization solutions, ghost_solutions.npz), E_c=10, g=1, t_c = 0.1, 0.05, rho/Omega = 0.5, 1.0.
+(eps=1e-9 direct-minimization solutions (ghost_solutions.npz), ghost poles placed on the ED satellites; the (3,3,3) row is the earlier eps=1e-9 run), E_c=10, g=1, t_c = 0.1, 0.05, rho/Omega = 0.5, 1.0.
 gGut poles: all eigenvalues of H_qp (occupied = hole, empty = particle), weight on orbital I = (R_I^T phi_n[I])^2, per spin.
 ED: <n|c^dag_I|GS>^2 (particle, omega = E_n-E_0) and <n|c_I|GS>^2 (hole, omega = -(E_n-E_0)) for I = c, o, v (spin up).
 Usage: python3 scripts/plot_cederbaum_fullspectra.py   -> cederbaum_data/cederbaum_fullspectra.png"""
@@ -31,15 +31,12 @@ def ed_poles(V, tc):
     return out                                    # [(poles, weights)] for c, o, v
 
 
-def gut_poles(V, tc, Bc, z):
-    import gga_cederbaum as g
-    import not_imp_gga_cederbaum as N
-    m = g.Model(1.0, 10.0, V, tc, Bc, 1e-9, "cv"); P = N.Problem(m)
-    o = N.recover(P, z)
-    eps, phi, R = o["eps"], np.linalg.eigh(o["Hqp"])[1], o["R"]
-    W = np.array([[(R[I] @ phi[m.sl[I], k]) ** 2 for k in range(eps.size)] for I in range(3)])
+def gut_poles(V, tc, Bc, z=None):
+    """eps=1e-9 solution in the gauge where the ghost poles sit on the ED satellites (gauge_tools.solution_at_gauge)."""
+    import gauge_tools as gt
+    r = gt.solution_at_gauge(V, tc, Bc, placed=True, eps=1e-9)
     # hole side: occupied levels (weight W); particle side: empty levels (weight W)
-    return eps, W, m.Nocc, o["comm"]
+    return r["eps"], r["W"], r["Nocc"], r["comm"]
 
 
 def lorentz(w, poles, wts):
@@ -112,7 +109,7 @@ def main():
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    Z = np.load("cederbaum_data/ghost_solutions.npz")
+    Z = None
     fig, axs = plt.subplots(len(TCS), len(VS), figsize=(13, 8.8), sharex=True, sharey=True)
     w = np.linspace(-18.0, 14.0, 9000)
     for i, tc in enumerate(TCS):
@@ -122,7 +119,7 @@ def main():
             ep = np.concatenate([p for p, _ in ed]); ew = np.concatenate([x for _, x in ed])
             ax.plot(w, lorentz(w, ep, ew), "-", lw=2.2, color="black", label="exact (ED)")
             for Bc, ls, lc, lw in ((3, "--", "red", 2.0), (5, ":", "tab:green", 3.0)):
-                eps, W, nocc, comm = gut_poles(V, tc, Bc, Z[f"V{V}_tc{tc}_z{Bc}"])
+                eps, W, nocc, comm = gut_poles(V, tc, Bc)
                 ax.plot(w, lorentz(w, eps, W.sum(axis=0)), ls, lw=lw, color=lc, label=rf"gGut" + "\n" + rf"($B_c={Bc}$)")
                 qpk = [np.argmax(W[I]) for I in range(3)]                     # the levels of the c, o, v quasiparticle peaks (they carry the weight)
                 mu = np.ones(eps.size, bool); mu[qpk] = False                 # muted poles: every other eigenvalue of H_qp, no weight threshold
