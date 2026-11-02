@@ -227,7 +227,7 @@ quasiparticle Hamiltonian $H_{qp}$ of Sec.~\ref{sec:spectrum}.
 \section{Direct minimization}
 \label{sec:direct}
 
-Problem~\eqref{eq:problem} is solved directly (\texttt{not\_imp\_gga\_cederbaum.py}), as in the direct-minimization solver
+Problem~\eqref{eq:problem} is solved directly, as in the direct-minimization solver
 used for the Hubbard dimer, without any self-consistency cycle.
 
 \paragraph{Variables.} The embedding states are parametrized by unnormalized real vectors $x_I$ in the half-filled sector
@@ -309,7 +309,7 @@ h_I=S_I^{-1}X_I,\qquad\lambda^c_I=\Lambda_I-\lambda_I,\qquad\alpha=\beta=4V\big(
 with $X_I$, $\Lambda_I$, $\Pi$, $\beta$ as in Eq.~\eqref{eq:dE} and below. Each term is the coefficient of one expectation value in the first group of Eq.~\eqref{eq:dL}:
 $h_{I,a}$ multiplies $\braket{\sum_\sigma(d\dg_{Ia\sigma}c_{I\sigma}+\mathrm{h.c.})}=4D_{I,a}$; $\lambda^c_{I,ab}$ multiplies $\braket{\sum_\sigma d\dg_{Ia\sigma}d_{Ib\sigma}}=2\Delta^{bb}_{I,ab}$;
 $\alpha+2\Tr\Xi$ multiplies $\nu_c$; and $-\Xi_{\gamma\delta}$ multiplies $\braket{n_c\sum_\sigma d\dg_{c\gamma\sigma}d_{c\delta\sigma}}=2\nu_c\delta_{\gamma\delta}-K_{\gamma\delta}$, which with the
-$2\Tr\Xi\,\nu_c$ part reproduces $\Tr[\Xi\,dK]$. A constant from normal ordering, $-2\Tr\lambda^c_I$, is dropped. Its vanishing for all $d\Phi_I\perp\Phi_I$ means that $\Phi_I$ is an eigenstate of $H^{imp}_I$. \textbf{Note on the excited state of $\Phi_c$.} $\Phi_c$ is not the lowest eigenstate: for $B_c=3$, $t_c/g=0.5$ the direct-minimization $\Phi_c$ is the fourth ($V/g=0.707$) and the sixth ($V/g=1.414$) of the $36$ eigenstates of $H^{imp}_c$ in energy order, with the lowest eigenvalue $2.3$ and $8.1$ below it, whereas $\Phi_o$ and $\Phi_v$ are ground states (\texttt{excited\_phi\_cederbaum.tex}, \texttt{excited\_check\_golze.py}). The impurity loop, which takes the lowest state, cannot follow it.
+$2\Tr\Xi\,\nu_c$ part reproduces $\Tr[\Xi\,dK]$. A constant from normal ordering, $-2\Tr\lambda^c_I$, is dropped. Its vanishing for all $d\Phi_I\perp\Phi_I$ means that $\Phi_I$ is an eigenstate of $H^{imp}_I$. \textbf{Note on the excited state of $\Phi_c$.} $\Phi_c$ is not the lowest eigenstate: for $B_c=3$, $t_c/g=0.5$ the direct-minimization $\Phi_c$ is the fourth ($V/g=0.707$) and the sixth ($V/g=1.414$) of the $36$ eigenstates of $H^{imp}_c$ in energy order, with the lowest eigenvalue $2.3$ and $8.1$ below it, whereas $\Phi_o$ and $\Phi_v$ are ground states (\texttt{excited\_phi\_cederbaum.tex}). The impurity loop, which takes the lowest state, cannot follow it.
 \end{itemize}
 The self-consistency loop enforces these conditions one after the other (diagonalizing $H_{qp}$, solving for $\Phi_I$); the direct minimization does not diagonalize either. It passes $E$, $dE$ (Eq.~\eqref{eq:dE}) and the constraints $\kappa=\rho^{II}-{}^I\Delta(\Phi_I)$
 with their Jacobian ($d\kappa=d\rho^{II}+d\Delta^{bb}_I$) to SLSQP, which drives the gradient to a constrained stationary point. The multipliers are recovered afterwards from the first group of Eq.~\eqref{eq:dL}: stationarity in $\Phi_I$
@@ -384,14 +384,14 @@ Poor local minima from continuation ($(V/g,t_c/g)=(0.707,0.025)$, $(1.414,0.07)$
 \subsection{Hole spectral function}
 \label{sec:spectra}
 
-\noindent\textbf{Note.} In Figs.~\ref{fig:spectra} and \ref{fig:fullspec} the muted (zero-weight) ghost poles are drawn \emph{after relocating them} by the gauge shift of Sec.~\ref{sec:place}: the occupied ghosts sit on the exact satellites and, at $B_c=5$, the free empty ghost on an exact particle-side pole. The shift changes no other quantity (curves, QP poles, weights and the energy are unchanged); the positions returned by the minimizer are an arbitrary choice (Sec.~\ref{sec:gauge}).
+\noindent\textbf{Note.} In Figs.~\ref{fig:spectra} and \ref{fig:fullspec} the muted (zero-weight) ghost poles are drawn \emph{after relocating them} by the gauge shift of Sec.~\ref{sec:place}: the occupied ghosts sit on the exact satellites and, at $B_c=5$, the free empty ghost on an exact particle-side pole. The shift changes no other quantity (curves, QP poles, weights and the energy are unchanged); the positions returned by the minimizer are an arbitrary choice (Sec.~\ref{sec:gauge}). Placing them on the exact satellites is likewise a \emph{selection} within the gauge, made by us with the exact answer in hand: it is \textbf{not a prediction of gGut}: the full allowed range of each ghost pole is shown in Fig.~\ref{fig:rangeauf} (Sec.~\ref{sec:intervals}), and the ghost poles carry no weight anyway.
 
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=\textwidth]{../cederbaum_data/cederbaum_spectra.png}
   \caption{Hole spectral function $A^h_{cc}(\omega)=\sum_n w_n\,(\eta/\pi)/[(\omega-\omega_n)^2+\eta^2]$, $\eta=0.15$: exact (solid), gGut $B_c=1$ (blue dotted), $B_c=3$ (red dashed), $B_c=5$ (green dotted, on top of $B_c=3$).
   Rows: $t_c/g=0.1$, $0.05$; columns: $\rho/\Omega=0.5$ ($V/g=0.707$), $1.0$ ($V/g=1.414$); $E_c/g=10$. Dots below zero: the occupied muted poles (zero-weight ghost levels of $H_{qp}$, defined in the text), placed on the exact satellites by the gauge shift of Sec.~\ref{sec:place}:
-  one at $B_c=3$ (small, rose), two at $B_c=5$ (large, green); $B_c=1$ has none. They carry no weight; without the shift their positions would be an arbitrary choice of the minimizer (Sec.~\ref{sec:gauge}).}
+  one at $B_c=3$ (small, rose), two at $B_c=5$ (large, green); $B_c=1$ has none. They carry no weight; the positions are a selection within the allowed interval of Fig.~\ref{fig:rangeauf}, not a prediction (Sec.~\ref{sec:gauge}).}
   \label{fig:spectra}
 \end{figure}
 
@@ -428,14 +428,14 @@ They matter because they are the only place where gGut could put a satellite: a 
 \begin{itemize}
 \item \emph{Character.} The hole-side muted poles are the filled sleeping ghosts of ${}^c\Delta$ (core block $>0.99$, core weight $<10^{-4}$; exact eigenvectors of $\rho$, Sec.~\ref{sec:gauge}); the dots of Fig.~\ref{fig:spectra} are one at $B_c=3$ and two at $B_c=5$. They are counted by occupation, not energy order (a free ghost level can cross the $o$ level).
 The empty level at $\omega\simeq+12$ (Fig.~\ref{fig:fullspec}) matches the exact $o$ particle peak at $12.003$ and is not part of the gauge (it does not move under any shift).
-\item \emph{Position.} It is a gauge, not a result: the constraint Jacobian has rank $7$ of $8$ ($B_c=3$) and $13$ of $17$ ($B_c=5$) because of the pure ghost orbitals, and shifting the multipliers along the $1$ and $4$ free directions moves the ghost levels (and at $B_c=5$ one empty ghost level) with everything else fixed (Sec.~\ref{sec:gauge}); the allowed intervals are in Sec.~\ref{sec:intervals} and the placement on the exact satellites in Sec.~\ref{sec:place}.
+\item \emph{Position.} It is a gauge, not a result: the constraint Jacobian has rank $7$ of $8$ ($B_c=3$) and $13$ of $17$ ($B_c=5$) because of the pure ghost orbitals, and shifting the multipliers along the $1$ and $4$ free directions moves the ghost levels (and at $B_c=5$ one empty ghost level) with everything else fixed (Sec.~\ref{sec:gauge}); the allowed intervals are in Sec.~\ref{sec:intervals} (Fig.~\ref{fig:rangeauf}: anywhere below a ceiling of $\approx0$ to $+3$) and the placement on the exact satellites in Sec.~\ref{sec:place}, which is a selection within these intervals, not a prediction.
 The values returned by the minimizer are the minimum-norm multipliers (e.g.\ $-2.98$, $-5.93$ at $B_c=3$, $t_c/g=0.05$ in different solutions).
 \item \emph{Weight.} It is set by $R_c$, which the energy minimization fixes along the core orbital. A solution with weight on a muted pole would have a different $R_c$ and so differ from the minimum; none was found.
 \item \emph{Ghosts on $o$ and $v$.} With $B_c=B_o=B_v=3$ ($9$ levels, $6$ muted poles) I seeded the minimization from the $B_c=3$ solution plus a sleeping ghost pair on $o$ and on $v$ (same energy), perturbed it ($15$ runs per case), and also tried random starts. No run went below the seed energy; the random starts mostly fell to the trivial product state ($R_c=0$).
 In three of the four cases of Fig.~\ref{fig:fullspec} a run returns to the $B_c=3$ point ($E-E_{\rm ED}\simeq9.5\times10^{-8}$, same main pole and weight); at $V/g=0.707$, $t_c/g=0.1$ the best point found is $B_c=1$-like ($6.4\times10^{-6}$). The extra poles again carry no weight (purple row of Fig.~\ref{fig:fullspec}). The search is limited (SLSQP, seeds from $B_c=3$ only).
-\item \textbf{Note on the search for an entangled $\Phi_c$.} A satellite needs $R_c$ on several qp levels, i.e.\ ${}^c\Delta$ with partially occupied ghost natural orbitals (here $0$, $0.99998$, $1$). I seeded $\Phi_c$ with the first four eigenstates of random embedding Hamiltonians with strong core--ghost hybridization (scales $0.5$, $1$, $2$; $3$ seeds each; $\Phi_o$, $\Phi_v$, $X$ from the $B_c=3$ solution; $36$ runs per $V/g$ at $t_c/g=0.05$; \texttt{search\_entangled\_phi\_c.py}). Converged runs ($15$ at $V/g=0.707$, $4$ at $1.414$) all return to the known point ($E-E_{\rm ED}\simeq9.5\times10^{-8}$, one pole of weight $0.994$ and $0.977$); the others stop away from a stationary point. No entangled solution with weight off the main pole was found; constraining that weight directly (\texttt{test\_pole\_weight\_constraint.py}) did not reach it either. This does not exclude one: only $72$ seeds, with $o$ and $v$ fixed.
+\item \textbf{Note on the search for an entangled $\Phi_c$.} A satellite needs $R_c$ on several qp levels, i.e.\ ${}^c\Delta$ with partially occupied ghost natural orbitals (here $0$, $0.99998$, $1$). I seeded $\Phi_c$ with the first four eigenstates of random embedding Hamiltonians with strong core--ghost hybridization (scales $0.5$, $1$, $2$; $3$ seeds each; $\Phi_o$, $\Phi_v$, $X$ from the $B_c=3$ solution; $36$ runs per $V/g$ at $t_c/g=0.05$). Converged runs ($15$ at $V/g=0.707$, $4$ at $1.414$) all return to the known point ($E-E_{\rm ED}\simeq9.5\times10^{-8}$, one pole of weight $0.994$ and $0.977$); the others stop away from a stationary point. No entangled solution with weight off the main pole was found; constraining that weight directly did not reach it either. This does not exclude one: only $72$ seeds, with $o$ and $v$ fixed.
 \end{itemize}
-The exact satellites lie \emph{below} the main peak ($-12$ and $-14.5$ at $V/g=0.707$, $-15.5$ at $V/g=1.414$, against $-9.6$ exact, $-9.9$ gGut), whereas the muted poles returned by the minimizer lie above it ($-6$ to $-1$). In the gauge of Sec.~\ref{sec:place} they lie on the satellites, but they still have no weight, so none of them plays the role of a satellite.
+The exact satellites lie \emph{below} the main peak ($-12$ and $-14.5$ at $V/g=0.707$, $-15.5$ at $V/g=1.414$, against $-9.6$ exact, $-9.9$ gGut), whereas the muted poles returned by the minimizer lie above it ($-6$ to $-1$). By the gauge shift of Sec.~\ref{sec:place} they can be put on the satellites, but this is a selection within the allowed intervals of Fig.~\ref{fig:rangeauf}, not a prediction, and they still have no weight, so none of them plays the role of a satellite.
 
 \begin{figure}[H]
   \centering
@@ -444,7 +444,7 @@ The exact satellites lie \emph{below} the main peak ($-12$ and $-14.5$ at $V/g=0
   \emph{Curves:} exact (black), gGut $B_c=3$ (red dashed) and $B_c=5$ (green dotted; both with $B_o=B_v=1$, from the cached solutions of Fig.~\ref{fig:spectra}).
   \emph{Labels:} $\varepsilon_{\rm QP}^{I}$ is the quasiparticle peak of the exact spectrum for the orbital $I=c,o,v$ and $\varepsilon_{s1}^{c}$, $\varepsilon_{s2}^{c}$ are the exact core satellites, numbered by increasing distance from $\varepsilon_{\rm QP}^{c}$; $\varepsilon_{\rm QP}^{I,{\rm Gut}}$ are the gGut quasiparticle peaks (the core one is single, with no satellites).
   \emph{Dots below the axis:} the muted poles of gGut, i.e.\ all eigenvalues of $H_{qp}$ except the three quasiparticle levels. One row per solution: $B_c=3$ (rose, $2$ poles), $B_c=5$ (green, $4$) and $B_c=B_o=B_v=3$ (purple, $6$; the lowest-energy run seeded from the $B_c=3$ solution with sleeping ghosts on $o$ and $v$; in the panel $\rho/\Omega=0.5$, $t_c/g=0.1$ no run returned to the seed and the best point is $B_c=1$-like).
-  Poles closer than $0.02$ share one dot, with the multiplicity written above it when it is larger than $1$. The muted poles carry no weight ($\le2.2\times10^{-6}$); the occupied ghost levels are placed on the exact satellites (gauge of Sec.~\ref{sec:place}), the empty ones are one at $\simeq+12$ (fixed) and, for $B_c=5$, the free empty ghost placed on the ED particle-side pole at $\simeq+3.0$ (Sec.~\ref{sec:place}). The $(3,3,3)$ row is the earlier $\varepsilon=10^{-9}$ run, not placed.}
+  Poles closer than $0.02$ share one dot, with the multiplicity written above it when it is larger than $1$. The muted poles carry no weight ($\le2.2\times10^{-6}$); the occupied ghost levels are placed on the exact satellites (a selection within the allowed intervals of Fig.~\ref{fig:rangeauf}; Sec.~\ref{sec:place}), the empty ones are one at $\simeq+12$ (fixed) and, for $B_c=5$, the free empty ghost placed on the ED particle-side pole at $\simeq+3.0$ (Sec.~\ref{sec:place}). The $(3,3,3)$ row is the earlier $\varepsilon=10^{-9}$ run, not placed.}
   \label{fig:fullspec}
 \end{figure}
 
@@ -453,7 +453,7 @@ Fig.~\ref{fig:fullspec} shows all peaks of $A=A_{cc}+A_{oo}+A_{vv}$, hole side (
 In gGut every eigenvalue of $H_{qp}$ is a pole, occupied ones on the hole side and empty ones on the particle side, with weight $|R_I^T\phi^{(I)}_n|^2$ on orbital $I$.
 The three main peaks are the core hole near $-10$ ($c$), the occupied level near $-g$ ($o$) and the virtual level near $+g$ ($v$); gGut reproduces the last two, and the core pole only approximately (position and weight as in Tab.~\ref{tab:poles}).
 What gGut misses are the exact core satellites at $-12$ and $-14.5$ ($-15.5$); the remaining ED peaks ($\omega\simeq3$ for $c$ and $\omega\simeq12$ for $o$, particle side) have weight $\lesssim10^{-6}$ and are not visible.
-The remaining levels are the muted poles defined above, shown in the gauge of Sec.~\ref{sec:place} ($B_c=3$: the occupied ghost on the exact satellite at $-12.0$ and the empty level at $\simeq+12$; $B_c=5$: the two occupied ghosts on the satellites, the free empty ghost at $\simeq+3.0$ (on the ED particle-side pole) and the empty level at $\simeq+12$), all with weight $\le10^{-6}$.
+The remaining levels are the muted poles defined above, shown in the gauge of Sec.~\ref{sec:place}, i.e.\ placed by selection within the intervals of Fig.~\ref{fig:rangeauf} ($B_c=3$: the occupied ghost on the exact satellite at $-12.0$ and the empty level at $\simeq+12$; $B_c=5$: the two occupied ghosts on the satellites, the free empty ghost at $\simeq+3.0$ (on the ED particle-side pole) and the empty level at $\simeq+12$), all with weight $\le10^{-6}$.
 
 \subsection{Comparison with the three-level model of Cederbaum and of Kockl\"auner and Golze}
 \label{sec:golze}
@@ -464,10 +464,10 @@ With $\Omega=\epsilon_v-\epsilon_o=2g$ and the transition moment $\rho$ (GW+C ex
 \begin{equation}
 \rho=\sqrt2\,V,\qquad \frac{\rho}{\Omega}=\frac{V}{\sqrt2\,g},
 \end{equation}
-confirmed by the small-$V$ limit of the exact satellite-to-QP weight ratio ($2.00\times10^{-4}=(\sqrt2V)^2/\Omega^2$ at $V/g=0.02$, \texttt{g0w0\_cederbaum.py}). Their ratios $\rho/\Omega=0.5$, $1.0$ are $V/g=0.707$, $1.414$, the values used throughout this note.
+confirmed by the small-$V$ limit of the exact satellite-to-QP weight ratio ($2.00\times10^{-4}=(\sqrt2V)^2/\Omega^2$ at $V/g=0.02$). Their ratios $\rho/\Omega=0.5$, $1.0$ are $V/g=0.707$, $1.414$, the values used throughout this note.
 Their figure gives only the ratio, no energy axis, so $E_c$ cannot be taken from it (it only shifts the poles rigidly); Fig.~\ref{fig:golze} therefore uses $\omega$ with ticks at the exact $\epsilon_c^{\rm QP}$, $\epsilon_c^{\rm Sat1}$, $\epsilon_c^{\rm Sat2}$.
 
-\paragraph{G$_0$W$_0$ and GW+C for the model (computed here).} We computed G$_0$W$_0$ and GW+C for this model ourselves (\texttt{g0w0\_cederbaum.py}) from the expressions below, in order to compare with the G$_0$W$_0$ and GW+C of Ref.~\cite{Kocklauner2024} (not taken from it). With $G_0$ the bare core level and one bosonic mode, $\Sigma_c(\omega)=\rho^2/(\omega-\epsilon_c+\Omega)$ (no exchange or Hedin shift), the poles of $[\omega-\epsilon_c-\Sigma_c]^{-1}$ solve $x(x+\Omega)=\rho^2$: a QP pole and one satellite at $-\Omega\sqrt{1+4\rho^2/\Omega^2}$,
+\paragraph{G$_0$W$_0$ and GW+C for the model (computed here).} We computed G$_0$W$_0$ and GW+C for this model ourselves from the expressions below, in order to compare with the G$_0$W$_0$ and GW+C of Ref.~\cite{Kocklauner2024} (not taken from it). With $G_0$ the bare core level and one bosonic mode, $\Sigma_c(\omega)=\rho^2/(\omega-\epsilon_c+\Omega)$ (no exchange or Hedin shift), the poles of $[\omega-\epsilon_c-\Sigma_c]^{-1}$ solve $x(x+\Omega)=\rho^2$: a QP pole and one satellite at $-\Omega\sqrt{1+4\rho^2/\Omega^2}$,
 against the exact satellites at $-\Omega\sqrt{1+2\rho^2/\Omega^2}$ and twice that. GW+C has Poisson satellites at $\epsilon_{\rm QP}-n\Omega$ with weights $e^{-\gamma}\gamma^n/n!$. These expressions agree with Eqs.~(11), (14), (16)--(17), (33), (36), (44)--(47) of Ref.~\cite{Kocklauner2024} (the exchange constant $\Sigma^x-v^{xc}$ is absorbed in $\epsilon_c$),
 and the first-satellite positions measured in their rendered Fig.~2b,c (in units of $\Omega$, accuracy a few per cent) agree with this note: exact $1.22$ and $1.76$ (here $1.225$, $1.732$), G$_0$W$_0$ $1.42$ and $2.23$ (here $1.414$, $2.236$) at $\rho/\Omega=0.5$, $1.0$.
 
@@ -492,7 +492,7 @@ $\rho/\Omega$ & & satellite positions $/\Omega$ (from QP) & weights (QP, satelli
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=\textwidth]{../cederbaum_data/golze_units.png}
-  \caption{$G^h_{cc}$ in the units of Fig.~2 of Ref.~\cite{Kocklauner2024}; left $\rho/\Omega=0.5$ ($V/g=0.707$), right $\rho/\Omega=1.0$ ($V/g=1.414$), $E_c/g=10$. Rows: GW+C; G$_0$W$_0$; exact at $t_c=0$ and $0.05$; gGut $B_c=1$, $3$, $5$ ($t_c/g=0.05$). All rows share one scale (peak height $=$ pole weight) and a Lorentzian half-width $0.018\,\Omega$, fitted to the G$_0$W$_0$ peaks of Golze. Ticks: exact $t_c=0$ QP and satellite energies (dotted lines). Dashed: the G$_0$W$_0$ curve of Ref.~\cite{Kocklauner2024}, digitized from their Fig.~2 and scaled with their exact QP peak (\texttt{measure\_golze\_fig2.py}); its QP peak at $\rho/\Omega=1.0$ is cut off by their frame.}
+  \caption{$G^h_{cc}$ in the units of Fig.~2 of Ref.~\cite{Kocklauner2024}; left $\rho/\Omega=0.5$ ($V/g=0.707$), right $\rho/\Omega=1.0$ ($V/g=1.414$), $E_c/g=10$. Rows: GW+C; G$_0$W$_0$; exact at $t_c=0$ and $0.05$; gGut $B_c=1$, $3$, $5$ ($t_c/g=0.05$). All rows share one scale (peak height $=$ pole weight) and a Lorentzian half-width $0.018\,\Omega$, fitted to the G$_0$W$_0$ peaks of Golze. Ticks: exact $t_c=0$ QP and satellite energies (dotted lines). Dashed: the G$_0$W$_0$ curve of Ref.~\cite{Kocklauner2024}, digitized from their Fig.~2 and scaled with their exact QP peak; its QP peak at $\rho/\Omega=1.0$ is cut off by their frame.}
   \label{fig:golze}
 \end{figure}
 
@@ -500,7 +500,7 @@ $\rho/\Omega$ & & satellite positions $/\Omega$ (from QP) & weights (QP, satelli
 ($-1.41\,\Omega$ against $-1.23\,\Omega$ at $\rho/\Omega=0.5$; $-2.24\,\Omega$ against $-1.73\,\Omega$ at $1.0$); GW+C puts satellites at $-n\Omega$ (closer to the exact ones at $\rho/\Omega=0.5$ than at $1.0$) and shows spurious higher satellites at larger $\rho/\Omega$; all as stated in Ref.~\cite{Kocklauner2024}. The hopping $t_c$ moves the exact poles by at most $0.06$ at $t_c/g=0.5$.
 
 \paragraph{What does not match.} gGut gives a single pole at both ratios (weight $0.977$--$0.9999$): it reproduces neither the exact satellites nor the GW+C or G$_0$W$_0$ ones, and does worse than G$_0$W$_0$ for this model, whose QP pole is within $0.04$ and $0.23$ of the exact one ($-9.59$, $-8.76$ against $-9.55$, $-8.54$)
-while the gGut $B_c=3$ pole is at $-9.93$, $-9.74$ (errors $0.38$, $1.21$) and the $B_c=1$ pole at $-10.00$. The muted poles (dots of Fig.~\ref{fig:spectra}) are not satellites: no weight, and positions that are a gauge choice (Sec.~\ref{sec:gauge}), here placed on the exact satellites by hand.
+while the gGut $B_c=3$ pole is at $-9.93$, $-9.74$ (errors $0.38$, $1.21$) and the $B_c=1$ pole at $-10.00$. The muted poles (dots of Fig.~\ref{fig:spectra}) are not satellites: no weight, and positions that are a gauge choice (Sec.~\ref{sec:gauge}), here placed on the exact satellites by hand, a selection within the allowed intervals of Fig.~\ref{fig:rangeauf}.
 
 %======================================================================
 \section{The gauge freedom of the multipliers}
@@ -513,8 +513,8 @@ The scan of this and the next sections is at $\varepsilon=10^{-7}$, where the so
 J_\Phi^{T}\mu=-\nabla_\Phi E,\qquad \lambda_{aa}=-\tfrac12\mu_{aa},\quad \lambda_{a<b}=-\tfrac14\mu_{ab}.
 \label{eq:mu}
 \end{equation}
-$J_\Phi$ has rank $7$ ($B_c=3$) and $13$ ($B_c=5$): at $V/g=1.414$, $t_c/g=1$ the smallest singular values are $8.7\times10^{-8}$ against $6.1\times10^{-3}$ for the next ($B_c=3$), and four values $2\times10^{-8}$--$10^{-7}$ against $3.6\times10^{-3}$ ($B_c=5$; \texttt{gauge\_structure.log}).
-The $1$ and $4$ left null vectors $n_j$ give the family $\mu(a)=\mu_0+\sum_ja_jn_j$, all stationary in $\Phi$; the code returns $\mu_0$ (minimum norm, $a=0$). This family is the gauge.
+$J_\Phi$ has rank $7$ ($B_c=3$) and $13$ ($B_c=5$): at $V/g=1.414$, $t_c/g=1$ the smallest singular values are $8.7\times10^{-8}$ against $6.1\times10^{-3}$ for the next ($B_c=3$), and four values $2\times10^{-8}$--$10^{-7}$ against $3.6\times10^{-3}$ ($B_c=5$).
+The $1$ and $4$ left null vectors $n_j$ give the family $\mu(a)=\mu_0+\sum_ja_jn_j$, all stationary in $\Phi$; the code returns $\mu_0=-(J_\Phi^T)^{+}\nabla_\Phi E$, the \emph{minimum-norm} least-squares solution of Eq.~\eqref{eq:mu} (Moore--Penrose pseudoinverse; \texttt{numpy.linalg.lstsq}, which discards singular values below its default cut). It is the member of the family with the smallest $|\mu|$ ($a=0$): a convention, not a physical selection, and it varies from point to point. This family is the gauge.
 
 \paragraph{Its origin: pure ghost orbitals.} Let $n_k$ be the occupations of the natural orbitals of ${}^c\Delta$; at the solutions one is the core quasiparticle orbital ($n\simeq0.99$) and the rest are ghosts, e.g.\ $n=(9.3\times10^{-5},0.9915,1)$ at $B_c=3$ and $(0,9.3\times10^{-5},0.9915,1,1)$ at $B_c=5$.
 Call an orbital \emph{pure} if $n=0$ or $1$ (to $10^{-6}$): the sleeping ghosts. Then
@@ -526,15 +526,14 @@ Call an orbital \emph{pure} if $n=0$ or $1$ (to $10^{-6}$): the sleeping ghosts.
 \end{enumerate}
 The number of free directions is $n_e(n_e+1)/2+n_f(n_f+1)/2$ for $n_e$ pure empty and $n_f$ pure filled orbitals: $0+1=1$ at $B_c=3$, $1+3=4$ at $B_c=5$, as found. The numerical null vectors lie on these blocks (the rest $\le3\times10^{-10}$ of the norm).
 
-\paragraph{What changes and what does not.} $H_{qp}(a)=H_{qp}(0)+\sum_ja_jD_j$ is exactly linear in $a$ and only the ghost levels move (at $B_c=3$ the filled ghost only; the QP, $o$, $v$ levels and the empty level near $+12$, whose orbital is not pure, are fixed;
-\texttt{which\_levels\_move.log}). The bath potentials $\lambda^c=\Lambda-\lambda$ move oppositely, so a filled ghost placed at $\epsilon_g\ll0$ is an empty bath orbital at $\epsilon_g$ in $H^{imp}_c$, which its ground state would fill: $\Phi_c$ stays an eigenstate but becomes an excited one (Sec.~\ref{sec:loop}).
-$E$, $\nu_c$, the double occupancies, $\rho$, $R$, $\Phi_I$ are identical by construction (at $V/g=1.414$, $t_c/g=1$, $B_c=3$: $E=-22.1828805287$, $\nu_c=1.9832184020$); rebuilding $\rho'$ from the shifted $H_{qp}$ gives $E'-E\le1.3\times10^{-7}$ and $\|\rho'-\rho\|\le7\times10^{-7}$ (\texttt{check\_gauge\_observables.log}).
+\paragraph{What changes and what does not.} $H_{qp}(a)=H_{qp}(0)+\sum_ja_jD_j$ is exactly linear in $a$ and only the ghost levels move (at $B_c=3$ the filled ghost only; the QP, $o$, $v$ levels and the empty level near $+12$, whose orbital is not pure, are fixed). The bath potentials $\lambda^c=\Lambda-\lambda$ move oppositely, so a filled ghost placed at $\epsilon_g\ll0$ is an empty bath orbital at $\epsilon_g$ in $H^{imp}_c$, which its ground state would fill: $\Phi_c$ stays an eigenstate but becomes an excited one (Sec.~\ref{sec:loop}).
+$E$, $\nu_c$, the double occupancies, $\rho$, $R$, $\Phi_I$ are identical by construction (at $V/g=1.414$, $t_c/g=1$, $B_c=3$: $E=-22.1828805287$, $\nu_c=1.9832184020$); rebuilding $\rho'$ from the shifted $H_{qp}$ gives $E'-E\le1.3\times10^{-7}$ and $\|\rho'-\rho\|\le7\times10^{-7}$.
 
 %======================================================================
 \section{Allowed positions of the muted poles}
 \label{sec:intervals}
 
-At every point the ghost levels were moved along the null directions up to $|a|=400$ (\texttt{ghost\_range\_tc.py}); a shift is accepted if the ghost levels stay identifiable, the QP pole ($10^{-4}$), QP weight and occupied core weight ($10^{-5}$) and the commutator ($10^{-6}$) do not change,
+At every point the ghost levels were moved along the null directions up to $|a|=400$; a shift is accepted if the ghost levels stay identifiable, the QP pole ($10^{-4}$), QP weight and occupied core weight ($10^{-5}$) and the commutator ($10^{-6}$) do not change,
 and all occupations $n_k=\phi_k^T\rho\phi_k$ stay as close to $0$ or $1$ as at the minimum-norm point (a single determinant has only these). Over all accepted shifts the QP pole moves $\le2.4\times10^{-7}$ and the occupations stay within $9.2\times10^{-7}$ of $0,1$. The figure imposes in addition \emph{aufbau} (every occupied level below every empty one); without it the ranges are unbounded (to the sampling limit, $+67$ to $+195$ above and $-72$ to $-220$ below).
 
 \begin{figure}[!ht]
@@ -553,11 +552,11 @@ The minimum-norm choice and the exact satellites ($-12$ to $-20$) lie inside the
 
 \paragraph{Procedure.} Satellites are the ED poles with weight $>10^{-3}$ below the main pole, merged when closer than $0.1$ and ordered by weight; $B_c=3$ uses the heaviest, $B_c=5$ the two heaviest (energy order). $B_c=5$ also has one free empty ghost level, placed on the second heaviest core particle-side pole of ED
 (the heaviest is the $v$-like peak at $\omega\simeq1$, reproduced by the fixed $v$ level): $\omega=3.00$, $3.18$, $4.5$, $6.9$ at $t_c/g=0.05$, $1$, $3$, $5$. Since $H_{qp}(a)$ is linear (Sec.~\ref{sec:gauge}), $a$ is the least-squares solution of $\sum_ja_jD_j=T$ with $T=\sum_k(\epsilon^{\rm target}_k-\epsilon_k)|g_k\rangle\langle g_k|$ over the ghost orbitals
-(\texttt{place\_ghosts\_scan.py}; residual $\le3.3\times10^{-3}$). A nonlinear search did not converge reliably. At $7$ of $50$ $B_c=5$ points the minimum-norm empty ghost lay below the occupied $o$ level (aufbau already violated); the placement removes this.
+(residual $\le3.3\times10^{-3}$). A nonlinear search did not converge reliably. At $7$ of $50$ $B_c=5$ points the minimum-norm empty ghost lay below the occupied $o$ level (aufbau already violated); the placement removes this.
 
 \paragraph{Result.} All ghost levels reach their targets (occupied: $\le5\times10^{-7}$, empty: $\le1.1\times10^{-8}$) at all $100$ points (Fig.~\ref{fig:placed}, Tabs.~\ref{tab:placed}, \ref{tab:inv}), and at the eight $\varepsilon=10^{-9}$ points of Sec.~\ref{sec:results} ($-12.00$ at $B_c=3$; $-14.45$ or $-15.47$ and $-12.00$ at $B_c=5$; empty ghost $3.00$).
-An independent re-check from the stored parameters (\texttt{verify\_placed.py}): the eigenvalues of $\rho$ are $0,1$ to $2\times10^{-15}$ ($\rho$ is not changed, only $H_{qp}$), every level of the shifted $H_{qp}$ has occupation within $6\times10^{-13}$ of $0,1$, the number of occupied levels is $N_{\rm occ}$, aufbau holds at every point, and the QP pole, its weight and the commutator are unchanged.
-The ghost weights are $\le1.8\times10^{-9}$ against $0.002$--$0.33$ for the exact satellites: \emph{the position is right, the weight is absent.}
+An independent re-check from the stored parameters: the eigenvalues of $\rho$ are $0,1$ to $2\times10^{-15}$ ($\rho$ is not changed, only $H_{qp}$), every level of the shifted $H_{qp}$ has occupation within $6\times10^{-13}$ of $0,1$, the number of occupied levels is $N_{\rm occ}$, aufbau holds at every point, and the QP pole, its weight and the commutator are unchanged.
+The ghost weights are $\le1.8\times10^{-9}$ against $0.002$--$0.33$ for the exact satellites: \emph{the position is right, the weight is absent.} The positions are chosen by hand with the exact satellites known; gGut itself does not predict them; each could be anywhere in the intervals of Fig.~\ref{fig:rangeauf}.
 
 \begin{figure}[!ht]
   \centering
@@ -575,8 +574,8 @@ The ghost weights are $\le1.8\times10^{-9}$ against $0.002$--$0.33$ for the exac
 \label{sec:loop}
 
 $\Phi_c$ is an eigenstate of $H^{imp}_c$ in every gauge (residual $\le7.8\times10^{-5}$), but not the lowest one: at the minimum-norm gauge it is the $4$th--$26$th state of $36$ ($B_c=3$) and the $24$th--$139$th of $400$ ($B_c=5$); $\Phi_o$, $\Phi_v$ are ground states. Placing the ghosts makes it higher still (about $20$th and $370$th), as explained in Sec.~\ref{sec:gauge}.
-A gauge in which $\Phi_c$ is the non-degenerate ground state and aufbau holds exists at all tested points ($B_c=3$, $10$ points; window of $3$--$8$ units in $a$), but there the ghost level is at $-1$ to $+3$, far from the satellites (\texttt{ghost\_in\_gs\_window.log}): the two requirements are incompatible.
-Started from that solution ($V/g=0.707$, $t_c/g=1$, $B_c=3$), the plain loop reproduces it at the first iteration (residual $7\times10^{-8}$) but then leaves it (residual $1.4$, $E$ $6\times10^{-4}$ higher; at $V/g=1.414$ it diverges to $\nu_c=0$); damping does not help (a deviation $7\times10^{-10}$ grows to $10^{-4}$--$10^{-3}$ in one step, \texttt{loop\_trajectory*.log}).
+A gauge in which $\Phi_c$ is the non-degenerate ground state and aufbau holds exists at all tested points ($B_c=3$, $10$ points; window of $3$--$8$ units in $a$), but there the ghost level is at $-1$ to $+3$, far from the satellites: the two requirements are incompatible.
+Started from that solution ($V/g=0.707$, $t_c/g=1$, $B_c=3$), the plain loop reproduces it at the first iteration (residual $7\times10^{-8}$) but then leaves it (residual $1.4$, $E$ $6\times10^{-4}$ higher; at $V/g=1.414$ it diverges to $\nu_c=0$); damping does not help (a deviation $7\times10^{-10}$ grows to $10^{-4}$--$10^{-3}$ in one step).
 The fixed point exists but is violently unstable, consistent with Sec.~\ref{sec:stationarity}; the direct minimization remains the reliable solver. Only $B_c=3$, $t_c/g=1$ was tested.
 
 
@@ -589,7 +588,7 @@ The fixed point exists but is violently unstable, consistent with Sec.~\ref{sec:
 The main pole is displaced from the exact one ($-9.93$ vs.\ $-9.55$; $-9.74$ vs.\ $-8.54$).
 \item The ghosts improve the ground state: $E-E_{\rm ED}\approx10^{-7}$ at $B_c=3$ and $5$ (vs.\ $1.3\times10^{-3}V^2t_c^2$ at $B_c=1$), $\nu_c$ to $\sim10^{-8}$; $B_c=5$ returns the $B_c=3$ energy and spectrum (the extra ghosts stay asleep).
 \item The muted poles (levels of $H_{qp}$ beyond the three QP levels) have zero weight ($R_c$ lies along the core orbital) and their energies are a \emph{gauge}: $1$ ($B_c=3$) or $4$ ($B_c=5$) null directions of the constraint Jacobian, one per independent multiplier component inside the blocks of pure ghost orbitals (Sec.~\ref{sec:gauge}).
-Along them $E$, $\nu_c$, $\rho$, $R$, the QP pole and weight and the occupations are unchanged; with aufbau the levels can lie anywhere below a ceiling of $\approx0$ to $+3$ (Sec.~\ref{sec:intervals}). They were placed on the exact satellites at all $100$ points and at the points of Sec.~\ref{sec:results} (Sec.~\ref{sec:place}): positions agree, weights ($\le2\times10^{-9}$ against $0.002$--$0.33$) do not, so there is no satellite.
+Along them $E$, $\nu_c$, $\rho$, $R$, the QP pole and weight and the occupations are unchanged; with aufbau the levels can lie anywhere below a ceiling of $\approx0$ to $+3$ (Sec.~\ref{sec:intervals}). They were placed on the exact satellites at all $100$ points and at the points of Sec.~\ref{sec:results} (Sec.~\ref{sec:place}): positions agree, weights ($\le2\times10^{-9}$ against $0.002$--$0.33$) do not, so there is no satellite; the positions are a selection within the intervals of Fig.~\ref{fig:rangeauf}, not a prediction.
 \item The accepted solutions depend on the regularizing shift $\varepsilon$: at $\varepsilon=10^{-9}$ they are not stationary in $X$ at larger $t_c$ ($\|[H_{qp},\rho]\|$ up to $0.3$); $\varepsilon=10^{-7}$ gives stationary points ($\le10^{-5}$) at an energy $\simeq10^2\varepsilon$ higher, and at $t_c/g\le0.1$ it distorts the $o$ and $v$ levels (Sec.~\ref{sec:stationarity}).
 \item The gauge does not help the impurity loop: a gauge exists in which $\Phi_c$ is the ground state of $H^{imp}_c$ (and $H_{qp}$ obeys aufbau), but the ghost level is then at $-1$ to $+3$, not on the satellites, and the loop started from that solution is reproduced at the first iteration but leaves it (amplification $>10^4$ per iteration; Sec.~\ref{sec:loop}).
 \item The model is the three-level model of Cederbaum \emph{et al.}~\cite{Cederbaum1980} with $\rho=\sqrt2V$; for $\rho/\Omega=0.5$, $1.0$ the exact spectrum has the QP peak and two satellites, G$_0$W$_0$ one satellite at too high a binding energy, GW+C satellites at $-n\Omega$, and gGut a single pole (Fig.~\ref{fig:golze}, Tab.~\ref{tab:golze}).
@@ -620,7 +619,7 @@ R_v\,(t_cR_c-V\,b)^T & -V(2-\nu_c)\,R_oR_v & -\lambda_v
 \label{eq:Hqpblock}
 \end{equation}
 The $co$ and $cv$ blocks are the column vectors $-VR_o\,a$ and $R_v(t_cR_c-Vb)$ ($B_c\times1$); the $ov$ block is a number.
-This is what \texttt{build\_Hqp} returns (\texttt{gga\_cederbaum.py}), and it is the same operator as $H_{\rm off}-\mathrm{blockdiag}(\lambda_I)$ of Sec.~\ref{sec:direct}.
+This is what \texttt{build\_Hqp} returns, and it is the same operator as $H_{\rm off}-\mathrm{blockdiag}(\lambda_I)$ of Sec.~\ref{sec:direct}.
 
 \paragraph{Spin.} $H_{qp}$ and $\rho$ in this appendix are the \emph{one-spin} matrices, of size $B_c+2$: $\rho_{pq}=\braket{d\dg_{p\sigma}d_{q\sigma}}$ with $\sigma$ fixed, and the
 solutions are paramagnetic, so $\uparrow$ and $\downarrow$ have the same matrix. The quasiparticle Hamiltonian on the full space of $2(B_c+2)$ spin orbitals, ordered
@@ -684,7 +683,7 @@ $H_{qp}$: $u=R_v(s_{c_1v},s_{c_2v},s_{c_3v})^T$, $w=R_o(s_{c_1o},s_{c_2o},s_{c_3
 
 For $B_c=5$ the core block is $5\times5$ and the two border columns have five entries each, same pattern.
 
-\paragraph{Use in the impurity loop.} In the impurity loop (\texttt{gga\_cederbaum.py}) $H_{qp}$ is diagonalized once per macroiteration; there is no inner loop on $\rho$.
+\paragraph{Use in the impurity loop.} In the impurity loop $H_{qp}$ is diagonalized once per macroiteration; there is no inner loop on $\rho$.
 The $\rho$ obtained from the occupied eigenvectors is used directly in the next macroiteration: its diagonal blocks $\rho^{II}$ are the ${}^I\Delta$ that
 enter the embedding problems (before the linear mixing with their output), and its off-diagonal blocks give $u$, $w$ and hence $a$, $b$ in the next $H_{qp}$.
 $\rho$ is thus self-consistent with $H_{qp}$ only at convergence of the macroiterations. (Repeating the diagonalization until $\rho$ stops changing, before the embedding step, was tested
@@ -708,16 +707,10 @@ Energies are unaffected ($E-E_{\rm ED}\simeq9\times10^{-8}$); what is affected i
 \input{tab_comm.tex}
 
 At $\varepsilon=10^{-7}$ the same point is stationary (commutator $10^{-7}$), at an energy cost of order $10^2\varepsilon$ (Tab.~\ref{tab:eps}); at $10^{-12}$ the minimization does not converge. A likely cause is $S\simeq\sqrt\varepsilon$ for a sleeping ghost (not proved).
-At small $t_c$ the spectrum itself depends on $\varepsilon$: at $t_c/g=0.05$, $V/g=0.707$ the core pole is $-9.933$ at $10^{-9}$ and $-9.860$ at $10^{-7}$, and the $o$ level moves from $-0.80$ to $-0.05$ (exact $-1$; \texttt{eps\_levels.log}). Therefore Sec.~\ref{sec:results} ($t_c/g\le0.1$) stays at $\varepsilon=10^{-9}$ (commutator $\le2.6\times10^{-5}$ there),
+At small $t_c$ the spectrum itself depends on $\varepsilon$: at $t_c/g=0.05$, $V/g=0.707$ the core pole is $-9.933$ at $10^{-9}$ and $-9.860$ at $10^{-7}$, and the $o$ level moves from $-0.80$ to $-0.05$ (exact $-1$). Therefore Sec.~\ref{sec:results} ($t_c/g\le0.1$) stays at $\varepsilon=10^{-9}$ (commutator $\le2.6\times10^{-5}$ there),
 and the scan uses $\varepsilon=10^{-7}$ (the $o$ level is within $0.12$ of $-1$ for $t_c/g\ge0.6$). Scan points are accepted if the constraints are $<10^{-9}$, the KKT residual $<10^{-5}$ and $\|[H_{qp},\rho]\|<10^{-5}$; all $100$ converged.
 
 \input{tab_eps.tex}
-
-%======================================================================
-\section{Scripts and data}
-\label{sec:appscripts}
-
-\raggedright Scripts in \texttt{scripts/}, data and logs in \texttt{cederbaum\_data/}: scan \texttt{scan\_ghost\_tc.py} (\texttt{GHOST\_EPS}); stationarity \texttt{comm\_scan.py}, \texttt{eps\_dependence.py}, \texttt{eps\_levels.py}; gauge \texttt{gauge\_structure.py}, \texttt{which\_levels\_move.py}, \texttt{check\_gauge\_observables.py}; intervals \texttt{ghost\_range\_tc.py}, \texttt{plot\_ghost\_range.py}; placement \texttt{place\_ghosts\_scan.py}, \texttt{verify\_placed.py}, \texttt{plot\_ghost\_placed.py}; tables \texttt{make\_gauge\_tables.py}; loop \texttt{check\_himp\_gauge.py}, \texttt{ghost\_in\_gs\_window.py}, \texttt{loop\_trajectory.py}.
 
 \begin{thebibliography}{9}
 \bibitem{Cederbaum1980} L.~S. Cederbaum, W. Domcke and J. Schirmer, Many-body theory of core holes, Phys.\ Rev.\ A \textbf{22}, 206 (1980).
