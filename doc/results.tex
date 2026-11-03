@@ -475,4 +475,53 @@ repulsion takes over.
 The ghost orbitals lower the energy only at larger $U/t$: $E(\Ng{=}0)-E(\Ng{=}2)<10^{-3}$ up to $U/t=2.3$ at $\dV=0$ and $4.3$ at $\dV=2$, and at most $0.13$ in the scanned range (Sec.~\ref{sec:energy}), still well below the error to the exact energy at large $U/t$ ($\approx0.3$--$0.5$).
 The ghosts change the transition more than the energy: $U_c/t$ goes from $8$ ($\Ng=0$) to $6.56$ ($\Ng=2$) at $\dV=0$ and the transition is no longer a continuous vanishing of $Z$ (the $\Ng=0$ spectral function disappears with $Z$, the $\Ng=2$ one keeps $Z\ge0.975$ and loses its inner peak, Sec.~\ref{sec:spectra}).
 
+%=====================================================================
+\section{The Gutzwiller wave function itself}
+\label{sec:psi}
+
+gGA never forms the state it describes. Here it is built explicitly from the converged solutions (script \texttt{gutzwiller\_psi.py}; scans \texttt{psi\_scan.py}, data in \texttt{psi\_scan/}), to read off the ionic and covalent content, the energy and the overlap with the exact ground state (FCI, from \texttt{exact\_dimer\_deltaV.py}).
+
+\paragraph{Construction.} For each fragment, $|\Psi\rangle=P_0P_1|\Psi_{\rm qp}\rangle$, with $|\Psi_{\rm qp}\rangle$ the Slater determinant of the occupied levels of $H_{qp}$ and $P_i=\sum_{\Gamma n}\lambda_{\Gamma n}|\Gamma\rangle\langle n|$ mapping the qp Fock space of the fragment ($4^{N_{\rm eff}}$ states, $N_{\rm eff}=1+\Ng$) onto its four physical configurations $\Gamma$. The matrix is $\lambda=\tilde\Phi\,P^{0\,-1/2}$, with $P^0$ the local density matrix of $\Psi_{\rm qp}$ and $\tilde\Phi$ the embedding state $\Phi$ with the bath particle-hole transformed back, $\tilde\Phi=\Phi\,U_{\rm PH}$, $U_{\rm PH}|n\rangle=(-1)^{N(N-1)/2}f_{j_1}\cdots f_{j_N}|{\rm full}\rangle$.
+The phase fixes the relative sign of the covalent and ionic amplitudes (the other choice gives $E_{\rm kin}>0$). Checks: $R=S^{-1}{\rm Tr}[\tilde\Phi^{T}c^\dagger\tilde\Phi f]$ reproduces the $R$ of the solution to $10^{-7}$ (fully for the non-impurity points), and the weight of $\tilde\Phi$ outside the support of $P^0$ is $\le7\times10^{-8}$.
+$\Phi$ is the saved $\phi_i$ for non-impurity solutions (\texttt{z.npy}) and the ground state of $H_{\rm imp}$ for impurity solutions. $\Ng=2$, $\dV=2$ uses the non-impurity scan (\texttt{scan\_ng2\_not\_imp\_dV2}): the impurity-solver points (\texttt{scan\_ng2\_dV2\_confirmed}) have the same energies, but at $U/t=0.6,0.7,9.9,10$ the Fermi level is degenerate or the ghosts are inert, $\Psi_{\rm qp}$ does not match $\Phi$, and $\Psi$ fails there.
+
+\paragraph{Normalization and energy.} The gGA constraints give $\langle\Psi|\Psi\rangle=1$ only in infinite dimensions; here it grows from $1$ to $\simeq2.8$ with $U/t$ (Tables~\ref{tab:psiE0}, \ref{tab:psiE2}; $0.29$ for $\Ng=2$, $\dV=2$ at small $U/t$, where the ghosts are inert and the value depends on the gauge). All quantities below use the normalized $\Psi$.
+The energy $E_\Psi=\langle\Psi|H|\Psi\rangle$ is variational and far better than the gGA one: for $\Ng=2$ the error is $\le8.5\times10^{-4}$ over the whole scan (against up to $0.4$ for gGA) and the overlap with FCI is $\ge0.9999$. For $\Ng=0$ it is $0.03$ at $U/t=4$ and $0.3$ at $7$ (overlap $0.98$ at $U_c$); $\Ng=0$ at $\dV=0$ is the ordinary Gutzwiller wave function, and gGA's $E$ is its Gutzwiller-approximation value.
+Above $U_c$ of $\Ng=0$ ($Z=0$, $R=0$) the solution does not determine $\Psi_{\rm qp}$: the values marked $^\dagger$ (dashed in Fig.~\ref{fig:psi}) depend on the arbitrary $\Psi_{\rm qp}$ stored by the solver (e.g.\ $E_\Psi=-U$ and $P_{\rm ion}=0$ exactly) and are not a result.
+\begin{table}[H]
+\centering\small
+\input{tab_psi_energy_dV0.tex}
+\caption{$\dV=0$: norm, error of the gGA energy $E_{\rm gGA}-E_{\rm FCI}$ and of $E_\Psi-E_{\rm FCI}$, and overlap deficit of $\Psi$ with the FCI ground state. $^\dagger$: above $U_c$ of $\Ng=0$, $\Psi_{\rm qp}$ is not determined.}
+\label{tab:psiE0}
+\end{table}
+\begin{table}[H]
+\centering\small
+\input{tab_psi_energy_dV2.tex}
+\caption{As Table~\ref{tab:psiE0} for $\dV=2$ ($\Ng=2$ from the non-impurity scan).}
+\label{tab:psiE2}
+\end{table}
+
+\paragraph{Ionic $\to$ covalent.} Table~\ref{tab:psiion} compares $P_{\rm ion}$ of ED, of $\Psi$ ($\Psi_{\Ng=0}$, $\Psi_{\Ng=2}$) and of the fragment ground states used so far (frag, Sec.~\ref{sec:spectra}). The fragments are too ionic up to $U/t\simeq5$ (frag$_{\Ng=2}$: $0.238$ against $0.146$ at $U/t=4$) and too covalent from $6$ on ($0.079$ and $0.022$ against $0.084$ and $0.066$ at $6$ and $7$), while $\Psi_{\Ng=2}$ follows ED within $0.006$ at $\dV=0$ and $0.011$ at $\dV=2$ ($0.1453$ against $0.1464$ at $U/t=4$) and keeps the slow decrease above $U_c$ ($0.037$ against $0.036$ at $10$). $\Psi_{\Ng=0}$ is too covalent: $0.100$ at $U/t=4$ and $0.020$ at $6$, going to $0$ at $U_c$.
+\begin{table}[H]
+\centering\small
+\input{tab_psi_ionic.tex}
+\caption{Ionic weight $P_{\rm ion}$: ED, $\Psi_{\Ng=0}$, $\Psi_{\Ng=2}$ and fragment ground states (frag). $^\dagger$: $\Psi_{\rm qp}$ not determined (above $U_c$ of $\Ng=0$).}
+\label{tab:psiion}
+\end{table}
+At $\dV=0$, $|\Psi\rangle=\cos\theta|{\rm cov}\rangle+\sin\theta|{\rm ion}\rangle$ with the amplitudes of Table~\ref{tab:psiamp}. $\Psi_{\Ng=2}$ has the exact amplitudes to $0.01$ over the scan and the same relative sign. The last columns give $(\cos\theta+\sin\theta)^2$, the weight of the bonding (inner) cation state in the exact interference relation, evaluated with each amplitude pair (the final states are the exact cation eigenstates, so this is a property of the ground state, not a gGA spectrum): $1.7048$ ($\Psi_{\Ng=2}$), $1.7071$ (ED) and $1.6000$ ($\Psi_{\Ng=0}$) at $U/t=4$ and $1.5640$ ($\Psi_{\Ng=2}$), $1.5547$ (ED), $1.2800$ ($\Psi_{\Ng=0}$) at $6$; the lowest peak of the gGA spectrum has $1.08$ at $U/t=4$ and $0.27$ at $6$.
+So the ionic$\to$covalent transfer is reproduced by $\Psi_{\Ng=2}$ but not by the gGA spectrum: the weight carried by $R$ and $H_{qp}$ does not follow the composition of the state it comes from.
+\begin{table}[H]
+\centering\small
+\input{tab_psi_amp.tex}
+\caption{$\dV=0$: covalent and ionic amplitudes of the exact ground state and of $\Psi_{\Ng=2}$, $\Psi_{\Ng=0}$ (normalized, global sign with $\cos\theta>0$), and $(\cos\theta+\sin\theta)^2$. $^\dagger$: $\Psi_{\rm qp}$ not determined (above $U_c$).}
+\label{tab:psiamp}
+\end{table}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{../psi_scan/psi_summary.png}
+\caption{Whole scans. Top: $P_{\rm ion}$ (ED, $\Psi$, fragments). Middle: $E-E_{\rm FCI}$ for gGA (dotted) and $\Psi$. Bottom: $1-|\langle\Psi|{\rm FCI}\rangle|$. $\Ng=0$ is dashed above its $U_c/t$ ($8.00$, $9.66$; vertical lines), where $\Psi_{\rm qp}$ is not determined.}
+\label{fig:psi}
+\end{figure}
+
+
 \end{document}
