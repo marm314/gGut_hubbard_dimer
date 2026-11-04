@@ -523,34 +523,58 @@ So the ionic$\to$covalent transfer is reproduced by $\Psi_{\Ng=2}$ but not by th
 \label{fig:psi}
 \end{figure}
 
-\subsection{Role of $R$ in the ionic and covalent character of $\Psi$}
-\label{sec:Rmod}
-$\Psi$ depends on $R$ through two objects: the qp determinant $\Psi_{\rm qp}$, which is the filled lower half of $H_{qp}$ with hopping $-tR_0R_1$, and the embedding states $\Phi_i$, whose hybridization $V_i$ and bath coupling $\lambda^c_i$ are built from $R$, $\rho$ and $\lambda$ at fixed $\lambda$. To see which of the two sets the ionic weight, $R_i\to s_iR_i$ is changed by hand at a converged solution (script \texttt{psi\_R\_modify.py}, $s_0=s_1=s$, data in \texttt{psi\_scan/Rmod\_*.txt}) in two ways: (A) $R$ only in $H_{qp}$, with the $\Phi_i$ of the solution (so $\lambda=\tilde\Phi P^{0\,-1/2}$ is rebuilt with the new $P^0$), and (B) $R$ everywhere, with $V_i$, $\lambda^c_i$ recomputed and $\Phi_i$ re-solved from $H_{\rm imp}$ (one iteration of the loop with the modified $R$). At $s=1$ both give the $\Psi$ of the previous sections.
+\subsection{Ionic weight of $\Psi$ at fixed $|R|$}
+\label{sec:Rfix}
+To see how the ionic weight of $\Psi$ depends on $R$, the gGA solution is recomputed with $R$ constrained, so that the state stays a solution of the gGA equations for that value of $R$. The ghost-GA functional of the direct minimization (Sec.~\ref{sec:psi}; $\dV=0$) is minimized with its constraints and the additional condition $R_i^{T}R_i=s^2|R_i^{\rm sol}|^2$ on both fragments, where $R^{\rm sol}$ is the unmodified solution ($s=1$). Starting from it, $s$ is changed step by step, each point starting from the previous one (largest step $0.05$ for $\Ng=0$ and $0.02$ for $\Ng=2$, halved when a step does not converge), and $\Psi$ is built from every converged point as in Sec.~\ref{sec:psi} (script \texttt{psi\_fixedR.py}; data in \texttt{psi\_scan/Rfix\_*}, solutions in \texttt{Rfixed/}).
 
-\paragraph{Procedure.} Starting from a converged point with $R=(R_0,R_1)$, $\lambda=(\lambda_0,\lambda_1)$ (files \texttt{*\_R.dat}, \texttt{*\_lambda.dat}), the modified $R'_i$ is obtained by $R'_i=s_iR_i$, or by the norm-conserving rotation below, and $\Psi$ is rebuilt with the construction of the beginning of this section, in these steps:
-\begin{enumerate}
-\item $H_{qp}'$ is assembled with $R'$ and the unchanged $\lambda$ ($-\lambda_i$ on the diagonal blocks, $-tR'_0R_1'^{\,T}$ off diagonal), the $N_{\rm eff}$ lowest levels per spin are filled (the rule of the solver) and the Slater determinant gives $|\Psi_{\rm qp}\rangle$ with amplitudes $M$ and local density matrices $P^0_0=MM^T$, $P^0_1=M^TM$. This is the only place where $R'$ enters in (A).
-\item (B) only: the qp density matrix $\rho'$ of $H_{qp}'$ gives the hybridization $V_i$, from $S(\rho'_{ii})V_i=-t\rho'_{ij}R'_j$, and the bath coupling $\lambda^c_i$ of the embedding Hamiltonian; the embedding state $\Phi_i$ is the ground state of $H_{\rm imp}$ (the $\Phi_i$ of the solution is not used). In (A), $V_i$ and $\lambda^c_i$ keep the values of the solution and $\Phi_i$ is the saved one.
-\item $\tilde\Phi_i=\Phi_iU_{\rm PH}$ and $\lambda_i=\tilde\Phi_i\,(P^0_i)^{-1/2}$ (pseudo-inverse on the support of $P^0_i$), now with the new $P^0_i$; the sign of the odd rows of $\tilde\Phi_i$ is fixed so that $R$ recomputed from $\tilde\Phi_i$ is $+R_i$.
-\item $\Psi=\lambda_0\,M\,\lambda_1^{T}$ in the physical Fock space, then normalized, and $P_{\rm ion}$, the amplitudes, $E_\Psi$ and the overlap with FCI are evaluated as for the solution.
-\end{enumerate}
-At $s=1$ the steps reproduce the $\Psi$ of the solution ($P_{\rm ion}=0.1453$ at $U/t=4$, $\Ng=2$, $\dV=0$). Because $\lambda_i$ depends on $P^0_i$ in (A), $\langle\Psi|\Psi\rangle$ departs from its value at the solution (Fig.~\ref{fig:Rmod} uses the normalized $\Psi$). For $\Ng=0$ there are no \texttt{*\_R.dat} files: $R_i=\sqrt{Z_i}$ is read from \texttt{output.out} and $\lambda=0$ at $\dV=0$.
+\paragraph{$\Ng=0$.} $R_i$ is one number, $R_i=\sqrt{Z_i}$, so fixing $R_i^2$ fixes $R_i$ itself and there is no norm to keep: $s$ changes $R$, and the reference value $|R^{\rm sol}|=0.968$, $0.866$, $0.781$, $0.661$, $0.484$ at $U/t=2,4,5,6,7$ (it vanishes at $U_c/t=8$) is smaller than the $0.99$--$1.00$ of $\Ng=2$ and decreases with $U/t$. $P_{\rm ion}$ rises with $R$ (Fig.~\ref{fig:Rfix}, left; Table~\ref{tab:Rfix0}): at $U/t=4$ it is $0.070$, $0.100$, $0.145$ at $s=0.95$, $1$, $1.05$ and $0.026$ at $s=0.80$, and it goes to $0.003$ at $s=0.5$. The curves are close to straight lines on the logarithmic scale of the figure, for all $U/t$ computed ($2,4,5,6,7$). The values reached with $s>1$ are limited: $s=1.1$ for $U/t\ge4$ (the largest value tried) and only $s=1.033$ at $U/t=2$, where $P_{\rm ion}$ is already $0.49$. The gGA energy has its minimum at $s=1$, as it must, and rises on both sides: at $U/t=4$ by $0.009$ and $0.014$ for $s=0.95$ and $1.05$ and by $0.098$ at $s=0.80$.
+\begin{table}[H]
+\centering\small
+\begin{tabular}{c|cccc|c}
+$U/t$ & $P_{\rm ion}(1.05)$ & $P_{\rm ion}(1)$ & $P_{\rm ion}(0.95)$ & $P_{\rm ion}(0.90)$ & $E_{\rm var}(0.90)-E_{\rm var}(1)$\\\hline
+2 & -- & 0.265 & 0.160 & 0.105 & 0.116\\
+4 & 0.145 & 0.100 & 0.070 & 0.050 & 0.032\\
+5 & 0.069 & 0.051 & 0.037 & 0.028 & 0.015\\
+6 & 0.026 & 0.020 & 0.015 & 0.012 & 0.006\\
+7 & 0.006 & 0.004 & 0.004 & 0.003 & 0.001
+\end{tabular}
+\caption{$\Ng=0$, $\dV=0$: ionic weight of $\Psi$ and gGA energy change for $|R_i|=s\,|R_i^{\rm sol}|$ (self-consistent). At $U/t=2$, $s=1.05$ is not reached.}
+\label{tab:Rfix0}
+\end{table}
 
-\paragraph{$\Ng=0$.} $R_i$ is one number, $R=\sqrt Z$ ($0.866$ at $U/t=4$; $\lambda=0$ at $\dV=0$, which is not saved and was set to zero). Since $\Psi_{\rm qp}$ is then the bonding orbital for any $R$, (A) changes nothing and the whole dependence is in (B). Fig.~\ref{fig:Rmod}a shows that $P_{\rm ion}$ rises smoothly with $R$: $P_{\rm ion}=0.0001$ at $R/R_{\rm gGA}=0.1$, $0.019$ at $0.5$, $0.100$ at $1$ (the value of Sec.~\ref{sec:psi}) and $0.152$ at $1.3$ (exact: $0.146$). Reducing $R$ makes $\Psi$ covalent, $R\to0$ being the Brinkman-Rice limit with no double occupancy, and increasing it makes $\Psi$ ionic. The energy $E_\Psi$ is not stationary at the gGA value of $R$: it is lowest at $R/R_{\rm gGA}\simeq1.3$ ($E_\Psi-E_{\rm FCI}=3\times10^{-4}$ against $0.03$ at $1$, overlap $0.99997$ against $0.9975$) where $P_{\rm ion}=0.15$ is also the exact value. gGA's $R$ minimizes the gGA functional, not $\langle\Psi|H|\Psi\rangle$, and for $\Ng=0$ it is $\simeq25\%$ too small for $\Psi$; this is the reason why $\Psi_{\Ng=0}$ is too covalent.
-
-\paragraph{$\Ng=2$.} $R_i$ has three components and $|R_i|$ stays within $1.3\%$ of $1$ over the whole scan ($|R|^2=1.000$ at $U/t\le2$, $0.987$ at $8$ for $\dV=0$): the quasiparticle weight no longer decreases, because the ghosts take the correlation, and $R$ only turns in the qp space. With $R_i\to sR_i$, which takes $|R_i|$ away from $1$, (B) leaves $P_{\rm ion}$ unchanged ($0.147$ to $0.143$ for $s=0.7$ to $1.3$ at $U/t=4$, $\dV=0$) whereas (A) changes it from $0.285$ to $0.065$ (Fig.~\ref{fig:Rmod}b): re-solving the embedding compensates the change of $R$, and what (A) shows is only the response of $\Psi_{\rm qp}$ to a $\Phi_i$ that is no longer consistent with it.
-The Ng=0 variable has an analogue if $R_i$ is split into the part on the HOMO/LUMO-like orbitals and the rest, which lives on the ghosts. With $\varepsilon_{\rm H}$, $\varepsilon_{\rm L}$ the highest occupied and lowest empty level of $H_{qp}$ and $w^{(i)}_{\rm H}$, $w^{(i)}_{\rm L}$ the parts of their eigenvectors on site $i$, let $\Pi_i$ be the projector on the span of $w^{(i)}_{\rm H}$, $w^{(i)}_{\rm L}$. Then $R_i=\Pi_iR_i+(1-\Pi_i)R_i$ and the change that keeps $|R_i|$ is
-\begin{equation}
-R_i\;\to\;s\,\Pi_iR_i+\sqrt{|R_i|^2-s^2|\Pi_iR_i|^2}\;\frac{(1-\Pi_i)R_i}{|(1-\Pi_i)R_i|},
-\end{equation}
-which moves weight between HOMO/LUMO and the ghosts. The weight $|\Pi_iR_i|^2$ on the HOMO/LUMO pair is $0.87$, $0.55$, $0.14$ at $U/t=2,4,6$ for $\dV=0$ and $0.99$, $0.87$, $0.60$ for $\dV=2$: with $U/t$ the weight of $R$ goes to the ghosts. With (A), $P_{\rm ion}$ then follows the Ng=0 rule (Fig.~\ref{fig:Rmod}c): at $\dV=2$ it decreases monotonically when weight is taken from HOMO/LUMO ($0.769\to0.350$ at $U/t=2$, $0.478\to0.227$ at $4$, $0.209\to0.180$ at $6$), at $\dV=0$ it does so below the solution ($0.145\to0.108$ at $U/t=4$ for $s=1\to0.7$). Above the solution, at $\dV=0$, the curves are not monotonic ($U/t=4$: $0.145$, $0.226$, $0.124$ at $s=1,1.15,1.3$), which was not investigated. Taking the weight from the ghosts instead (not norm conserving) makes $P_{\rm ion}$ rise at $\dV=0$ ($0.253\to0.083$ for $s=0.7\to1.3$ at $U/t=4$), the opposite of the behavior of the HOMO/LUMO part. With (B) the change is again at most $\sim0.005$ in the usable range.
-
-In short, for $\Ng=0$ the ionic or covalent character of $\Psi$ is set by $R$ alone, through the embedding state, and a smaller $R$ is more covalent. For $\Ng=2$ the same rule holds for the share of $R$ on the HOMO/LUMO orbitals, but only through $\Psi_{\rm qp}$ and not once the embedding is made consistent with the new $R$: the ghost degrees of freedom of $\Phi_i$ absorb the change.
+\paragraph{$\Ng=2$.} $R_i$ has three components. Only $|R_i|$ can be fixed: the functional is invariant under the orthogonal rotations of the qp basis of each fragment, which turn $R_i$ into another vector of the same length, so fixing $R_i$ with $|R_i|$ unchanged returns the same energy and the same $\Psi$ (checked at $U/t=4$: $E_{\rm var}=-4.511136$ and $P_{\rm ion}=0.1453$ for all $s$). The values $s>1$ could not be reached ($U/t=4$, $s=1.1$: the minimization does not converge), so $s\le1$ is studied.
+Lowering $|R|$ makes $\Psi$ more covalent, as for $\Ng=0$ (Fig.~\ref{fig:Rfix}, right; Table~\ref{tab:Rfix}): $P_{\rm ion}$ decreases with $s$ for $U/t=2,4,5,6,7,8$, from $0.273$ to $0.059$ at $U/t=2$, from $0.087$ to $0.036$ at $U/t=6$ and from $0.055$ to $0.024$ at $U/t=8$, between $s=1$ and $s=0.80$. The decrease is steady for $U/t=2,6,7,8$. At $U/t=4$ it is $0.145\to0.063$ between $s=1$ and $0.90$, then there is a small increase ($0.065$ at $s=0.88$, $0.095$ at $0.86$) and the decrease resumes ($0.059$ at $s=0.80$); the overlap of $\Psi$ with the FCI ground state is $0.997$ at $s=0.86$ and $E_{\rm var}$ has no feature there. At $U/t=5$ the last point ($s=0.80$, $0.027$) lies below the trend of the others.
+The change of $P_{\rm ion}$ is large for a small change of the gGA energy: at $U/t=4$ a change of $|R|$ by $2\%$ ($s=0.98$) takes $P_{\rm ion}$ from $0.145$ to $0.100$ and changes $E_{\rm var}$ by $0.0015$ (bottom right panel of Fig.~\ref{fig:Rfix}; $E_{\rm var}(0.80)-E_{\rm var}(1)=0.03$--$0.04$ for $U/t\ge4$ and $0.25$ at $U/t=2$).
+\begin{table}[H]
+\centering\small
+\begin{tabular}{c|ccc|c}
+$U/t$ & $P_{\rm ion}(s=1)$ & $P_{\rm ion}(s=0.96)$ & $P_{\rm ion}(s=0.80)$ & $E_{\rm var}(0.80)-E_{\rm var}(1)$\\\hline
+2 & 0.273 & 0.240 & 0.059 & 0.246\\
+4 & 0.145 & 0.078 & 0.059 & 0.032\\
+5 & 0.112 & 0.104 & 0.027 & 0.026\\
+6 & 0.087 & 0.075 & 0.036 & 0.036\\
+7 & 0.069 & 0.056 & 0.030 & 0.038\\
+8 & 0.055 & 0.045 & 0.024 & 0.035
+\end{tabular}
+\caption{$\Ng=2$, $\dV=0$: ionic weight of $\Psi$ and gGA energy change when $|R_i|$ is reduced to $s\,|R_i^{\rm sol}|$ at a self-consistent point.}
+\label{tab:Rfix}
+\end{table}
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{../merged_Ng/Rmod_role_of_R.png}
-\caption{Ionic weight of $\Psi$ when $R$ is changed by hand at the solution. (a) $\Ng=0$, $\dV=0$, $U/t=4$: $P_{\rm ion}$ (orange; exact value: dotted) and $E_\Psi-E_{\rm FCI}$ (green, right axis) against $R/R_{\rm gGA}$. (b) $\Ng=2$, same point, $R_i\to sR_i$: (A) only in $H_{qp}$ and (B) everywhere with the embedding re-solved. (c) $\Ng=2$, $|R_i|$ kept, (A): $P_{\rm ion}$ against the weight $|\Pi_iR_i|^2$ of $R$ on the HOMO/LUMO orbitals for $U/t=2,4,6$ (solid: $\dV=2$; dashed: $\dV=0$, only $s\le1$); stars: the solutions; dotted gray: $\Ng=0$ ($x=R^2$). Scripts \texttt{psi\_R\_modify.py}, \texttt{plot\_Rmod\_role.py}.}
-\label{fig:Rmod}
+\includegraphics[width=0.95\textwidth]{../merged_Ng/Rfix_pion_vs_R.png}
+\caption{$\dV=0$, $|R_i|=s\,|R_i^{\rm sol}|$ fixed self-consistently ($s=1$: the solution). Left: $\Ng=0$ ($P_{\rm ion}$ on a logarithmic scale). Right: $\Ng=2$. Top: $P_{\rm ion}$ of $\Psi$. Bottom: change of the gGA energy functional. Points whose overlap with the FCI ground state is below $0.95$ are left out of the top panels ($\Ng=0$: $U/t=2$, $s\le0.80$; $U/t=4$, $s\le0.55$; $\Ng=2$: $U/t=2$, $s=0.95$). Script \texttt{plot\_fixedR.py}.}
+\label{fig:Rfix}
 \end{figure}
+
+\medskip
+\noindent\fbox{\parbox{0.96\textwidth}{\small
+\textbf{Main conclusions of the fixed-$|R|$ test} ($\dV=0$, self-consistent, $|R_i|=s\,|R_i^{\rm sol}|$).
+\begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=2pt]
+\item Lowering $|R|$ makes $\Psi$ more covalent and raising it more ionic, for $\Ng=0$ ($U/t=2,4,5,6,7$) and, below the solution, for $\Ng=2$ ($U/t=2,4,5,6,7,8$).
+\item $\Ng=0$: $P_{\rm ion}$ is a smooth, nearly exponential function of $s$; at $U/t=4$ it is $0.070$, $0.100$, $0.145$ at $s=0.95$, $1$, $1.05$. $R$ is the only quantity that changes ($|R^{\rm sol}|=0.97\to0.48$ for $U/t=2\to7$).
+\item $\Ng=2$: only $|R_i|$ is a meaningful variable (the direction of $R_i$ is a symmetry of the functional); $|R^{\rm sol}|\simeq1$ at all $U/t$. A change of $|R|$ by $2\%$ changes $P_{\rm ion}$ at $U/t=4$ from $0.145$ to $0.100$, while the gGA energy changes by $0.0015$.
+\item $\Ng=2$, $U/t=4$: the decrease has a small bump near $s=0.86$--$0.88$ ($0.063\to0.095$), cause not established; at $U/t=5$ the last point ($s=0.80$) lies below the trend.
+\item Not covered: $s>1$ for $\Ng=2$ (not reachable), $\dV\ne0$, and $U/t$ outside the values listed.
+\end{itemize}}}
 
 \end{document}
