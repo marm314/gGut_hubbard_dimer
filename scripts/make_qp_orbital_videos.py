@@ -24,8 +24,8 @@ from plot_eqp_3d import t
 
 def load_R_lambda(d):
     """as plot_eqp_3d.load_R_lambda, but with the first file in sorted order when a directory holds several equivalent solutions"""
-    R = np.loadtxt(sorted(glob.glob(os.path.join(d, "*_R.dat")))[0])
-    lam = np.loadtxt(sorted(glob.glob(os.path.join(d, "*_lambda.dat")))[0])
+    R = np.loadtxt(sorted(glob.glob(os.path.join(d, "*_R.dat")))[0], ndmin=2)
+    lam = np.loadtxt(sorted(glob.glob(os.path.join(d, "*_lambda.dat")))[0], ndmin=2)
     Neff = R.shape[1]
     return [R[0], R[1]], [lam[:Neff], lam[Neff:]]
 import make_qp_weights_video as mw

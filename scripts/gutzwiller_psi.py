@@ -51,13 +51,13 @@ def impurity_gs(V, lam_c, ops):
     return gs, w[:2]
 
 
-def embedding_vector(d, i, ops, Neff, V=None, lam_c=None):
+def embedding_vector(d, i, ops, Neff, V=None, lam_c=None, allow_z=True):
     """Embedding state of fragment i. Non-impurity solution (z.npy = [phi_0, phi_1, X], phi_i on the N_up=N_dn sector of the impurity
     Fock space): the saved phi_i itself. Otherwise (impurity solver): the ground state of H_imp built from (V, lambda^c).
     Returns (vector, residual |H phi - E phi| (None if V, lambda^c are not available), number of sector eigenstates below it, label)."""
     sec = ops["sector"]; m = len(sec)
     zf = os.path.join(d, "z.npy")
-    z = np.load(zf) if os.path.exists(zf) else None
+    z = np.load(zf) if (allow_z and os.path.exists(zf)) else None
     if z is not None and len(z) == 2 * m + 2 * Neff * Neff:
         phi = z[i * m:(i + 1) * m]; phi = phi / np.linalg.norm(phi)
         gs = np.zeros(2 ** (2 * (1 + Neff))); gs[sec] = phi
@@ -140,9 +140,12 @@ def inv_sqrt_psd(P, Neff, tol=None):
 
 
 # ------------------------------------------------------------------ main builder
-def build_psi(d, U, dV, Ng=None, verbose=True, phase=None):
+def build_psi(d, U, dV, Ng=None, verbose=True, phase=None, Rscale=None, mode="A", part=None):
     """Psi of the gGA point in directory d. Needs z.npy (non-impurity solver; then no R / lambda file is required, Psi0 is the Slater
-    determinant of the column space of X) or the R / lambda files (impurity solver). Ng gives Neff = 1 + Ng when there is no R file."""
+    determinant of the column space of X) or the R / lambda files (impurity solver). Ng gives Neff = 1 + Ng when there is no R file.
+    Rscale = (s0, s1): R_i -> s_i R_i by hand (needs the R / lambda files), lambda fixed. mode "A": only H_qp (hence Psi0, M, P0) sees the
+    modified R, the embedding states Phi_i are those of the solution; mode "B": R modified everywhere (rho, V, lambda^c) and the embedding
+    ground states are re-solved from H_imp (one iteration of the loop with the modified R)."""
     import glob
     has_RL = bool(glob.glob(os.path.join(d, "*_R.dat")))
     R = lam = None
@@ -156,7 +159,31 @@ def build_psi(d, U, dV, Ng=None, verbose=True, phase=None):
     z = np.load(zf) if os.path.exists(zf) else None
     use_z = z is not None and len(z) == 2 * m + 2 * Neff * Neff
     V = lamc = None
-    if use_z:
+    allow_z = True
+    if Rscale is not None:
+        if part is None:
+            Rm = [R[i] * Rscale[i] for i in range(2)]
+        else:                                               # scale only one part of R_i: "hl" (span of the site blocks of the H_qp HOMO and LUMO) or "ghost" (the rest)
+            Wq = np.linalg.eigh(np.block([[-lam[0], -t * np.outer(R[0], R[1])], [-t * np.outer(R[1], R[0]), -lam[1]]]))[1]
+            Rm = []
+            for i in range(2):
+                B = np.column_stack([Wq[i * Neff:(i + 1) * Neff, k] for k in (Neff - 1, Neff)])   # HOMO, LUMO restricted to site i
+                Q, sv, _ = np.linalg.svd(B, full_matrices=False); Q = Q[:, sv > 1e-8]
+                Ph = R[i] @ Q @ Q.T if Q.shape[1] else np.zeros(Neff)
+                if part == "rot":                       # norm-conserving: HOMO/LUMO part x s, ghost part rescaled so that |R_i| is unchanged
+                    g = R[i] - Ph; rest = R[i] @ R[i] - Rscale[i] ** 2 * (Ph @ Ph)
+                    if rest < 0:
+                        raise ValueError("s too large: HOMO/LUMO part alone exceeds |R|")
+                    Rm.append(Rscale[i] * Ph + np.sqrt(rest) / np.linalg.norm(g) * g)
+                else:
+                    Rm.append(R[i] + (Rscale[i] - 1) * (Ph if part == "hl" else R[i] - Ph))
+        Hqp, rho_m = gg.qp_state(Rm, lam, t)
+        w, W = np.linalg.eigh(Hqp); Wocc = W[:, :Neff]
+        if mode == "A":
+            rho = gg.qp_state(R, lam, t)[1]                 # embedding quantities of the solution
+        else:
+            rho = rho_m; R = Rm; allow_z = False
+    elif use_z:
         Wocc, _ = np.linalg.qr(z[2 * m:].reshape(2 * Neff, Neff))
         rho = Wocc @ Wocc.T
         Hqp = None
@@ -175,7 +202,7 @@ def build_psi(d, U, dV, Ng=None, verbose=True, phase=None):
 
     lams, info = [], []
     for i in range(2):
-        gs, resid, rank, label = embedding_vector(d, i, ops[i], Neff, None if V is None else V[i], None if lamc is None else lamc[i])
+        gs, resid, rank, label = embedding_vector(d, i, ops[i], Neff, None if V is None else V[i], None if lamc is None else lamc[i], allow_z)
         docc = float(gs @ (ops[i]["n_pu"] @ ops[i]["n_pd"] @ gs)); nph = float(gs @ ((ops[i]["n_pu"] + ops[i]["n_pd"]) @ gs))
         Phi = gs.reshape(4, 4 ** Neff)                       # [Gamma, nbar]
         Phit = Phi @ UPH                                     # Phi = Phit U_PH^T  ->  Phit = Phi U_PH
