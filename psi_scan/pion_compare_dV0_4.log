@@ -1,0 +1,104 @@
+=== dV0 Ng=4 U/t=1.0
+   site 0: R(file)=[ 0.13852  0.25087 -0.95409 -0.01824 -0.08512]  R(from Phit)=[ 0.13852  0.25087 -0.95409 -0.01824 -0.08512]  null(P0)=900  |Phit|^2 on null=4.60e-06  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=3.0300865225988574e-07, 1 eigenstates below it
+   site 1: R(file)=[ 0.0833   0.1266  -0.9846   0.0799   0.03461]  R(from Phit)=[ 0.0833   0.1266  -0.9846   0.0799   0.03461]  null(P0)=900  |Phit|^2 on null=3.83e-06  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=3.1979249903822394e-07, 3 eigenstates below it
+   (../scan_ng4_not_imp/U_1.0)  <Psi|Psi>=0.898958  N=2-sector weight=1.000000
+   amplitudes (normalized Psi): cov=-0.78871  ion(sym)=-0.61477  ion(asym)=+0.00000   P_ion(Psi)=0.37794  P_ion(ED)=0.37873  P_ion(fragments)=0.43734
+   E_Psi=-2.561550   E_FCI=-2.561553   E_gGA=-2.531291   overlap with the exact ground state=1.000000
+   kinetic energy: Psi=-1.93949  exact=-1.94029  gGA functional (-4t R0 rho01 R1)=-1.96863
+   [ED cation states, not a gGA spectrum: Psi is projected on the exact N=1 eigenstates of H]
+      exact hole poles           :  -1.0616   -1.0616   -3.0616   -3.0616
+      |<cation|c|Psi>|^2          :   0.9849    0.9849    0.0151    0.0151
+      |<cation|c|exact GS>|^2     :   0.9851    0.9851    0.0149    0.0149
+=== dV0 Ng=4 U/t=2.0
+   site 0: R(file)=[ 0.14697  0.07619 -0.95701  0.15631 -0.17946]  R(from Phit)=[ 0.14697  0.07618 -0.95701  0.15631 -0.17946]  null(P0)=876  |Phit|^2 on null=5.52e-07  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=2.714282077301735e-07, 0 eigenstates below it
+   site 1: R(file)=[ 0.3356   0.21072 -0.9016  -0.17122  0.02622]  R(from Phit)=[ 0.3356   0.21073 -0.9016  -0.17122  0.02622]  null(P0)=876  |Phit|^2 on null=1.42e-05  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=2.7318912143994924e-07, 0 eigenstates below it
+   (../scan_ng4_not_imp/U_2.0)  <Psi|Psi>=2.994862  N=2-sector weight=1.000000
+   amplitudes (normalized Psi): cov=-0.85489  ion(sym)=-0.51881  ion(asym)=-0.00000   P_ion(Psi)=0.26916  P_ion(ED)=0.27639  P_ion(fragments)=0.37367
+   E_Psi=-3.235773   E_FCI=-3.236068   E_gGA=-3.125661   overlap with the exact ground state=0.999967
+   kinetic energy: Psi=-1.77409  exact=-1.78885  gGA functional (-4t R0 rho01 R1)=-1.87299
+   [ED cation states, not a gGA spectrum: Psi is projected on the exact N=1 eigenstates of H]
+      exact hole poles           :  -1.2361   -1.2361   -3.2361   -3.2361
+      |<cation|c|Psi>|^2          :   0.9435    0.9435    0.0565    0.0565
+      |<cation|c|exact GS>|^2     :   0.9472    0.9472    0.0528    0.0528
+=== dV0 Ng=4 U/t=3.0
+   site 0: R(file)=[ 0.93156 -0.06866 -0.22019 -0.21504 -0.17964]  R(from Phit)=[ 0.93156 -0.06866 -0.22019 -0.21504 -0.17964]  null(P0)=668  |Phit|^2 on null=1.48e-04  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=2.2177735648128434e-07, 0 eigenstates below it
+   site 1: R(file)=[-0.20296  0.93026 -0.14491  0.03908  0.26536]  R(from Phit)=[-0.20296  0.93026 -0.14491  0.03908  0.26536]  null(P0)=668  |Phit|^2 on null=1.88e-04  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=2.1162422496706872e-07, 0 eigenstates below it
+   (../scan_ng4_not_imp/U_3.0)  <Psi|Psi>=1.292935  N=2-sector weight=1.000000
+   amplitudes (normalized Psi): cov=+0.89791  ion(sym)=+0.44017  ion(asym)=-0.00000   P_ion(Psi)=0.19375  P_ion(ED)=0.20000  P_ion(fragments)=0.30786
+   E_Psi=-3.999691   E_FCI=-4.000000   E_gGA=-3.784668   overlap with the exact ground state=0.999969
+   kinetic energy: Psi=-1.58095  exact=-1.60000  gGA functional (-4t R0 rho01 R1)=-1.70824
+   [ED cation states, not a gGA spectrum: Psi is projected on the exact N=1 eigenstates of H]
+      exact hole poles           :  -1.5000   -1.5000   -3.5000   -3.5000
+      |<cation|c|Psi>|^2          :   0.8952    0.8952    0.1048    0.1048
+      |<cation|c|exact GS>|^2     :   0.9000    0.9000    0.1000    0.1000
+=== dV0 Ng=4 U/t=4.0
+   site 0: R(file)=[ 0.79227  0.39817 -0.35487 -0.12347  0.26621]  R(from Phit)=[ 0.79227  0.39817 -0.35487 -0.12347  0.26621]  null(P0)=884  |Phit|^2 on null=5.74e-07  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=3.185802466776314e-07, 3 eigenstates below it
+   site 1: R(file)=[-0.3278   0.89416  0.22942 -0.06913  0.18407]  R(from Phit)=[-0.3278   0.89416  0.22942 -0.06911  0.18407]  null(P0)=884  |Phit|^2 on null=4.60e-07  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=3.3113850152686244e-07, 3 eigenstates below it
+   (../scan_ng4_not_imp/U_4.0)  <Psi|Psi>=1.757978  N=2-sector weight=1.000000
+   amplitudes (normalized Psi): cov=+0.92450  ion(sym)=+0.38118  ion(asym)=+0.00000   P_ion(Psi)=0.14530  P_ion(ED)=0.14645  P_ion(fragments)=0.23846
+   E_Psi=-4.828412   E_FCI=-4.828427   E_gGA=-4.511136   overlap with the exact ground state=0.999999
+   kinetic energy: Psi=-1.40961  exact=-1.41421  gGA functional (-4t R0 rho01 R1)=-1.46500
+   [ED cation states, not a gGA spectrum: Psi is projected on the exact N=1 eigenstates of H]
+      exact hole poles           :  -1.8284   -1.8284   -3.8284   -3.8284
+      |<cation|c|Psi>|^2          :   0.8524    0.8524    0.1476    0.1476
+      |<cation|c|exact GS>|^2     :   0.8536    0.8536    0.1464    0.1464
+=== dV0 Ng=4 U/t=5.0
+   site 0: R(file)=[ 0.28044  0.64622 -0.57198  0.11411 -0.39827]  R(from Phit)=[ 0.28044  0.64622 -0.57198  0.11411 -0.39827]  null(P0)=584  |Phit|^2 on null=9.31e-04  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=2.001004575372745e-07, 0 eigenstates below it
+   site 1: R(file)=[ 0.46273  0.59806 -0.64215 -0.10098  0.02635]  R(from Phit)=[ 0.46273  0.59806 -0.64215 -0.10098  0.02635]  null(P0)=584  |Phit|^2 on null=1.03e-03  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=2.239259891936035e-07, 0 eigenstates below it
+   (../scan_ng4_not_imp/U_5.0)  <Psi|Psi>=1.153343  N=2-sector weight=1.000000
+   amplitudes (normalized Psi): cov=-0.93987  ion(sym)=-0.34153  ion(asym)=-0.00000   P_ion(Psi)=0.11664  P_ion(ED)=0.10957  P_ion(fragments)=0.16343
+   E_Psi=-5.700763   E_FCI=-5.701562   E_gGA=-5.309607   overlap with the exact ground state=0.999938
+   kinetic energy: Psi=-1.28398  exact=-1.24939  gGA functional (-4t R0 rho01 R1)=-1.12675
+   [ED cation states, not a gGA spectrum: Psi is projected on the exact N=1 eigenstates of H]
+      exact hole poles           :  -2.2016   -2.2016   -4.2016   -4.2016
+      |<cation|c|Psi>|^2          :   0.8210    0.8210    0.1790    0.1790
+      |<cation|c|exact GS>|^2     :   0.8123    0.8123    0.1877    0.1877
+=== dV0 Ng=4 U/t=6.0
+   site 0: R(file)=[ 0.68047  0.63728 -0.29642 -0.14781 -0.09132]  R(from Phit)=[ 0.68047  0.63728 -0.29642 -0.14781 -0.09132]  null(P0)=600  |Phit|^2 on null=8.96e-05  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=2.468958146910753e-07, 0 eigenstates below it
+   site 1: R(file)=[ 0.66423  0.65809 -0.32611 -0.04079 -0.07028]  R(from Phit)=[ 0.66423  0.65809 -0.32611 -0.04079 -0.07028]  null(P0)=600  |Phit|^2 on null=8.54e-05  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=2.3132387831525502e-07, 0 eigenstates below it
+   (../scan_ng4_not_imp/U_6.0)  <Psi|Psi>=2.556601  N=2-sector weight=1.000000
+   amplitudes (normalized Psi): cov=-0.95544  ion(sym)=-0.29517  ion(asym)=+0.00000   P_ion(Psi)=0.08713  P_ion(ED)=0.08397  P_ion(fragments)=0.07936
+   E_Psi=-6.605322   E_FCI=-6.605551   E_gGA=-6.187260   overlap with the exact ground state=0.999984
+   kinetic energy: Psi=-1.12808  exact=-1.10940  gGA functional (-4t R0 rho01 R1)=-0.66342
+   [ED cation states, not a gGA spectrum: Psi is projected on the exact N=1 eigenstates of H]
+      exact hole poles           :  -2.6056   -2.6056   -4.6056   -4.6056
+      |<cation|c|Psi>|^2          :   0.7820    0.7820    0.2180    0.2180
+      |<cation|c|exact GS>|^2     :   0.7774    0.7774    0.2226    0.2226
+=== dV0 Ng=4 U/t=7.0
+   site 0: R(file)=[ 0.61679  0.74804  0.09037 -0.07432  0.16773]  R(from Phit)=[ 0.61626  0.7485   0.09038 -0.07437  0.16761]  null(P0)=600  |Phit|^2 on null=1.70e-05  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=2.521461942059362e-07, 2 eigenstates below it
+   site 1: R(file)=[0.73673 0.62123 0.20154 0.01341 0.111  ]  R(from Phit)=[0.73713 0.62075 0.20154 0.01342 0.11106]  null(P0)=600  |Phit|^2 on null=1.51e-05  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=2.3637037370431917e-07, 0 eigenstates below it
+   (../scan_ng4_not_imp/U_7.0)  <Psi|Psi>=6.593327  N=2-sector weight=1.000000
+   amplitudes (normalized Psi): cov=-0.96306  ion(sym)=-0.26908  ion(asym)=-0.00000   P_ion(Psi)=0.07241  P_ion(ED)=0.06588  P_ion(fragments)=0.02229
+   E_Psi=-7.529731   E_FCI=-7.531129   E_gGA=-7.146919   overlap with the exact ground state=0.999861
+   kinetic energy: Psi=-1.03657  exact=-0.99228  gGA functional (-4t R0 rho01 R1)=-0.30296
+   [ED cation states, not a gGA spectrum: Psi is projected on the exact N=1 eigenstates of H]
+      exact hole poles           :  -3.0311   -3.0311   -5.0311   -5.0311
+      |<cation|c|Psi>|^2          :   0.7591    0.7591    0.2409    0.2409
+      |<cation|c|exact GS>|^2     :   0.7481    0.7481    0.2519    0.2519
+=== dV0 Ng=4 U/t=8.0
+   site 0: R(file)=[ 0.00542  0.90054 -0.32639  0.24907 -0.08445]  R(from Phit)=[ 0.00535  0.90142 -0.32454  0.24827 -0.0846 ]  null(P0)=440  |Phit|^2 on null=3.18e-04  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=3.094513071767082e-07, 0 eigenstates below it
+   site 1: R(file)=[-0.59845  0.15752  0.69043  0.2934  -0.2024 ]  R(from Phit)=[-0.59636  0.15779  0.69247  0.29251 -0.2027 ]  null(P0)=440  |Phit|^2 on null=1.60e-05  odd rows flipped: False
+           embedding state: phi from z.npy (non-impurity solver); residual=3.456327658304387e-07, 0 eigenstates below it
+   (../scan_ng4_not_imp/U_8.0)  <Psi|Psi>=83.463937  N=2-sector weight=1.000000
+   amplitudes (normalized Psi): cov=-0.28779  ion(sym)=+0.03645  ion(asym)=+0.00000   P_ion(Psi)=0.00133  P_ion(ED)=0.05279  P_ion(fragments)=0.01668
+   E_Psi=-7.947407   E_FCI=-8.472136   E_gGA=-8.127647   overlap with the exact ground state=0.271716
+   kinetic energy: Psi=+0.04196  exact=-0.89443  gGA functional (-4t R0 rho01 R1)=-0.26105
+   [ED cation states, not a gGA spectrum: Psi is projected on the exact N=1 eigenstates of H]
+      exact hole poles           :  -3.4721   -3.4721   -5.4721   -5.4721
+      |<cation|c|Psi>|^2          :   0.4895    0.4895    0.5105    0.5105
+      |<cation|c|exact GS>|^2     :   0.7236    0.7236    0.2764    0.2764
