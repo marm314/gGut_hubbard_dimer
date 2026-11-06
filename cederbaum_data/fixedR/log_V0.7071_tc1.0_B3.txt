@@ -1,0 +1,10 @@
+V=0.7071067811865476 tc=1.0 B_c=3 eps=1e-07: ED E0=-22.180970861; ED poles(w>1e-3) [ -9.658 -12.175 -12.189 -14.699] w [0.832 0.03  0.123 0.007]
+s=1.0000: E-E_ED=9.170e-06 |R_c|^2=0.994378 kkt=5.6e-08 comm=1.6e-06 poles [-10.022  -1.834  -0.966] w [9.8620e-01 3.5898e-15 5.3336e-05]
+s=0.9800 (h=0.020) E-E_ED=6.916e-03 viol=1.6e-06 succ=False kkt=1.3e-01 comm=1.6e-01 nit=600 13s -> REJECT
+s=0.9900 (h=0.010) E-E_ED=8.475e-04 viol=4.1e-06 succ=False kkt=1.2e-02 comm=1.0e-01 nit=600 12s -> REJECT
+s=0.9950 (h=0.005) E-E_ED=3.087e-04 viol=2.8e-07 succ=False kkt=1.8e-02 comm=4.9e-02 nit=600 12s -> REJECT
+s=0.9975 (h=0.002) E-E_ED=9.526e-05 viol=9.2e-14 succ=True kkt=2.7e-07 comm=1.1e-05 nit=67 1s -> ok
+    poles [-9.986 -7.482 -0.983] w [9.8124e-01 1.0805e-15 5.3897e-05] nu_c=1.983685
+s=0.9938 (h=0.004) E-E_ED=4.009e-04 viol=3.3e-07 succ=False kkt=4.9e-03 comm=2.3e-02 nit=600 13s -> REJECT
+s=0.9956 (h=0.002) E-E_ED=2.318e-04 viol=1.8e-08 succ=False kkt=3.9e-03 comm=9.4e-03 nit=600 13s -> REJECT
+walk stopped at s=0.9975

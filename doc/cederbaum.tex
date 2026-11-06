@@ -529,6 +529,22 @@ The number of free directions is $n_e(n_e+1)/2+n_f(n_f+1)/2$ for $n_e$ pure empt
 \paragraph{What changes and what does not.} $H_{qp}(a)=H_{qp}(0)+\sum_ja_jD_j$ is exactly linear in $a$ and only the ghost levels move (at $B_c=3$ the filled ghost only; the QP, $o$, $v$ levels and the empty level near $+12$, whose orbital is not pure, are fixed). The bath potentials $\lambda^c=\Lambda-\lambda$ move oppositely, so a filled ghost placed at $\epsilon_g\ll0$ is an empty bath orbital at $\epsilon_g$ in $H^{imp}_c$, which its ground state would fill: $\Phi_c$ stays an eigenstate but becomes an excited one (Sec.~\ref{sec:loop}).
 $E$, $\nu_c$, the double occupancies, $\rho$, $R$, $\Phi_I$ are identical by construction (at $V/g=1.414$, $t_c/g=1$, $B_c=3$: $E=-22.1828805287$, $\nu_c=1.9832184020$); rebuilding $\rho'$ from the shifted $H_{qp}$ gives $E'-E\le1.3\times10^{-7}$ and $\|\rho'-\rho\|\le7\times10^{-7}$.
 
+\paragraph{Illustration: two minimizations at $B_c=3$ (core plus two ghosts).} Because the family is exactly flat in $E$, the minimizer has nothing that selects a member: the ghost level at convergence is whatever the starting point and the SLSQP path leave. Table~\ref{tab:twostarts} shows two converged runs at $V/g=1/\sqrt2$, $t_c/g=0.05$ that differ only in the starting point (the seed was built with a different target value $f$ of the ghost-pole parameter, plus noise $0.01$). Both satisfy the constraints ($\le1.6\times10^{-9}$) and are stationary (KKT $\le1.2\times10^{-6}$, $\|[H_{qp},\rho]\|\le5\times10^{-6}$).
+\begin{table}[h]
+\centering\small
+\begin{tabular}{l r r r r r}
+\toprule
+start & $E-E_{\rm ED}$ & $\nu_c$ & QP pole (weight) & ghost pole (weight) & $o,v$ level (weight)\\
+\midrule
+$f=0.05$ & $9.451\times10^{-8}$ & $1.99996$ & $-9.933$ ($0.99387$) & $\mathbf{-9.500}$ ($0$) & $-0.805$ ($0$)\\
+$f=0.17$ & $9.451\times10^{-8}$ & $1.99996$ & $-9.933$ ($0.99387$) & $\mathbf{-6.839}$ ($0$) & $-0.805$ ($0$)\\
+\bottomrule
+\end{tabular}
+\caption{Two converged $B_c=3$ solutions from different starting points ($V/g=1/\sqrt2$, $t_c/g=0.05$). Energy, $\nu_c$, QP pole and weight and the $o,v$ level coincide; only the weightless ghost pole differs, by $2.7$.}
+\label{tab:twostarts}
+\end{table}
+The energy, $\nu_c$, the QP pole and its weight and the other level agree to all printed digits, while the ghost pole sits at $-9.500$ in one run and at $-6.839$ in the other. Its weight is zero in both, so the spectral function is the same: the position of this pole is not a prediction of the method but a free parameter fixed by the history of the minimization. This is a two-point illustration of the gauge, not a systematic multi-start statistic; the same holds at $B_c=5$ with four free directions. The next sections use the freedom deliberately instead of leaving it to chance.
+
 %======================================================================
 \section{Allowed positions of the muted poles}
 \label{sec:intervals}

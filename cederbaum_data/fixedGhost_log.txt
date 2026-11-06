@@ -1,0 +1,2 @@
+V=0.7071 tc=1.0 eps=1e-07: ED poles(w>1e-3) [ -9.658 -12.175 -12.189 -14.699] w [0.832 0.03  0.123 0.007]; target pole -12.189
+t=1.00e-05: E-E_ED=5.485e-05 viol=1.7e-08 succ=False nit=800 kkt=2.2e-02 comm=9.5e-03 nat.occ Delta_c [2.70565e-05 9.91821e-01 1.00000e+00] nu_c=1.983696 19s -> REJECT
