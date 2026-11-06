@@ -1,0 +1,78 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\newcommand{\Ng}{N_g}
+\newcommand{\dV}{\Delta V}
+\newcommand{\ket}[1]{|#1\rangle}
+\newcommand{\bra}[1]{\langle #1|}
+
+\title{Constrained minimization of the ghost-GA functional at fixed $|R|$\\
+\large (Hubbard dimer, direct minimization without the impurity problem)}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\noindent This note describes how the gGA solution of the half-filled Hubbard dimer is recomputed with the renormalization vector $R_i$ of each fragment held at a prescribed length. It is the method behind Sec.~``Ionic weight of $\Psi$ at fixed $|R|$'' of \texttt{results.tex}. No impurity problem is solved and there is no self-consistency loop: the energy functional of the direct minimization is minimized under its own constraints plus one extra equality constraint on $|R_i|$.
+
+\section{The functional that is minimized}
+Fragment $i=0,1$ carries a normalized many-body state $\phi_i$ of the embedding space, with $N=1+\Ng$ quasiparticle/bath orbitals per spin. The variables are the unnormalized coefficient vectors $x_0,x_1$ of the two fragments ($\phi_i=x_i/|x_i|$) and a real $2N\times N$ matrix $X$ whose column space is the occupied space of the Slater determinant $\psi^*$; its one-body density matrix per spin is $\rho=X(X^TX)^{-1}X^T$. All of these are stacked in one vector $z$ (code: \texttt{model.unpack(z)} $\to(x_0,x_1,X)$, class \texttt{NotImpDimer} of \texttt{not\_imp\_gga\_dimer.py}).
+
+From $\phi_i$ one builds the density matrix $\Delta_i^{bb}(\phi_i)$ and the vector $D_i(\phi_i)$ (spin averages of $\langle\phi_i|d^\dagger_a d_b|\phi_i\rangle$ and $\langle\phi_i|d^\dagger_a c|\phi_i\rangle$), and the renormalization vector
+\begin{equation}
+R_i(\phi_i)=\big[\Delta_i^{bb}(1-\Delta_i^{bb})\big]^{-1/2}\,D_i ,
+\label{eq:R}
+\end{equation}
+which in the code is \texttt{frag(x,i)["R"]} (a small shift, $10^{-9}$, regularizes the inverse square root). It has $N$ components. The energy is
+\begin{equation}
+E(z)=-4t\,R_0^{T}\rho_{01}R_1+\sum_{i}\langle\phi_i|H_{\rm loc}^{(i)}|\phi_i\rangle ,
+\label{eq:E}
+\end{equation}
+with $\rho_{01}$ the block of $\rho$ connecting the two fragments and $H^{(i)}_{\rm loc}=Un_\uparrow n_\downarrow-\mu_i n$, $\mu_i=U/2\pm\dV$. The standard gGA equality constraints are, for each fragment and each $a\le b$,
+\begin{equation}
+c^{\rm gGA}_{i,ab}(z)=\rho_{ii,ab}+\Delta^{bb}_{i,ab}(\phi_i)-\delta_{ab}=0 ,
+\label{eq:cgga}
+\end{equation}
+(code: \texttt{model.constraints}, with analytic Jacobian \texttt{model.constraint\_jac}). The unconstrained gGA solution minimizes Eq.~\eqref{eq:E} under Eq.~\eqref{eq:cgga} with SLSQP; call it $z^{\rm sol}$ and its renormalization vectors $R_i^{\rm sol}=R_i(z^{\rm sol})$.
+
+\section{What is fixed: $|R_i|^2$, not the vector}
+For $\Ng=0$, $R_i$ is a single number ($R_i=\sqrt{Z_i}$), so fixing $R_i^2$ fixes $R_i$ itself.
+
+For $\Ng\ge1$ the functional is invariant under orthogonal rotations of the quasiparticle basis of each fragment: such a rotation turns $R_i$ into another vector of the same length and leaves $E$ and the constraints unchanged. Therefore only $|R_i|$ is a variable with a meaning. Fixing the whole vector $R_i$ at a value of unchanged length returns the same energy and the same $\Psi$ (checked at $U/t=4$, $\Ng=2$: $E_{\rm var}=-4.511136$ and $P_{\rm ion}=0.1453$ for all $s$; this is the option \texttt{rot} of the script). The constraint used is therefore, for $i=0,1$,
+\begin{equation}
+g_i(z)\equiv R_i(\phi_i)^{T}R_i(\phi_i)-s^{2}\,\big|R_i^{\rm sol}\big|^{2}=0 ,
+\label{eq:cR}
+\end{equation}
+where $s$ is the scale factor ($s=1$ is the unmodified solution). Two scalar equations are added to the gGA constraints of Eq.~\eqref{eq:cgga}. In the code, \texttt{Rfun(z)} returns $(R_0^TR_0,\,R_1^TR_1)$, the target is $\texttt{Rt}=s^2(|R_0^{\rm sol}|^2,|R_1^{\rm sol}|^2)$, and the constraint is \texttt{Rfun(z) - Rt}.
+
+\section{The constrained problem and its solver}
+For a given $s$ the problem is
+\begin{equation}
+\min_z\;E(z)\qquad\text{subject to}\qquad c^{\rm gGA}(z)=0,\quad g(z)=0 ,
+\end{equation}
+solved with \texttt{scipy.optimize.minimize(..., method="SLSQP")}, with the analytic gradient of $E$ (\texttt{model.energy(z)} returns $E$ and $\partial E/\partial z$), the analytic Jacobian of $c^{\rm gGA}$, and for $g$ a central finite-difference Jacobian (step $h=10^{-6}$ per component of $z$; \texttt{Rjac}). The options are \texttt{ftol}$=10^{-13}$ and \texttt{maxiter}$=1000$. The solution of the constrained problem is a point that satisfies the gGA constraints and has the prescribed $|R_i|$, and it minimizes the same functional as the solution; it is not a solution of the gGA stationarity equations (the energy is higher than at $s=1$). Since the functional is the one of the direct minimization, no impurity Hamiltonian and no outer loop over $\lambda$ or $V$ appear.
+
+\section{Continuation in $s$}
+The unconstrained solution is the starting point and $s$ is changed step by step, each point started from the previous converged one:
+\begin{enumerate}[leftmargin=1.5em,itemsep=1pt]
+\item $s=1$: the stored solution $z^{\rm sol}$ is taken as is (it is saved as the first point). As a check, $R_i(z^{\rm sol})$ is compared with the $R_i$ derived from the stored solution files.
+\item From $s_{\rm cur}$ the next value is $s_{\rm new}=s_{\rm cur}\pm h$, with $h\le ds$ ($ds=0.05$ for $\Ng=0$ and $0.02$ for $\Ng=2$ in the runs of \texttt{results.tex}), walking once upward (to $s_{\max}$) and once downward (to $s_{\min}$), both starting from $s=1$.
+\item The constrained problem is solved starting from the last accepted $z$. The point is accepted if SLSQP reports success and the largest violation of all constraints, $\max\big(|c^{\rm gGA}|,|g|\big)$, is below $10^{-7}$. Then $z$ is saved at once (\texttt{Rfixed/ng<Ng>\_<tag>\_U<U>\_norm/s\_<s>/z.npy}), the reference point is moved to $s_{\rm new}$ and the step is increased, $h\to\min(1.5h,ds)$.
+\item Otherwise the step is halved, $h\to h/2$, and the attempt is repeated from the last accepted point. If $h<10^{-3}$ the walk in that direction stops and the last accepted $s$ is the limit reached.
+\end{enumerate}
+In this way values of $s>1$ were reached for $\Ng=0$ (up to $1.1$ for $U/t\ge4$), while for $\Ng=2$ no value $s>1$ converged (at $U/t=4$, $s=1.1$ does not converge), so $s\le1$ is studied.
+
+\section{From the constrained point to $\Psi$ and $P_{\rm ion}$}
+Every accepted point is passed to the construction of the Gutzwiller wave function $\Psi$ (\texttt{gutzwiller\_psi.build\_psi}, Sec.~``The Gutzwiller wave function itself'' of \texttt{results.tex}), and \texttt{analyse} gives $P_{\rm ion}$, the energy $E_\Psi$ and the overlap with the FCI ground state. One line per point is appended to \texttt{psi\_scan/Rfix\_ng<Ng>\_<tag>\_U<U>\_norm.txt}:
+\[
+s,\;E_{\rm var},\;\text{constraint},\;|R'_0|,\;P_{\rm ion},\;E_\Psi,\;\text{overlap},\;\big(|R_\Phi|^2-|R'_0|^2\big),
+\]
+where $E_{\rm var}=E(z)$ is the value of Eq.~\eqref{eq:E} at the constrained point and the last column is the difference between $|R|^2$ computed from the $\Phi$-matrix in the construction of $\Psi$ and the target (of order $10^{-7}$ or smaller in the $\Ng=2$, $U/t=4$ data).
+
+\paragraph{Script.} \texttt{scripts/psi\_fixedR.py <dV0|dV2|dV2n> <Ng> <U> <none|rot|norm> [s\_min s\_max ds]}; the results of \texttt{results.tex} use the option \texttt{norm} (Eq.~\eqref{eq:cR}) at $\dV=0$.
+
+\end{document}

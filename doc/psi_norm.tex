@@ -1,0 +1,101 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\newcommand{\Ng}{N_g}
+\newcommand{\dV}{\Delta V}
+
+\title{Why the Gutzwiller wave function $\Psi_G$ is not normalized\\
+\large (Hubbard dimer; worked example: $\Ng=0$, $\dV=0$)}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\noindent The wave function $|\Psi\rangle=P_0P_1|\Psi_0\rangle$ built from a converged gGA solution (Sec.~``The Gutzwiller wave function itself'' of \texttt{results.tex}) has $\langle\Psi|\Psi\rangle\neq1$ for the dimer. This note shows where the norm comes from, which part of it the gGA constraints fix, which part they cannot, and evaluates it in closed form for $\Ng=0$, $\dV=0$, checked against the computed values (script \texttt{psi\_norm\_check.py}, output \texttt{psi\_scan/psi\_norm\_check.txt}).
+
+\section{The norm as the expectation value of a product of two local operators}
+For fragment $i=0,1$ let $|\Psi_0\rangle$ be the Slater determinant of the occupied levels of $H_{qp}$, with qp Fock space $\{|n\rangle\}$ ($4^{N_{\rm eff}}$ states per fragment, $N_{\rm eff}=1+\Ng$), and let $P^0_i=\langle\Psi_0|\,|n\rangle\langle n'|\,|\Psi_0\rangle$ be its local density matrix on fragment $i$. The projector is $P_i=\sum_{\Gamma n}\lambda_{i,\Gamma n}|\Gamma\rangle\langle n|$, with $\lambda_i=\tilde\Phi_i\,(P^0_i)^{-1/2}$ and $\tilde\Phi_i[\Gamma,n]$ the embedding state of the fragment, $\sum_{\Gamma n}\tilde\Phi_{i,\Gamma n}^2=\langle\phi_i|\phi_i\rangle=1$ (all real). Define the operator on the qp Fock space of fragment $i$
+\begin{equation}
+G_i\equiv P_i^\dagger P_i=\lambda_i^{T}\lambda_i=(P^0_i)^{-1/2}\,\tilde\Phi_i^{T}\tilde\Phi_i\,(P^0_i)^{-1/2}.
+\label{eq:G}
+\end{equation}
+Since $P_0$ and $P_1$ act on different fragments, $\langle\Psi|\Psi\rangle=\langle\Psi_0|P_1^\dagger P_0^\dagger P_0P_1|\Psi_0\rangle$ is
+\begin{equation}
+\langle\Psi|\Psi\rangle=\langle\Psi_0|\,G_0\,G_1\,|\Psi_0\rangle .
+\label{eq:norm}
+\end{equation}
+
+\section{What the gGA constraints fix: each factor alone}
+The expectation value of a single factor in $\Psi_0$ is a trace with the local density matrix, and with Eq.~\eqref{eq:G}
+\begin{equation}
+\langle\Psi_0|G_i|\Psi_0\rangle=\mathrm{Tr}\big[P^0_i\,G_i\big]=\mathrm{Tr}\big[\tilde\Phi_i^{T}\tilde\Phi_i\big]=\langle\phi_i|\phi_i\rangle=1 ,
+\label{eq:Gi}
+\end{equation}
+up to the weight of $\tilde\Phi_i$ outside the support of $P^0_i$ (at most $7\times10^{-8}$ in the computed points). This is the normalization condition of the embedding state. The density constraint $\Delta^*_{ii}=1-\Delta_{\phi_i}$ is the corresponding statement for the one-body operators $f^\dagger_af_b$ of the fragment: in their expectation values $G_i$ may be replaced by $1$ (the standard form of the Gutzwiller constraints; this part is not checked separately here). Both are statements about one fragment. They do not say that $G_i$ is the identity operator: $G_i$ is a nontrivial operator whose expectation value, and whose one-body moments, are those of the identity.
+
+\section{What they cannot fix: the correlation of $G_0$ and $G_1$}
+Writing the product in Eq.~\eqref{eq:norm} in terms of the single-fragment values and a connected part,
+\begin{equation}
+\langle\Psi|\Psi\rangle=\langle G_0\rangle\langle G_1\rangle+\Big(\langle G_0G_1\rangle-\langle G_0\rangle\langle G_1\rangle\Big)=1+\Big(\langle G_0G_1\rangle-\langle G_0\rangle\langle G_1\rangle\Big),
+\label{eq:conn}
+\end{equation}
+where all expectation values are in $|\Psi_0\rangle$ and Eq.~\eqref{eq:Gi} was used. The second term is the correlation, in $\Psi_0$, between the two fragment operators $G_0$ and $G_1$. In a dimer, $\Psi_0$ is a Slater determinant of two sites with delocalized orbitals, and the two fragments are correlated: this term is not zero. The gGA is the Gutzwiller approximation, where the factorization $\langle G_0G_1\rangle\to\langle G_0\rangle\langle G_1\rangle$ is taken to hold (it is the limit in which the connected term vanishes); the constraints of Sec.~2 are exactly what makes the norm equal to $1$ then. For the dimer the factorization is not exact, and $\langle\Psi|\Psi\rangle-1$ is the connected term of Eq.~\eqref{eq:conn}. It is therefore not a numerical error of the construction: for the converged points $\langle G_0\rangle=\langle G_1\rangle=1$ holds to $4\times10^{-9}$ and the connected term carries all of the deviation (Table~\ref{tab:norm}).
+
+\section{Example: $\Ng=0$, $\dV=0$ in closed form}
+Here $N_{\rm eff}=1$ and everything can be written out.
+
+\paragraph{$\Psi_0$.} $H_{qp}=-tZ\sigma_x$ and the occupied orbital is the bonding orbital $b=(c_0+c_1)/\sqrt2$, so
+\begin{equation}
+|\Psi_0\rangle=b^\dagger_\uparrow b^\dagger_\downarrow|0\rangle=\tfrac12\big(c^\dagger_{0\uparrow}+c^\dagger_{1\uparrow}\big)\big(c^\dagger_{0\downarrow}+c^\dagger_{1\downarrow}\big)|0\rangle ,
+\end{equation}
+which is a superposition of four configurations of equal weight $\tfrac14$: $(\uparrow\downarrow,0)$, $(0,\uparrow\downarrow)$, $(\uparrow,\downarrow)$ and $(\downarrow,\uparrow)$ (state of site $0$, state of site $1$). Each fragment has the occupations $n_\sigma=\tfrac12$ and no local correlation, so $P^0_i=\tfrac14\mathbb 1$ on its four configurations $0,\uparrow,\downarrow,\uparrow\downarrow$.
+
+\paragraph{$\lambda_i$ and $G_i$.} With $d\equiv\langle n_\uparrow n_\downarrow\rangle=\tfrac14-\tfrac{U}{32t}$ (the closed Gutzwiller solution of Sec.~``The $\Ng=0$ case'' of \texttt{results.tex}), the embedding state has the weights $d$ on the empty and on the doubly occupied configuration (particle--hole symmetry at $\dV=0$) and $\tfrac12-d$ on each singly occupied one. The embedding state pairs each physical configuration with one qp configuration, so $\tilde\Phi_i$ and hence $\lambda_i=\tilde\Phi_i(P^0_i)^{-1/2}=2\tilde\Phi_i$ are diagonal and $G_i=\lambda_i^T\lambda_i$ is the diagonal operator with entries $4\times$(weight of the configuration):
+\begin{equation}
+G_i=4d\quad\text{on }|0\rangle,\ |\!\uparrow\downarrow\rangle,\qquad G_i=2-4d\quad\text{on }|\!\uparrow\rangle,\ |\!\downarrow\rangle .
+\end{equation}
+Check of Eq.~\eqref{eq:Gi}: $\langle G_i\rangle=\tfrac14\,(2\cdot4d+2\cdot(2-4d))=1$.
+
+\paragraph{The product.} Let $e_i$ be the indicator of even occupation of fragment $i$ (1 on $|0\rangle,|\!\uparrow\downarrow\rangle$, 0 on the singly occupied ones). Then
+\begin{equation}
+G_i=(2-4d)+(8d-2)\,e_i .
+\end{equation}
+In $\Psi_0$: $\langle e_i\rangle=\tfrac12$ (each fragment is even in two of the four configurations), but $\langle e_0e_1\rangle=\tfrac12$, since the configurations $(\uparrow\downarrow,0)$ and $(0,\uparrow\downarrow)$ have both fragments even and $(\uparrow,\downarrow)$, $(\downarrow,\uparrow)$ both odd; if the fragments were uncorrelated it would be $\tfrac14$. The connected part is $\langle e_0e_1\rangle-\langle e_0\rangle\langle e_1\rangle=\tfrac14$, and Eq.~\eqref{eq:conn} gives
+\begin{equation}
+\langle\Psi|\Psi\rangle=1+(8d-2)^2\cdot\tfrac14=1+(4d-1)^2=1+\Big(\frac{U}{8t}\Big)^{2},
+\label{eq:ng0}
+\end{equation}
+using $4d-1=-U/8t$. It is $1$ at $U=0$ (where $G_i=1$) and grows to $2$ at $U_c=8t$, where $d=0$ and $G_i$ projects onto the two singly occupied configurations ($Z=0$).
+
+\paragraph{Comparison with the computed values.} Table~\ref{tab:norm} gives the quantities of Eqs.~\eqref{eq:Gi}--\eqref{eq:conn} computed from the stored solutions with \texttt{build\_psi}, and for $\Ng=0$ the closed form \eqref{eq:ng0}. They agree to $3\times10^{-8}$ (the shift $10^{-9}$ in $S^{-1}$). The $\Ng=0$ values equal the $\langle\Psi|\Psi\rangle$ of the norm tables of \texttt{results.tex} ($1.062$, $1.250$, $1.562$, $1.766$ at $U/t=2,4,6,7$).
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cc rrrr r}
+\toprule
+$\Ng$ & $U/t$ & $\langle G_0\rangle$ & $\langle G_1\rangle$ & $\langle G_0G_1\rangle=\langle\Psi|\Psi\rangle$ & connected & $1+(U/8t)^2$\\
+\midrule
+0 & 2 & 1.0000000 & 1.0000000 & 1.0625000 & 0.0625000 & 1.0625000\\
+0 & 4 & 1.0000000 & 1.0000000 & 1.2500000 & 0.2500000 & 1.2500000\\
+0 & 6 & 1.0000000 & 1.0000000 & 1.5625000 & 0.5625000 & 1.5625000\\
+0 & 7 & 1.0000000 & 1.0000000 & 1.7656250 & 0.7656250 & 1.7656250\\
+\midrule
+2 & 2 & 1.0000000 & 1.0000000 & 1.1527890 & 0.1527890 & --\\
+2 & 4 & 1.0000000 & 1.0000000 & 1.7579779 & 0.7579779 & --\\
+2 & 6 & 1.0000000 & 1.0000000 & 2.6468041 & 1.6468041 & --\\
+\bottomrule
+\end{tabular}
+\caption{$\dV=0$: single-fragment norms, norm of $\Psi$ and connected part of Eq.~\eqref{eq:conn}, from the stored solutions. The $\Ng=2$ values are the $\langle\Psi|\Psi\rangle$ of \texttt{results.tex}; for $\Ng=2$ there is no closed form here.}
+\label{tab:norm}
+\end{table}
+
+\section{Consequences}
+Since the connected term is a property of $\Psi_0$ and of the $G_i$, it is not removed by changing the solution of the gGA equations; the wave function is normalized by hand,
+$\Psi\to\Psi/\sqrt{\langle\Psi|\Psi\rangle}$, before any expectation value is computed (energy, overlap with FCI, $P_{\rm ion}$, amplitudes), as in \texttt{results.tex}. For $\Ng=2$ the same structure holds, Eqs.~\eqref{eq:G}--\eqref{eq:conn}, with $\langle G_i\rangle=1$ and a connected term that grows with $U/t$ (Table~\ref{tab:norm}); I have not derived a closed form for it.
+
+\end{document}
