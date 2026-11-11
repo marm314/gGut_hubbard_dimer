@@ -46,3 +46,10 @@ doc/results.out
 doc/results.toc
 doc/*.tex.bak
 *.orig
+psi_scan/
+Rfixed
+Rfixed_firstpass/
+doc/fixedR_constraint.aux
+doc/hubbard_sat.aux
+doc/psi_norm.aux
+doc/hubbard_sat_spectrum.png.bak
