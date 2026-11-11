@@ -272,6 +272,29 @@ What can be seen at the critical $U_c/t$ of the weight transfer ($6.56$ for $\dV
 \end{itemize}
 This is a gap closing and re-opening of the gGA solution. It is not present in the exact dimer, whose spectral gap varies smoothly with $U/t$ (Sec.~\ref{sec:spectra}).
 
+\subsection{Physical orbitals: the quasiparticle orbitals transformed by $R$}
+
+The last set of movies maps the quasiparticle orbitals to the physical space with $R$. For $\Ng$ ghosts per site the qp space has dimension $2(1+\Ng)$ (six for $\Ng=2$: the state and two ghosts on each site),
+while the physical space has the two sites. The renormalization matrix is therefore $2\times2(1+\Ng)$, with row $s$ equal to $R_s$ on the block of site $s$ and zero on the block of the other site,
+\begin{equation*}
+R=\begin{pmatrix} R_{1,1} & R_{1,2} & R_{1,3} & 0 & 0 & 0\\ 0 & 0 & 0 & R_{2,1} & R_{2,2} & R_{2,3}\end{pmatrix}\quad(\Ng=2).
+\end{equation*}
+Let $\Phi_{qp}$ be the $2(1+\Ng)\times2(1+\Ng)$ matrix whose columns are the eigenvectors $\phi^{qp}_n$ of $H_{qp}$ (energies $\epsilon_n$; the lowest $1+\Ng$ occupied, the rest virtual; $\Phi_{qp}\Phi_{qp}^T=1$). The physical orbitals are
+\begin{equation*}
+\phi^{phys}=R\,\Phi_{qp},\qquad c_{R_s,n}=(R\Phi_{qp})_{sn}=R_s\cdot\phi^{qp}_n|_{\text{block }s},
+\end{equation*}
+a $2\times2(1+\Ng)$ matrix. Because $R$ has two rows there are only two physical orbitals, $\phi^{phys}_1$ and $\phi^{phys}_2$ (the rows), each specified by its $2(1+\Ng)$ coefficients over the qp eigenorbitals.
+The weight of a qp level in $A(\omega)$ is $2\sum_s c_{R_s,n}^2$. The squared norm of a physical orbital is $\|\phi^{phys}_s\|^2=\sum_n c_{R_s,n}^2=|R_s|^2$, which is not $1$ (it is $0.996$ at $\Ng=2$, $\dV=0$, $U/t=4.9$ and $0.991$ at $\dV=2$, $U/t=7.3$, close to $Z$ at these points).
+
+Left of each movie frame: for each of the two physical orbitals, one circle per qp eigenorbital in energy order, labelled \emph{occ} (blue) or \emph{virt} (pink) with its $\epsilon_{qp}$, with the coefficient $c_{R_s,n}$ below; circle area is $c^2$ and the color is the sign. Each circle follows one qp orbital as $U/t$ grows (same tracking and phase alignment as for the qp-orbital movies), so a color change is a change of the coefficient, not of the phase. Right (arrow): the final physical orbital $\phi^{phys}_s=\sum_n c_{R_s,n}\,\phi^{qp}_n$ on the two physical sites, with its norm. It sits on site $s$ with amplitude $|R_s|$ and the other site is empty: the sum is $\Phi_{qp}\Phi_{qp}^TR_s^T=R_s^T$,, which has no component on the other site.
+The final orbitals are thus localized by construction, and the information lies in the coefficients on the left. For $\Ng=0$ the qp space is the two states (bonding and antibonding), $|R_s|=\sqrt Z$ on both sites, and each physical orbital has two coefficients.
+\begin{itemize}[nosep]
+  \item $\Ng=0$, $\dV=0$: \href{run:../scan_ng0/dV_0.0/phys_orbitals_vs_U.mp4}{physical orbitals}
+  \item $\Ng=0$, $\dV=2$: \href{run:../scan_ng0/dV_2.0/phys_orbitals_vs_U.mp4}{physical orbitals}
+  \item $\Ng=2$, $\dV=0$: \href{run:../scan_ng2_not_imp/phys_orbitals_vs_U.mp4}{physical orbitals}
+  \item $\Ng=2$, $\dV=2$: \href{run:../scan_ng2_dV2_confirmed/phys_orbitals_vs_U.mp4}{physical orbitals}
+\end{itemize}
+
 \subsection{$\Ng=0$ orbitals versus the $\Ng=2$ HOMO and LUMO}
 \label{sec:orbcomp}
 
