@@ -19,8 +19,8 @@ for (dv, ng), c, mk in [(("dV0", 2), "C0", "o"), (("dV0", 4), "C1", "s"), (("dV2
     U = [p[0] for p in pts]; fr = [p[1][0] for p in pts]; ps = [p[1][1] for p in pts]; ex = [p[1][2] for p in pts]
     ax[0].plot(fr, ps, mk, color=c, label=f"{dv} Ng={ng}")
     ax[1].plot(U, [a - b for a, b in zip(fr, ex)], mk + "-", color=c, mfc="none", label=f"fragments - ED, {dv} Ng={ng}")
-    ax[1].plot(U, [a - b for a, b in zip(ps, ex)], mk + "--", color=c, label=f"Psi_G - ED, {dv} Ng={ng}")
-ax[0].plot([0, 1], [0, 1], "k:", lw=1); ax[0].set_xlabel("P_ion from impurity docc (fragments)"); ax[0].set_ylabel("P_ion of normalized Psi_G"); ax[0].legend()
+    ax[1].plot(U, [a - b for a, b in zip(ps, ex)], mk + "--", color=c, label=f"$\\bar\\Psi_G$ - ED, {dv} Ng={ng}")
+ax[0].plot([0, 1], [0, 1], "k:", lw=1); ax[0].set_xlabel("P_ion from impurity docc (fragments)"); ax[0].set_ylabel("$P_{ion}$ of $\\bar\\Psi_G$"); ax[0].legend()
 ax[1].axhline(0, color="k", lw=.6); ax[1].set_xlabel("U/t"); ax[1].set_ylabel("P_ion - P_ion(ED)"); ax[1].legend(fontsize=6)
 plt.tight_layout(); plt.savefig("../psi_scan/pion_compare.png", dpi=150)
 for k in sorted(rows): print(k, "frag %.4f Psi %.4f ED %.4f norm %.3f" % rows[k])

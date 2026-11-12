@@ -63,19 +63,19 @@ At $\dV=0$ the Gutzwiller equations of the dimer have a closed solution (\texttt
   Z=R^2=1-\Bigl(\frac{U}{8t}\Bigr)^2,\qquad
   E=-2t-\frac U2-\frac{U^2}{32t},\qquad
   \langle n_\uparrow n_\downarrow\rangle=\frac14-\frac{U}{32t},\qquad
-  P_{\rm ion}=\frac12-\frac{U}{16t},
+  P_{\rm ion}^{\rm loc}=\frac12-\frac{U}{16t},
 \end{equation}
-and for $U\ge8t$ only $R=0$ exists: $Z=0$, $E=-U$, $P_{\rm ion}=0$. The quasiparticle Hamiltonian is $-tZ\,\sigma_x$, with levels $\pm tZ$ and orbitals $(1,\pm1)/\sqrt2$ on the two states; each level carries the weight $2Z$, so the spectral function consists of two peaks, at $\pm tZ$ with weight $2Z$,
+and for $U\ge8t$ only $R=0$ exists: $Z=0$, $E=-U$, $P_{\rm ion}^{\rm loc}=0$. The quasiparticle Hamiltonian is $-tZ\,\sigma_x$, with levels $\pm tZ$ and orbitals $(1,\pm1)/\sqrt2$ on the two states; each level carries the weight $2Z$, so the spectral function consists of two peaks, at $\pm tZ$ with weight $2Z$,
 that move to $\omega=0$ and vanish at $U_c$ (the gap $2tZ$ closes continuously). Here $U_c$ is the value where the spectral function disappears. The closed forms agree with the numerical $\Ng=0$ solution of the code to $1.4\times10^{-7}$ in $Z$ and $10^{-8}$ in $E$ and $\langle n_\uparrow n_\downarrow\rangle$ (script \texttt{ng0\_analysis.py}).
 
 At $\dV\neq0$ particle--hole symmetry is broken, so $\lambda\neq0$ and the embedding problem is $3\times3$ in the states $S=(a^\dagger_\uparrow d^\dagger_\downarrow-a^\dagger_\downarrow d^\dagger_\uparrow)/\sqrt2$, $D=a^\dagger_\uparrow a^\dagger_\downarrow$, $E=d^\dagger_\uparrow d^\dagger_\downarrow$ of the physical ($a$) and bath ($d$) orbitals.
 The site exchange combined with the particle--hole transformation relates the two fragments, $\phi_1=(s,\epsilon,\delta)$ for $\phi_0=(s,\delta,\epsilon)$ in the basis $(S,D,E)$, so $Z_0=Z_1$ and the problem has two variables, $c=\delta^2+\epsilon^2$ and $m=\delta^2-\epsilon^2$. With $r=\sqrt{c^2-m^2}$:
 \begin{equation}
   E=-U(1-c)-2\dV\,m-4t\,\frac{(1-c)(c+r)}{\sqrt{1-m^2}},\qquad
-  Z=\frac{2(1-c)(c+r)}{1-m^2},\qquad P_{\rm ion}=c,\qquad n=1+m,
+  Z=\frac{2(1-c)(c+r)}{1-m^2},\qquad P_{\rm ion}^{\rm loc}=c,\qquad n=1+m,
 \end{equation}
 where $n$ is the number of electrons on the favored site; the quasiparticle levels are $\pm tZ/\sqrt{1-m^2}$ with weight $2Z$ each ($\lambda=tZm/\sqrt{1-m^2}$), and at $\dV=0$ ($m=0$) all of this reduces to the formulas above.
-The stationarity conditions, $U\sqrt{1-m^2}\,r=4t(c+r)(1-c-r)$ and $\dV(1-m^2)^{3/2}r=2t(1-c)\,m\,(1-c^2-rc)$, are solved for $(c,m)$; they reproduce the numerical $\Ng=0$ solution of the code (\texttt{scan\_ng0/}) to $8\times10^{-8}$ in $E$, $4\times10^{-7}$ in $Z$ and $5\times10^{-8}$ in $P_{\rm ion}$ (script \texttt{ng0\_dV\_analytic.py}).
+The stationarity conditions, $U\sqrt{1-m^2}\,r=4t(c+r)(1-c-r)$ and $\dV(1-m^2)^{3/2}r=2t(1-c)\,m\,(1-c^2-rc)$, are solved for $(c,m)$; they reproduce the numerical $\Ng=0$ solution of the code (\texttt{scan\_ng0/}) to $8\times10^{-8}$ in $E$, $4\times10^{-7}$ in $Z$ and $5\times10^{-8}$ in $P_{\rm ion}^{\rm loc}$ (script \texttt{ng0\_dV\_analytic.py}).
 $Z$ vanishes for $c,m\to0$ with $q=r/c$ fixed, where the two conditions give $U_c=4t(1+q)/q$ and $\dV=2t\sqrt{1-q^2}/q$, i.e.
 \begin{equation}
   U_c=4t+2\sqrt{4t^2+\dV^2},
@@ -106,7 +106,7 @@ Table~\ref{tab:ng0} gives the main quantities.
 \toprule
  & \multicolumn{3}{c}{$\dV=0$ (closed form)} & & \multicolumn{3}{c}{$\dV=2$ (two-variable reduction)}\\
 \cmidrule{2-4}\cmidrule{6-8}
-$U/t$ & $Z$ & $E_{\rm var}/t$ & $P_{\rm ion}$ & & $Z$ & $E_{\rm var}/t$ & $P_{\rm ion}$\\
+$U/t$ & $Z$ & $E_{\rm var}/t$ & $P_{\rm ion}^{\rm loc}$ & & $Z$ & $E_{\rm var}/t$ & $P_{\rm ion}^{\rm loc}$\\
 \midrule
 2  & 0.938 & $-3.125$ & 0.375 & & 0.993 & $-4.774$ & 0.781\\
 4  & 0.750 & $-4.500$ & 0.250 & & 0.926 & $-5.422$ & 0.558\\
@@ -273,6 +273,7 @@ What can be seen at the critical $U_c/t$ of the weight transfer ($6.56$ for $\dV
 This is a gap closing and re-opening of the gGA solution. It is not present in the exact dimer, whose spectral gap varies smoothly with $U/t$ (Sec.~\ref{sec:spectra}).
 
 \subsection{Physical orbitals: the quasiparticle orbitals transformed by $R$}
+\label{sec:physorb}
 
 Diagonalizing $H_{qp}$ gives $H_{qp}C_{qp}=C_{qp}\,\epsilon_{qp}$, where the columns of $C_{qp}$ are the qp eigenvectors $\phi^{qp}_n$ (dimension $2(1+\Ng)$; the lowest $1+\Ng$ occupied) and $\epsilon_{qp}$ is diagonal. With $R$ the $2\times2(1+\Ng)$ matrix whose row $s$ is $R_s$ on the block of site $s$ (zero elsewhere), the physical orbitals are
 \begin{equation*}
@@ -303,6 +304,10 @@ Since $C_{qp}C_{qp}^T=1$ the sum is $R_s^T$, so the final orbital sits on site $
 At the qp level the occupied orbitals give an idea of the character: a bonding combination with equal amplitudes on the two states is covalent-like, and unequal amplitudes ($\dV\neq0$) are polarized, i.e.\ ionic-like.
 At the physical level nothing can be read: the physical orbitals $R\,C_{qp}$ are localized on the two sites (the final orbitals are $R_s^T$, unchanged with $U/t$ except for the norm $|R_s|$), so they carry no information on covalency or ionicity.
 This is a property of the many-electron state, which needs the probability of finding both electrons on one site, i.e.\ the double occupancy (or equivalently the ionic weight); it is not contained in the orbitals.
+
+\subsubsection{Relation to the Gutzwiller wavefunction}
+
+The Gutzwiller wavefunction is $|\Psi_G\rangle=P_0P_1|\Psi_{qp}\rangle$, with $|\Psi_{qp}\rangle$ the Slater determinant of the occupied columns of $C_{qp}$ (ghosts included) and $P_i$ the local projectors that expand it over the physical configurations of site $i$ (a CI-like expansion). The $\phi^{phys}=R\,C_{qp}$ constructed in this section are therefore not used to build $|\Psi_G\rangle$.
 
 \subsection{$\Ng=0$ orbitals versus the $\Ng=2$ HOMO and LUMO}
 \label{sec:orbcomp}
@@ -339,14 +344,14 @@ $U/t$ & $n_s$ & overlap with $\Ng=0$ & $\Ng=2$ & $\Ng=0$ & $\Ng=2$ & $\Ng=0$\\
 \subsection{Ionic and covalent weights}
 
 As $U/t$ grows (the analogue of stretching H$_2$) the weight of the ionic configurations (one site doubly occupied, H$^-$H$^+$) is expected to go to the covalent ones (one electron on each site).
-The ionic weight is $P_{\rm ion}=\langle n_{0\uparrow}n_{0\downarrow}\rangle+\langle n_{1\uparrow}n_{1\downarrow}\rangle$ and the covalent weight is $1-P_{\rm ion}$. In gGA the double occupancies and the site
+The ionic weight is $P_{\rm ion}=\langle n_{0\uparrow}n_{0\downarrow}\rangle+\langle n_{1\uparrow}n_{1\downarrow}\rangle$ and the covalent weight is $1-P_{\rm ion}$. For gGA we write $P_{\rm ion}^{\rm loc}$ when it is obtained from the local quantities of the fragment ground states (double occupancies, as below) and $P_{\rm ion}^{\bar\Psi_G}$ when it is the expectation value in the explicitly built normalized $|\bar\Psi_G\rangle$ (Sec.~\ref{sec:psi}); ED is the exact value. In gGA the double occupancies and the site
 occupations come from the impurity ground state of each fragment (\texttt{gga\_dimer.impurity\_solve}) at the converged $(R,\lambda)$, as in one iteration of the loop (at $\dV=0$ they reproduce the \texttt{docc} of the solver output);
-ED uses the exact ground state ($\Delta V_{\rm ED}=2\,\Delta V_{\rm gGA}$). Figure~\ref{fig:ionic} gives $P_{\rm ion}$ over the whole $U/t$ grid for both $\dV$.
+ED uses the exact ground state ($\Delta V_{\rm ED}=2\,\Delta V_{\rm gGA}$). Figure~\ref{fig:ionic} gives $P_{\rm ion}^{\rm loc}$ (gGA) and the exact value over the whole $U/t$ grid for both $\dV$.
 \begin{table}[H]
 \centering\small
 \begin{tabular}{r rrr c rrr c rr}
 \toprule
- & \multicolumn{3}{c}{$\dV=0$: $P_{\rm ion}$} & & \multicolumn{3}{c}{$\dV=2$: $P_{\rm ion}$} & & \multicolumn{2}{c}{$\dV=2$: $n$ favored site}\\
+ & \multicolumn{3}{c}{$\dV=0$: $P_{\rm ion}$ (gGA: $P_{\rm ion}^{\rm loc}$)} & & \multicolumn{3}{c}{$\dV=2$: $P_{\rm ion}$ (gGA: $P_{\rm ion}^{\rm loc}$)} & & \multicolumn{2}{c}{$\dV=2$: $n$ favored site}\\
 \cmidrule{2-4}\cmidrule{6-8}\cmidrule{10-11}
 $U/t$ & ED & $\Ng=0$ & $\Ng=2$ & & ED & $\Ng=0$ & $\Ng=2$ & & ED & $\Ng=2$\\
 \midrule
@@ -370,12 +375,12 @@ The density of the two states in the density movies matches the physical occupat
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.95\textwidth]{../merged_Ng/ionic_weight_vs_U_ng02.png}
-  \caption{Ionic weight $P_{\rm ion}$ of the ground state vs.\ $U/t$: ED (black), gGA with $\Ng=0$ (orange) and $\Ng=2$ (blue), for $\dV=0$ (left) and $\dV=2$ (right); the dotted lines are $U_c/t$ of $\Ng=0$ ($8.00$ and $9.66$) and of $\Ng=2$ ($6.56$ and $8.34$).
+  \caption{Ionic weight of the ground state vs.\ $U/t$: ED (black), gGA ($P_{\rm ion}^{\rm loc}$) with $\Ng=0$ (orange) and $\Ng=2$ (blue), for $\dV=0$ (left) and $\dV=2$ (right); the dotted lines are $U_c/t$ of $\Ng=0$ ($8.00$ and $9.66$) and of $\Ng=2$ ($6.56$ and $8.34$).
   For $\Ng=0$ the curve is the closed form of Sec.~\ref{sec:ng0} at $\dV=0$ and its two-variable reduction at $\dV=2$. For $\Ng=2$ and $\dV=0$ the gGA values are $2\,\texttt{docc}$ from the solver output; at $\dV=2$ they are the impurity double occupancies $\sum_I\phi_I^TN_{dd}\,\phi_I$ of the embedding states. Script: \texttt{make\_ng0\_figures.py}.}
   \label{fig:ionic}
 \end{figure}
 
-\paragraph{$P_{\rm ion}$ from the Gutzwiller wavefunction.} In the gGA a local expectation value in the Gutzwiller wavefunction is the one in the embedding state, so $P_{\rm ion}=\sum_{I}\phi_I^{T}N_{dd}\,\phi_I$ can be read from the $\Phi$-matrix of the direct minimization, without the impurity solve. At a solution it equals the impurity value of Fig.~\ref{fig:ionic} (script \texttt{pion\_check\_refined.py}). The ionic weight of the explicitly built, normalized $\Psi_G$ (Sec.~\ref{sec:psi}) agrees with it qualitatively.
+\paragraph{$P_{\rm ion}^{\rm loc}$ from the Gutzwiller wavefunction.} In the gGA a local expectation value in the Gutzwiller wavefunction is the one in the embedding state, so $P_{\rm ion}^{\rm loc}=\sum_{I}\phi_I^{T}N_{dd}\,\phi_I$ can be read from the $\Phi$-matrix of the direct minimization, without the impurity solve. At a solution it equals the impurity value of Fig.~\ref{fig:ionic} (script \texttt{pion\_check\_refined.py}). The ionic weight $P_{\rm ion}^{\bar\Psi_G}$ of the explicitly built, normalized $\bar\Psi_G$ (Sec.~\ref{sec:psi}) agrees with it qualitatively.
 
 % Hidden (remove \iffalse/\fi to show): link between ionic weight and spectral weights, Tables/Figs. on the inner pole weight
 \iffalse
@@ -401,7 +406,7 @@ relation gives the inner weight that the gGA state would have; it is compared be
 \toprule
  & \multicolumn{3}{c}{$\dV=0$: inner weight} & & \multicolumn{3}{c}{$\dV=2$: inner weight}\\
 \cmidrule{2-4}\cmidrule{6-8}
-$U/t$ & ED & from gGA $P_{\rm ion}$ & gGA peak & & ED & from gGA composition & gGA peak\\
+$U/t$ & ED & from gGA $P_{\rm ion}^{\rm loc}$ & gGA peak & & ED & from gGA composition & gGA peak\\
 \midrule
 2  & 1.894 & 1.968 & 1.717 & & 1.965 & 1.971 & 1.963\\
 4  & 1.707 & 1.852 & 1.076 & & 1.760 & 1.830 & 1.729\\
@@ -418,7 +423,7 @@ Above $U_c$ the two remaining peaks are more equal than the exact ones ($0.89$ a
 at large $U/t$. The total weight of the positive-energy peaks stays close to $2$.
 
 Figures~\ref{fig:link0} and \ref{fig:link2} show this link, one figure per $\dV$ with the same two panels: the inner weight against $U/t$ (left; ED, the exact relation applied to the ionic/covalent composition of the gGA state, and the lowest gGA peak)
-and against the ionic weight (right; ED, and for gGA its own $P_{\rm ion}$ and the weight of its lowest peak, colored by $U/t$). The gGA curves stop at $U_c$, where the lowest peak vanishes.
+and against the ionic weight (right; ED, and for gGA its own $P_{\rm ion}^{\rm loc}$ and the weight of its lowest peak, colored by $U/t$). The gGA curves stop at $U_c$, where the lowest peak vanishes.
 At $\dV=0$ the exact inner weight is a function of $P_{\rm ion}$ only (black curve), so the ED points lie on it; the gGA points start on it at $U/t=0$ ($P_{\rm ion}=\tfrac12$, weight $2$) and then fall below it, down to a weight $0.03$ at $U_c$.
 At $\dV=2$ there is no closed relation with $P_{\rm ion}$ alone (three amplitudes), but ED still gives a curve; the gGA peak stays close to the exact weight up to $U/t\simeq4$
 ($1.729$ against $1.760$ at $U/t=4$) and then falls to $0$ at $U_c$, while the exact relation with gGA's own composition stays above ED up to $U/t\simeq7.7$ and below it from there on ($1.175$ against $1.290$ at $U/t=8.3$).
@@ -426,7 +431,7 @@ At $\dV=2$ there is no closed relation with $P_{\rm ion}$ alone (three amplitude
   \centering
   \includegraphics[width=0.97\textwidth]{../merged_Ng/ionic_spectral_link_dV0.png}
   \caption{$\dV=0$ ($\Ng=2$): weight of the inner hole pole. Left: against $U/t$ for ED, for the exact relation applied to the ionic/covalent composition of the gGA state (dashed), and for the lowest gGA peak; dotted line: $U_c/t=6.56$. Right: against the
-  ionic weight; the black curve is the exact relation $1+2\sqrt{P_{\rm ion}(1-P_{\rm ion})}$, the black points are ED (one per $U/t$) and the blue points are gGA ($P_{\rm ion}$ of gGA and weight of its lowest peak, colored by $U/t$). The gGA curves
+  ionic weight; the black curve is the exact relation $1+2\sqrt{P_{\rm ion}(1-P_{\rm ion})}$, the black points are ED (one per $U/t$) and the blue points are gGA ($P_{\rm ion}^{\rm loc}$ of gGA and weight of its lowest peak, colored by $U/t$). The gGA curves
   stop at $U_c$. Script: \texttt{plot\_ionic\_spectral\_link.py}.}
   \label{fig:link0}
 \end{figure}
@@ -513,17 +518,28 @@ The ghosts change the transition more than the energy: $U_c/t$ goes from $8$ ($\
 
 gGA never forms the state it describes. Here it is built explicitly from the converged solutions (script \texttt{gutzwiller\_psi.py}; scans \texttt{psi\_scan.py}, data in \texttt{psi\_scan/}), to read off the ionic and covalent content, the energy and the overlap with the exact ground state (FCI, from \texttt{exact\_dimer\_deltaV.py}).
 
-\paragraph{Construction.} For each fragment, $|\Psi\rangle=P_0P_1|\Psi_{\rm qp}\rangle$, with $|\Psi_{\rm qp}\rangle$ the Slater determinant of the occupied levels of $H_{qp}$ and $P_i=\sum_{\Gamma n}\lambda_{\Gamma n}|\Gamma\rangle\langle n|$ mapping the qp Fock space of the fragment ($4^{N_{\rm eff}}$ states, $N_{\rm eff}=1+\Ng$) onto its four physical configurations $\Gamma$. The matrix is $\lambda=\tilde\Phi\,P^{0\,-1/2}$, with $P^0$ the local density matrix of $\Psi_{\rm qp}$ and $\tilde\Phi$ the embedding state $\Phi$ with the bath particle-hole transformed back, $\tilde\Phi=\Phi\,U_{\rm PH}$, $U_{\rm PH}|n\rangle=(-1)^{N(N-1)/2}f_{j_1}\cdots f_{j_N}|{\rm full}\rangle$.
+\paragraph{Construction.} For each fragment, $|\Psi_G\rangle=P_0P_1|\Psi_{\rm qp}\rangle$ (not normalized: $\langle\Psi_G|\Psi_G\rangle\neq1$; $|\bar\Psi_G\rangle=|\Psi_G\rangle/\sqrt{\langle\Psi_G|\Psi_G\rangle}$ is the normalized state, $\bar\Psi_{G,\Ng}$ when the number of ghosts matters, and the results of this section are for $\bar\Psi_G$ unless stated), with $|\Psi_{\rm qp}\rangle$ the Slater determinant of the occupied levels of $H_{qp}$ and $P_i=\sum_{\Gamma n}\lambda_{\Gamma n}|\Gamma\rangle\langle n|$ mapping the qp Fock space of the fragment ($4^{N_{\rm eff}}$ states, $N_{\rm eff}=1+\Ng$) onto its four physical configurations $\Gamma$. The matrix is $\lambda=\tilde\Phi\,P^{0\,-1/2}$, with $P^0$ the local density matrix of $\Psi_{\rm qp}$ and $\tilde\Phi$ the embedding state $\Phi$ with the bath particle-hole transformed back, $\tilde\Phi=\Phi\,U_{\rm PH}$, $U_{\rm PH}|n\rangle=(-1)^{N(N-1)/2}f_{j_1}\cdots f_{j_N}|{\rm full}\rangle$.
 The phase fixes the relative sign of the covalent and ionic amplitudes (the other choice gives $E_{\rm kin}>0$). Checks: $R=S^{-1}{\rm Tr}[\tilde\Phi^{T}c^\dagger\tilde\Phi f]$ reproduces the $R$ of the solution to $10^{-7}$ (fully for the non-impurity points), and the weight of $\tilde\Phi$ outside the support of $P^0$ is $\le7\times10^{-8}$.
-$\Phi$ is the saved $\phi_i$ for non-impurity solutions (\texttt{z.npy}) and the ground state of $H_{\rm imp}$ for impurity solutions. $\Ng=2$, $\dV=2$ uses the non-impurity scan (\texttt{scan\_ng2\_not\_imp\_dV2}): the impurity-solver points (\texttt{scan\_ng2\_dV2\_confirmed}) have the same energies, but at $U/t=0.6,0.7,9.9,10$ the Fermi level is degenerate or the ghosts are inert, $\Psi_{\rm qp}$ does not match $\Phi$, and $\Psi$ fails there.
+$\Phi$ is the saved $\phi_i$ for non-impurity solutions (\texttt{z.npy}) and the ground state of $H_{\rm imp}$ for impurity solutions. $\Ng=2$, $\dV=2$ uses the non-impurity scan (\texttt{scan\_ng2\_not\_imp\_dV2}): the impurity-solver points (\texttt{scan\_ng2\_dV2\_confirmed}) have the same energies, but at $U/t=0.6,0.7,9.9,10$ the Fermi level is degenerate or the ghosts are inert, $\Psi_{\rm qp}$ does not match $\Phi$, and $\bar\Psi_G$ fails there.
 
-\paragraph{Normalization and energy.} The gGA constraints give $\langle\Psi|\Psi\rangle=1$ only in infinite dimensions; here it grows from $1$ to $\simeq2.8$ with $U/t$ (Tables~\ref{tab:psiE0}, \ref{tab:psiE2}; $0.29$ for $\Ng=2$, $\dV=2$ at small $U/t$, where the ghosts are inert and the value depends on the gauge). The origin of this norm is worked out in the note \texttt{psi\_norm.tex} (\texttt{psi\_norm.pdf}): $\langle\Psi|\Psi\rangle=\langle\Psi_0|G_0G_1|\Psi_0\rangle$ with $G_i=P_i^\dagger P_i$, each factor has expectation value $1$ by the gGA constraints, and the excess is the correlation of $G_0$ and $G_1$ in $\Psi_0$; for $\Ng=0$, $\dV=0$ it is $1+(U/8t)^2$ in closed form, which reproduces the $\Ng=0$ column of the tables. All quantities below use the normalized $\Psi$.
-The energy $E_\Psi=\langle\Psi|H|\Psi\rangle$ is variational and far better than the gGA one: for $\Ng=2$ the error is $\le8.5\times10^{-4}$ over the whole scan (against up to $0.4$ for gGA) and the overlap with FCI is $\ge0.9999$. For $\Ng=0$ it is $0.03$ at $U/t=4$ and $0.3$ at $7$ (overlap $0.98$ at $U_c$); $\Ng=0$ at $\dV=0$ is the ordinary Gutzwiller wave function, and gGA's $E$ is its Gutzwiller-approximation value.
-Above $U_c$ of $\Ng=0$ ($Z=0$, $R=0$) the solution does not determine $\Psi_{\rm qp}$: the values marked $^\dagger$ (dashed in Fig.~\ref{fig:psi}) depend on the arbitrary $\Psi_{\rm qp}$ stored by the solver (e.g.\ $E_\Psi=-U$ and $P_{\rm ion}=0$ exactly) and are not a result.
+\textbf{Note.} The physical orbitals $\phi^{phys}=R\,C_{qp}$ of Sec.~\ref{sec:physorb} are not used in this construction: $|\Psi_G\rangle$ is built from the occupied columns of $C_{qp}$ (ghosts included) and the projectors $P_i$. Even when $\phi^{phys}=0$ (e.g.\ $R=0$ above $U_c$ for $\Ng=0$), $|\Psi_G\rangle$ is in general a CI vector, a combination of the physical configurations of the dimer, with amplitudes fixed by $\Psi_{\rm qp}$ and $\lambda$.
+
+\textbf{Note 2.} Over the scanned $U/t$, $|\Psi_G\rangle=P_0P_1|\Psi_{\rm qp}\rangle$ is always a CI vector in the physical Fock space of the dimer (never the vacuum):
+\begin{itemize}[nosep]
+  \item $\Ng=2$: the ionic amplitude stays non-zero up to $U/t=10$ ($\sin\theta=0.19$, $P_{\rm ion}^{\bar\Psi_G}=0.037$ at $\dV=0$, Tables~\ref{tab:psiion}, \ref{tab:psiamp}); both covalent and ionic components are kept.
+  \item $\Ng=0$, $U<U_c$: the ionic amplitude decreases with $U/t$ ($\sin\theta=0.07$ at $U/t=7$, $\dV=0$) but is non-zero; still a CI vector.
+  \item $\Ng=0$, $U>U_c$: $Z=R=0$ and the gGA solution does not fix $\Psi_{\rm qp}$, so $|\Psi_G\rangle$ is not determined and its values (norm, energy, overlap, ionic weight, amplitudes) are not shown (``--'' in the tables, curves stopped at $U_c$ in Fig.~\ref{fig:psi}). Any $|\Psi_G\rangle=P_0P_1|\Psi_{\rm qp}\rangle$ built from a chosen $\Psi_{\rm qp}$ would still be a CI vector, but its composition is then a choice, not a result.
+\end{itemize}
+
+
+
+\paragraph{Normalization and energy.} The gGA constraints give $\langle\Psi_G|\Psi_G\rangle=1$ only in infinite dimensions; here it grows from $1$ to $\simeq2.8$ with $U/t$ (Tables~\ref{tab:psiE0}, \ref{tab:psiE2}; $0.29$ for $\Ng=2$, $\dV=2$ at small $U/t$, where the ghosts are inert and the value depends on the gauge). The origin of this norm is worked out in the note \texttt{psi\_norm.tex} (\texttt{psi\_norm.pdf}): $\langle\Psi_G|\Psi_G\rangle=\langle\Psi_0|G_0G_1|\Psi_0\rangle$ with $G_i=P_i^\dagger P_i$, each factor has expectation value $1$ by the gGA constraints, and the excess is the correlation of $G_0$ and $G_1$ in $\Psi_0$; for $\Ng=0$, $\dV=0$ it is $1+(U/8t)^2$ in closed form, which reproduces the $\Ng=0$ column of the tables. Unless stated otherwise, the quantities below are for the normalized $\bar\Psi_G$; the unnormalized values are given in Sec.~\ref{sec:unnorm}.
+The energy $E_{\bar\Psi_G}=\langle\bar\Psi_G|H|\bar\Psi_G\rangle$ is variational and far better than the gGA one: for $\Ng=2$ the error is $\le8.5\times10^{-4}$ over the whole scan (against up to $0.4$ for gGA) and the overlap with FCI is $\ge0.9999$. For $\Ng=0$ it is $0.03$ at $U/t=4$ and $0.3$ at $7$ (overlap $0.98$ at $U_c$); $\Ng=0$ at $\dV=0$ is the ordinary Gutzwiller wave function, and gGA's $E$ is its Gutzwiller-approximation value.
+Above $U_c$ of $\Ng=0$ ($Z=0$, $R=0$) the solution does not determine $\Psi_{\rm qp}$: the $\bar\Psi_G$ values there depend on the $\Psi_{\rm qp}$ stored by the solver and are not a result; they are left out (``--'' in the tables, no curve in Fig.~\ref{fig:psi}).
 \begin{table}[H]
 \centering\small
 \input{tab_psi_energy_dV0.tex}
-\caption{$\dV=0$: norm, error of the gGA energy $E_{\rm gGA}-E_{\rm FCI}$ and of $E_\Psi-E_{\rm FCI}$, and overlap deficit of $\Psi$ with the FCI ground state. $^\dagger$: above $U_c$ of $\Ng=0$, $\Psi_{\rm qp}$ is not determined.}
+\caption{$\dV=0$: norm $\langle\Psi_G|\Psi_G\rangle$, error of the gGA energy $E_{\rm gGA}-E_{\rm FCI}$, of the normalized $E_{\bar\Psi_G}-E_{\rm FCI}$ and of the unnormalized $\langle H\rangle_{\Psi_G}-E_{\rm FCI}$, overlap deficit of $\bar\Psi_G$ with the FCI ground state and unnormalized overlap $|\langle\Psi_G|{\rm FCI}\rangle|=\sqrt{\langle\Psi_G|\Psi_G\rangle}\,|\langle\bar\Psi_G|{\rm FCI}\rangle|$. --: not shown, above $U_c$ of $\Ng=0$ the state $\bar\Psi_G$ is not determined ($\Psi_{\rm qp}$ is not fixed by the solution).}
 \label{tab:psiE0}
 \end{table}
 \begin{table}[H]
@@ -533,54 +549,65 @@ Above $U_c$ of $\Ng=0$ ($Z=0$, $R=0$) the solution does not determine $\Psi_{\rm
 \label{tab:psiE2}
 \end{table}
 
-\paragraph{Ionic $\to$ covalent.} Table~\ref{tab:psiion} compares $P_{\rm ion}$ of ED, of $\Psi$ ($\Psi_{\Ng=0}$, $\Psi_{\Ng=2}$) and of the fragment ground states used so far (frag, Sec.~\ref{sec:spectra}). The fragments are too ionic up to $U/t\simeq5$ (frag$_{\Ng=2}$: $0.238$ against $0.146$ at $U/t=4$) and too covalent from $6$ on ($0.079$ and $0.022$ against $0.084$ and $0.066$ at $6$ and $7$), while $\Psi_{\Ng=2}$ follows ED within $0.006$ at $\dV=0$ and $0.011$ at $\dV=2$ ($0.1453$ against $0.1464$ at $U/t=4$) and keeps the slow decrease above $U_c$ ($0.037$ against $0.036$ at $10$). $\Psi_{\Ng=0}$ is too covalent: $0.100$ at $U/t=4$ and $0.020$ at $6$, going to $0$ at $U_c$.
+\paragraph{Ionic $\to$ covalent.} Table~\ref{tab:psiion} compares the ionic weight of ED, of $\bar\Psi_G$ ($P_{\rm ion}^{\bar\Psi_G}$, normalized), of $\Psi_G$ ($P_{\rm ion}^{\Psi_G}$, unnormalized, Sec.~\ref{sec:unnorm}) and of the fragment ground states used so far ($P_{\rm ion}^{\rm loc}$, Sec.~\ref{sec:spectra}), for $\Ng=0$ and $\Ng=2$. The discussion refers to the normalized values. The fragments are too ionic up to $U/t\simeq5$ ($P_{\rm ion}^{\rm loc}$ at $\Ng=2$: $0.238$ against $0.146$ at $U/t=4$) and too covalent from $6$ on ($0.079$ and $0.022$ against $0.084$ and $0.066$ at $6$ and $7$), while $\bar\Psi_{G,\Ng=2}$ follows ED within $0.006$ at $\dV=0$ and $0.011$ at $\dV=2$ ($0.1453$ against $0.1464$ at $U/t=4$) and keeps the slow decrease above $U_c$ ($0.037$ against $0.036$ at $10$). $\bar\Psi_{G,\Ng=0}$ is too covalent: $0.100$ at $U/t=4$ and $0.020$ at $6$, going to $0$ at $U_c$.
 \begin{table}[H]
 \centering\small
 \input{tab_psi_ionic.tex}
-\caption{Ionic weight $P_{\rm ion}$: ED, $\Psi_{\Ng=0}$, $\Psi_{\Ng=2}$ and fragment ground states (frag). $^\dagger$: $\Psi_{\rm qp}$ not determined (above $U_c$ of $\Ng=0$).}
+\caption{Ionic weight: ED, $P_{\rm ion}^{\bar\Psi_G}$ of the normalized $\bar\Psi_{G,\Ng=0}$, $\bar\Psi_{G,\Ng=2}$ and $P_{\rm ion}^{\Psi_G}$ of the unnormalized $\Psi_{G,\Ng=0}$, $\Psi_{G,\Ng=2}$ (computed directly with $\Psi_G$; not a probability), and $P_{\rm ion}^{\rm loc}$ of the fragment ground states (loc). --: not shown, $\Psi_G$ is not determined above $U_c$ of $\Ng=0$ ($\Psi_{\rm qp}$ not fixed by the solution).}
 \label{tab:psiion}
 \end{table}
-At $\dV=0$, $|\Psi\rangle=\cos\theta|{\rm cov}\rangle+\sin\theta|{\rm ion}\rangle$ with the amplitudes of Table~\ref{tab:psiamp}. $\Psi_{\Ng=2}$ has the exact amplitudes to $0.01$ over the scan and the same relative sign. The last columns give $(\cos\theta+\sin\theta)^2$, the weight of the bonding (inner) cation state in the exact interference relation, evaluated with each amplitude pair (the final states are the exact cation eigenstates, so this is a property of the ground state, not a gGA spectrum): $1.7048$ ($\Psi_{\Ng=2}$), $1.7071$ (ED) and $1.6000$ ($\Psi_{\Ng=0}$) at $U/t=4$ and $1.5640$ ($\Psi_{\Ng=2}$), $1.5547$ (ED), $1.2800$ ($\Psi_{\Ng=0}$) at $6$; the lowest peak of the gGA spectrum has $1.08$ at $U/t=4$ and $0.27$ at $6$.
-So the ionic$\to$covalent transfer is reproduced by $\Psi_{\Ng=2}$ but not by the gGA spectrum: the weight carried by $R$ and $H_{qp}$ does not follow the composition of the state it comes from.
+At $\dV=0$, $|\bar\Psi_G\rangle=\cos\theta|{\rm cov}\rangle+\sin\theta|{\rm ion}\rangle$ with the amplitudes of Table~\ref{tab:psiamp} (the $\Psi_G$ columns are the unnormalized amplitudes, $\sqrt{\langle\Psi_G|\Psi_G\rangle}$ times the normalized ones). $\bar\Psi_{G,\Ng=2}$ has the exact amplitudes to $0.01$ over the scan and the same relative sign. The last columns give $(\cos\theta+\sin\theta)^2$, the weight of the bonding (inner) cation state in the exact interference relation, evaluated with each amplitude pair (the final states are the exact cation eigenstates, so this is a property of the ground state, not a gGA spectrum): $1.7048$ ($\bar\Psi_{G,\Ng=2}$), $1.7071$ (ED) and $1.6000$ ($\bar\Psi_{G,\Ng=0}$) at $U/t=4$ and $1.5640$ ($\bar\Psi_{G,\Ng=2}$), $1.5547$ (ED), $1.2800$ ($\bar\Psi_{G,\Ng=0}$) at $6$; the lowest peak of the gGA spectrum has $1.08$ at $U/t=4$ and $0.27$ at $6$.
+So the ionic$\to$covalent transfer is reproduced by $\bar\Psi_{G,\Ng=2}$ but not by the gGA spectrum: the weight carried by $R$ and $H_{qp}$ does not follow the composition of the state it comes from.
 \begin{table}[H]
 \centering\small
 \input{tab_psi_amp.tex}
-\caption{$\dV=0$: covalent and ionic amplitudes of the exact ground state and of $\Psi_{\Ng=2}$, $\Psi_{\Ng=0}$ (normalized, global sign with $\cos\theta>0$), and $(\cos\theta+\sin\theta)^2$. $^\dagger$: $\Psi_{\rm qp}$ not determined (above $U_c$).}
+\caption{$\dV=0$: covalent and ionic amplitudes of the exact ground state and of $\bar\Psi_{G,\Ng=2}$, $\bar\Psi_{G,\Ng=0}$ (normalized) and of the unnormalized $\Psi_{G,\Ng=2}$, $\Psi_{G,\Ng=0}$ (amplitudes $\langle\Psi_G|{\rm cov}\rangle$, $\langle\Psi_G|{\rm ion}\rangle$, i.e.\ $\sqrt{\langle\Psi_G|\Psi_G\rangle}$ times the normalized ones; global sign with $\cos\theta>0$), and $(\cos\theta+\sin\theta)^2$. --: not shown, $\bar\Psi_G$ is not determined above $U_c$ of $\Ng=0$ ($\Psi_{\rm qp}$ not fixed by the solution).}
 \label{tab:psiamp}
 \end{table}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.85\textwidth]{../psi_scan/psi_summary.png}
-\caption{Whole scans. Top: $P_{\rm ion}$ (ED, $\Psi$, fragments). Middle: $E-E_{\rm FCI}$ for gGA (dotted) and $\Psi$. Bottom: $1-|\langle\Psi|{\rm FCI}\rangle|$. $\Ng=0$ is dashed above its $U_c/t$ ($8.00$, $9.66$; vertical lines), where $\Psi_{\rm qp}$ is not determined.}
+\caption{Whole scans. Top: error of the ionic weight, $P_{\rm ion}^{X}-P_{\rm ion}^{\rm ED}$ with $X=\bar\Psi_G$ (solid), $X={\rm loc}$ (dashed, fragments) and the unnormalized $X=\Psi_G$ (dash-dotted); $P_{\rm ion}^{\rm ED}$ itself is shown in Fig.~\ref{fig:ionic}. Middle: $E-E_{\rm FCI}$ for gGA (dotted) and $\bar\Psi_G$. Bottom: $1-|\langle\bar\Psi_G|{\rm FCI}\rangle|$. The $\Ng=0$ $\bar\Psi_G$ curves stop at its $U_c/t$ ($8.00$, $9.66$; vertical lines), above which $\bar\Psi_G$ is not determined ($\Psi_{\rm qp}$ is not fixed by the solution).}
 \label{fig:psi}
 \end{figure}
 
-\subsection{Ionic weight of $\Psi$ at fixed $|R|$}
-\label{sec:Rfix}
-To see how the ionic weight of $\Psi$ depends on $R$, the gGA solution is recomputed with $R$ constrained, so that the state stays a solution of the gGA equations for that value of $R$. The ghost-GA functional of the direct minimization (Sec.~\ref{sec:psi}; $\dV=0$) is minimized directly with its constraints (class \texttt{NotImpDimer} of \texttt{not\_imp\_gga\_dimer.py}, SLSQP), with no impurity problem solved and no self-consistency loop, and with the additional equality constraint $R_i^{T}R_i=s^2|R_i^{\rm sol}|^2$ on both fragments, where $R^{\rm sol}$ is the unmodified solution ($s=1$). Starting from it, $s$ is changed step by step, each point starting from the previous one (largest step $0.05$ for $\Ng=0$ and $0.02$ for $\Ng=2$, halved when a step does not converge), and $\Psi$ is built from every converged point as in Sec.~\ref{sec:psi} (script \texttt{psi\_fixedR.py}; data in \texttt{psi\_scan/Rfix\_*}, solutions in \texttt{Rfixed/}). The constrained minimization (functional, constraint on $|R_i|^2$, SLSQP, continuation in $s$) is described step by step in the separate note \texttt{fixedR\_constraint.tex} (\texttt{fixedR\_constraint.pdf}).
+\subsection{Normalized and unnormalized $\Psi_G$}
+\label{sec:unnorm}
 
-\paragraph{$\Ng=0$.} $R_i$ is one number, $R_i=\sqrt{Z_i}$, so fixing $R_i^2$ fixes $R_i$ itself and there is no norm to keep: $s$ changes $R$, and the reference value $|R^{\rm sol}|=0.968$, $0.866$, $0.781$, $0.661$, $0.484$ at $U/t=2,4,5,6,7$ (it vanishes at $U_c/t=8$) is smaller than the $0.99$--$1.00$ of $\Ng=2$ and decreases with $U/t$. $P_{\rm ion}$ rises with $R$ (Fig.~\ref{fig:Rfix}, left; Table~\ref{tab:Rfix0}): at $U/t=4$ it is $0.070$, $0.100$, $0.145$ at $s=0.95$, $1$, $1.05$ and $0.026$ at $s=0.80$, and it goes to $0.003$ at $s=0.5$. The curves are close to straight lines on the logarithmic scale of the figure, for all $U/t$ computed ($2,4,5,6,7$). The values reached with $s>1$ are limited: $s=1.1$ for $U/t\ge4$ (the largest value tried) and only $s=1.033$ at $U/t=2$, where $P_{\rm ion}$ is already $0.49$. The gGA energy has its minimum at $s=1$, as it must, and rises on both sides: at $U/t=4$ by $0.009$ and $0.014$ for $s=0.95$ and $1.05$ and by $0.098$ at $s=0.80$.
+\hl{\textbf{Warning.} The unnormalized values are not usable as physical estimates: $\langle H\rangle_{\Psi_G}$ is not variational (it lies far below $E_{\rm FCI}$ when $\langle\Psi_G|\Psi_G\rangle>1$), $P_{\rm ion}^{\Psi_G}$ is not a probability and $|\langle\Psi_G|{\rm FCI}\rangle|$ exceeds $1$ (Tables~\ref{tab:psiE0}--\ref{tab:psiamp}). All physical results of this note use the normalized $\bar\Psi_G$; the unnormalized ones are shown only for comparison.}
+
+Tables~\ref{tab:psiE0}, \ref{tab:psiE2}, \ref{tab:psiion}, \ref{tab:psiamp} and Fig.~\ref{fig:psi} give the values for both the normalized $\bar\Psi_G$ and the unnormalized $|\Psi_G\rangle=P_0P_1|\Psi_{\rm qp}\rangle$ (computed directly with it). For any operator $O$, $\langle\Psi_G|O|\Psi_G\rangle=\langle\Psi_G|\Psi_G\rangle\,\langle\bar\Psi_G|O|\bar\Psi_G\rangle$, so the unnormalized values are the normalized ones times the norm; the amplitudes and the overlap with FCI carry $\sqrt{\langle\Psi_G|\Psi_G\rangle}$.
+\begin{itemize}[nosep]
+  \item $\langle H\rangle_{\Psi_G}$ is not variational: it lies far below $E_{\rm FCI}$ when the norm is $>1$ (e.g.\ $\Ng=2$, $\dV=0$, $U/t=4$: error $-3.66$ with norm $1.76$, against $1.5\times10^{-5}$ for $\bar\Psi_G$), and it does not reproduce the gGA energy except at small $U/t$.
+  \item $P_{\rm ion}^{\Psi_G}$ is far from ED where the norm is far from $1$ ($\Ng=2$, $\dV=0$: $0.255$ against $0.146$ at $U/t=4$), while $P_{\rm ion}^{\bar\Psi_G}$ follows ED ($0.145$); it does not coincide with $P_{\rm ion}^{\rm loc}$ either ($0.239$ at $U/t=4$).
+\end{itemize}
+
+\subsection{Ionic weight of $\bar\Psi_G$ at fixed $|R|$}
+\label{sec:Rfix}
+To see how the ionic weight of $\bar\Psi_G$ depends on $R$, the gGA solution is recomputed with $R$ constrained, so that the state stays a solution of the gGA equations for that value of $R$. The ghost-GA functional of the direct minimization (Sec.~\ref{sec:psi}; $\dV=0$) is minimized directly with its constraints (class \texttt{NotImpDimer} of \texttt{not\_imp\_gga\_dimer.py}, SLSQP), with no impurity problem solved and no self-consistency loop, and with the additional equality constraint $R_i^{T}R_i=s^2|R_i^{\rm sol}|^2$ on both fragments, where $R^{\rm sol}$ is the unmodified solution ($s=1$). Starting from it, $s$ is changed step by step, each point starting from the previous one (largest step $0.05$ for $\Ng=0$ and $0.02$ for $\Ng=2$, halved when a step does not converge), and $\bar\Psi_G$ is built from every converged point as in Sec.~\ref{sec:psi} (script \texttt{psi\_fixedR.py}; data in \texttt{psi\_scan/Rfix\_*}, solutions in \texttt{Rfixed/}). The constrained minimization (functional, constraint on $|R_i|^2$, SLSQP, continuation in $s$) is described step by step in the separate note \texttt{fixedR\_constraint.tex} (\texttt{fixedR\_constraint.pdf}).
+
+\paragraph{$\Ng=0$.} $R_i$ is one number, $R_i=\sqrt{Z_i}$, so fixing $R_i^2$ fixes $R_i$ itself and there is no norm to keep: $s$ changes $R$, and the reference value $|R^{\rm sol}|=0.968$, $0.866$, $0.781$, $0.661$, $0.484$ at $U/t=2,4,5,6,7$ (it vanishes at $U_c/t=8$) is smaller than the $0.99$--$1.00$ of $\Ng=2$ and decreases with $U/t$. $P_{\rm ion}^{\bar\Psi_G}$ rises with $R$ (Fig.~\ref{fig:Rfix}, left; Table~\ref{tab:Rfix0}): at $U/t=4$ it is $0.070$, $0.100$, $0.145$ at $s=0.95$, $1$, $1.05$ and $0.026$ at $s=0.80$, and it goes to $0.003$ at $s=0.5$. The curves are close to straight lines on the logarithmic scale of the figure, for all $U/t$ computed ($2,4,5,6,7$). The values reached with $s>1$ are limited: $s=1.1$ for $U/t\ge4$ (the largest value tried) and only $s=1.033$ at $U/t=2$, where $P_{\rm ion}^{\bar\Psi_G}$ is already $0.49$. The gGA energy has its minimum at $s=1$, as it must, and rises on both sides: at $U/t=4$ by $0.009$ and $0.014$ for $s=0.95$ and $1.05$ and by $0.098$ at $s=0.80$.
 \begin{table}[H]
 \centering\small
 \begin{tabular}{c|cccc|c}
-$U/t$ & $P_{\rm ion}(1.05)$ & $P_{\rm ion}(1)$ & $P_{\rm ion}(0.95)$ & $P_{\rm ion}(0.90)$ & $E_{\rm var}(0.90)-E_{\rm var}(1)$\\\hline
+$U/t$ & $P_{\rm ion}^{\bar\Psi_G}(1.05)$ & $P_{\rm ion}^{\bar\Psi_G}(1)$ & $P_{\rm ion}^{\bar\Psi_G}(0.95)$ & $P_{\rm ion}^{\bar\Psi_G}(0.90)$ & $E_{\rm var}(0.90)-E_{\rm var}(1)$\\\hline
 2 & -- & 0.265 & 0.160 & 0.105 & 0.116\\
 4 & 0.145 & 0.100 & 0.070 & 0.050 & 0.032\\
 5 & 0.069 & 0.051 & 0.037 & 0.028 & 0.015\\
 6 & 0.026 & 0.020 & 0.015 & 0.012 & 0.006\\
 7 & 0.006 & 0.004 & 0.004 & 0.003 & 0.001
 \end{tabular}
-\caption{$\Ng=0$, $\dV=0$: ionic weight of $\Psi$ and gGA energy change for $|R_i|=s\,|R_i^{\rm sol}|$ (self-consistent). At $U/t=2$, $s=1.05$ is not reached.}
+\caption{$\Ng=0$, $\dV=0$: ionic weight of $\bar\Psi_G$ and gGA energy change for $|R_i|=s\,|R_i^{\rm sol}|$ (self-consistent). At $U/t=2$, $s=1.05$ is not reached.}
 \label{tab:Rfix0}
 \end{table}
 
-\paragraph{$\Ng=2$.} $R_i$ has three components. Only $|R_i|$ can be fixed: the functional is invariant under the orthogonal rotations of the qp basis of each fragment, which turn $R_i$ into another vector of the same length, so fixing $R_i$ with $|R_i|$ unchanged returns the same energy and the same $\Psi$ (checked at $U/t=4$: $E_{\rm var}=-4.511136$ and $P_{\rm ion}=0.1453$ for all $s$). The values $s>1$ could not be reached ($U/t=4$, $s=1.1$: the minimization does not converge), so $s\le1$ is studied.
-Lowering $|R|$ makes $\Psi$ more covalent, as for $\Ng=0$ (Fig.~\ref{fig:Rfix}, right; Table~\ref{tab:Rfix}): $P_{\rm ion}$ decreases with $s$ for $U/t=2,4,5,6,7,8$, from $0.273$ to $0.059$ at $U/t=2$, from $0.087$ to $0.036$ at $U/t=6$ and from $0.055$ to $0.024$ at $U/t=8$, between $s=1$ and $s=0.80$. The decrease is steady for $U/t=2,6,7,8$. At $U/t=4$ it is $0.145\to0.063$ between $s=1$ and $0.90$, then there is a small increase ($0.065$ at $s=0.88$, $0.095$ at $0.86$) and the decrease resumes ($0.059$ at $s=0.80$); the overlap of $\Psi$ with the FCI ground state is $0.997$ at $s=0.86$ and $E_{\rm var}$ has no feature there. At $U/t=5$ the last point ($s=0.80$, $0.027$) lies below the trend of the others.
-The change of $P_{\rm ion}$ is large for a small change of the gGA energy: at $U/t=4$ a change of $|R|$ by $2\%$ ($s=0.98$) takes $P_{\rm ion}$ from $0.145$ to $0.100$ and changes $E_{\rm var}$ by $0.0015$ (bottom right panel of Fig.~\ref{fig:Rfix}; $E_{\rm var}(0.80)-E_{\rm var}(1)=0.03$--$0.04$ for $U/t\ge4$ and $0.25$ at $U/t=2$).
+\paragraph{$\Ng=2$.} $R_i$ has three components. Only $|R_i|$ can be fixed: the functional is invariant under the orthogonal rotations of the qp basis of each fragment, which turn $R_i$ into another vector of the same length, so fixing $R_i$ with $|R_i|$ unchanged returns the same energy and the same $\Psi_G$ (checked at $U/t=4$: $E_{\rm var}=-4.511136$ and $P_{\rm ion}^{\bar\Psi_G}=0.1453$ for all $s$). The values $s>1$ could not be reached ($U/t=4$, $s=1.1$: the minimization does not converge), so $s\le1$ is studied.
+Lowering $|R|$ makes $\bar\Psi_G$ more covalent, as for $\Ng=0$ (Fig.~\ref{fig:Rfix}, right; Table~\ref{tab:Rfix}): $P_{\rm ion}^{\bar\Psi_G}$ decreases with $s$ for $U/t=2,4,5,6,7,8$, from $0.273$ to $0.059$ at $U/t=2$, from $0.087$ to $0.036$ at $U/t=6$ and from $0.055$ to $0.024$ at $U/t=8$, between $s=1$ and $s=0.80$. The decrease is steady for $U/t=2,6,7,8$. At $U/t=4$ it is $0.145\to0.063$ between $s=1$ and $0.90$, then there is a small increase ($0.065$ at $s=0.88$, $0.095$ at $0.86$) and the decrease resumes ($0.059$ at $s=0.80$); the overlap of $\bar\Psi_G$ with the FCI ground state is $0.997$ at $s=0.86$ and $E_{\rm var}$ has no feature there. At $U/t=5$ the last point ($s=0.80$, $0.027$) lies below the trend of the others.
+The change of $P_{\rm ion}^{\bar\Psi_G}$ is large for a small change of the gGA energy: at $U/t=4$ a change of $|R|$ by $2\%$ ($s=0.98$) takes $P_{\rm ion}^{\bar\Psi_G}$ from $0.145$ to $0.100$ and changes $E_{\rm var}$ by $0.0015$ (bottom right panel of Fig.~\ref{fig:Rfix}; $E_{\rm var}(0.80)-E_{\rm var}(1)=0.03$--$0.04$ for $U/t\ge4$ and $0.25$ at $U/t=2$).
 \begin{table}[H]
 \centering\small
 \begin{tabular}{c|ccc|c}
-$U/t$ & $P_{\rm ion}(s=1)$ & $P_{\rm ion}(s=0.96)$ & $P_{\rm ion}(s=0.80)$ & $E_{\rm var}(0.80)-E_{\rm var}(1)$\\\hline
+$U/t$ & $P_{\rm ion}^{\bar\Psi_G}(s=1)$ & $P_{\rm ion}^{\bar\Psi_G}(s=0.96)$ & $P_{\rm ion}^{\bar\Psi_G}(s=0.80)$ & $E_{\rm var}(0.80)-E_{\rm var}(1)$\\\hline
 2 & 0.273 & 0.240 & 0.059 & 0.246\\
 4 & 0.145 & 0.078 & 0.059 & 0.032\\
 5 & 0.112 & 0.104 & 0.027 & 0.026\\
@@ -588,13 +615,13 @@ $U/t$ & $P_{\rm ion}(s=1)$ & $P_{\rm ion}(s=0.96)$ & $P_{\rm ion}(s=0.80)$ & $E_
 7 & 0.069 & 0.056 & 0.030 & 0.038\\
 8 & 0.055 & 0.045 & 0.024 & 0.035
 \end{tabular}
-\caption{$\Ng=2$, $\dV=0$: ionic weight of $\Psi$ and gGA energy change when $|R_i|$ is reduced to $s\,|R_i^{\rm sol}|$ at a self-consistent point.}
+\caption{$\Ng=2$, $\dV=0$: ionic weight of $\bar\Psi_G$ and gGA energy change when $|R_i|$ is reduced to $s\,|R_i^{\rm sol}|$ at a self-consistent point.}
 \label{tab:Rfix}
 \end{table}
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{../merged_Ng/Rfix_pion_vs_R.png}
-\caption{$\dV=0$, $|R_i|=s\,|R_i^{\rm sol}|$ fixed self-consistently ($s=1$: the solution). Left: $\Ng=0$ ($P_{\rm ion}$ on a logarithmic scale). Right: $\Ng=2$. Top: $P_{\rm ion}$ of $\Psi$. Bottom: change of the gGA energy functional. Points whose overlap with the FCI ground state is below $0.95$ are left out of the top panels ($\Ng=0$: $U/t=2$, $s\le0.80$; $U/t=4$, $s\le0.55$; $\Ng=2$: $U/t=2$, $s=0.95$). Script \texttt{plot\_fixedR.py}.}
+\caption{$\dV=0$, $|R_i|=s\,|R_i^{\rm sol}|$ fixed self-consistently ($s=1$: the solution). Left: $\Ng=0$ ($P_{\rm ion}^{\bar\Psi_G}$ on a logarithmic scale). Right: $\Ng=2$. Top: $P_{\rm ion}^{\bar\Psi_G}$. Bottom: change of the gGA energy functional. Points whose overlap with the FCI ground state is below $0.95$ are left out of the top panels ($\Ng=0$: $U/t=2$, $s\le0.80$; $U/t=4$, $s\le0.55$; $\Ng=2$: $U/t=2$, $s=0.95$). Script \texttt{plot\_fixedR.py}.}
 \label{fig:Rfix}
 \end{figure}
 
@@ -602,9 +629,9 @@ $U/t$ & $P_{\rm ion}(s=1)$ & $P_{\rm ion}(s=0.96)$ & $P_{\rm ion}(s=0.80)$ & $E_
 \noindent\fbox{\parbox{0.96\textwidth}{\small
 \textbf{Main conclusions of the fixed-$|R|$ test} ($\dV=0$, self-consistent, $|R_i|=s\,|R_i^{\rm sol}|$).
 \begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=2pt]
-\item Lowering $|R|$ makes $\Psi$ more covalent and raising it more ionic, for $\Ng=0$ ($U/t=2,4,5,6,7$) and, below the solution, for $\Ng=2$ ($U/t=2,4,5,6,7,8$).
-\item $\Ng=0$: $P_{\rm ion}$ is a smooth, nearly exponential function of $s$; at $U/t=4$ it is $0.070$, $0.100$, $0.145$ at $s=0.95$, $1$, $1.05$. $R$ is the only quantity that changes ($|R^{\rm sol}|=0.97\to0.48$ for $U/t=2\to7$).
-\item $\Ng=2$: only $|R_i|$ is a meaningful variable (the direction of $R_i$ is a symmetry of the functional); $|R^{\rm sol}|\simeq1$ at all $U/t$. A change of $|R|$ by $2\%$ changes $P_{\rm ion}$ at $U/t=4$ from $0.145$ to $0.100$, while the gGA energy changes by $0.0015$.
+\item Lowering $|R|$ makes $\bar\Psi_G$ more covalent and raising it more ionic, for $\Ng=0$ ($U/t=2,4,5,6,7$) and, below the solution, for $\Ng=2$ ($U/t=2,4,5,6,7,8$).
+\item $\Ng=0$: $P_{\rm ion}^{\bar\Psi_G}$ is a smooth, nearly exponential function of $s$; at $U/t=4$ it is $0.070$, $0.100$, $0.145$ at $s=0.95$, $1$, $1.05$. $R$ is the only quantity that changes ($|R^{\rm sol}|=0.97\to0.48$ for $U/t=2\to7$).
+\item $\Ng=2$: only $|R_i|$ is a meaningful variable (the direction of $R_i$ is a symmetry of the functional); $|R^{\rm sol}|\simeq1$ at all $U/t$. A change of $|R|$ by $2\%$ changes $P_{\rm ion}^{\bar\Psi_G}$ at $U/t=4$ from $0.145$ to $0.100$, while the gGA energy changes by $0.0015$.
 \item $\Ng=2$, $U/t=4$: the decrease has a small bump near $s=0.86$--$0.88$ ($0.063\to0.095$), cause not established; at $U/t=5$ the last point ($s=0.80$) lies below the trend.
 \item Not covered: $s>1$ for $\Ng=2$ (not reachable), $\dV\ne0$, and $U/t$ outside the values listed.
 \end{itemize}}}
