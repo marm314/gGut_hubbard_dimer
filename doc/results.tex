@@ -279,6 +279,15 @@ Diagonalizing $H_{qp}$ gives $H_{qp}C_{qp}=C_{qp}\,\epsilon_{qp}$, where the col
 \phi^{phys}=R\,C_{qp},\qquad C_{R_s,n}=(R\,C_{qp})_{sn},
 \end{equation*}
 i.e.\ two orbitals (the rows) with coefficients $C_{R_s,n}$ over the qp eigenorbitals.
+For $\Ng=2$ the shapes are: $R$ is $2\times6$, $C_{qp}$ is $6\times6$ (column $n$ is $\phi^{qp}_n$) and $R\,C_{qp}$ is $2\times6$,
+\begin{equation*}
+R=\begin{pmatrix} R_{1,1} & R_{1,2} & R_{1,3} & 0 & 0 & 0\\ 0 & 0 & 0 & R_{2,1} & R_{2,2} & R_{2,3}\end{pmatrix},
+\end{equation*}
+\begin{align*}
+C_{R_1,n}&=R_{1,1}C_{1n}+R_{1,2}C_{2n}+R_{1,3}C_{3n}+0\cdot C_{4n}+0\cdot C_{5n}+0\cdot C_{6n},\\
+C_{R_2,n}&=0\cdot C_{1n}+0\cdot C_{2n}+0\cdot C_{3n}+R_{2,1}C_{4n}+R_{2,2}C_{5n}+R_{2,3}C_{6n},\qquad n=1,\dots,6,
+\end{align*}
+i.e.\ $C_{R_s,n}$ is row $s$ of $R$ times column $n$ of $C_{qp}$ (one number). The zeros of $R$ remove only the components of $\phi^{qp}_n$ on the other site's block; since every eigenvector extends over both blocks (the hopping $-tR_0R_1^T$ couples them), all $C_{R_s,n}$ are in general non-zero.
 Their squared norm is $\sum_nC_{R_s,n}^2=|R_s|^2<1$ (e.g.\ $0.996$ at $\Ng=2$, $\dV=0$, $U/t=4.9$).
 Movies: left, the coefficients of each physical orbital (one circle per qp orbital, occ/virt and $\epsilon_{qp}$ labelled, area $C_{R_s,n}^2$, color = sign, phases aligned in $U/t$); right, the sum $\sum_nC_{R_s,n}\phi^{qp}_n$ on the two physical sites, with its norm.
 Since $C_{qp}C_{qp}^T=1$ the sum is $R_s^T$, so the final orbital sits on site $s$ and the other site is empty (localized by construction).
