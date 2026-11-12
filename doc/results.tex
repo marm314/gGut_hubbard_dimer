@@ -274,11 +274,14 @@ This is a gap closing and re-opening of the gGA solution. It is not present in t
 
 \subsection{Physical orbitals: the quasiparticle orbitals transformed by $R$}
 
-With $\Phi_{qp}$ the matrix of eigenvectors of $H_{qp}$ (dimension $2(1+\Ng)$; lowest $1+\Ng$ occupied) and $R$ the $2\times2(1+\Ng)$ matrix with row $s$ equal to $R_s$ on the block of site $s$, the physical orbitals are
-$\phi^{phys}=R\,\Phi_{qp}$, i.e.\ two orbitals (the rows) with coefficients $c_{R_s,n}=R_s\cdot\phi^{qp}_n|_{\text{block }s}$ over the qp eigenorbitals.
+Diagonalizing $H_{qp}$ gives $H_{qp}C_{qp}=C_{qp}\,\epsilon_{qp}$, where the columns of $C_{qp}$ are the qp eigenvectors $\phi^{qp}_n$ (dimension $2(1+\Ng)$; the lowest $1+\Ng$ occupied) and $\epsilon_{qp}$ is diagonal. With $R$ the $2\times2(1+\Ng)$ matrix whose row $s$ is $R_s$ on the block of site $s$ (zero elsewhere), the physical orbitals are
+\begin{equation*}
+\phi^{phys}=R\,C_{qp},\qquad c_{R_s,n}=(R\,C_{qp})_{sn},
+\end{equation*}
+i.e.\ two orbitals (the rows) with coefficients $c_{R_s,n}$ over the qp eigenorbitals.
 Their squared norm is $\sum_nc_{R_s,n}^2=|R_s|^2<1$ (e.g.\ $0.996$ at $\Ng=2$, $\dV=0$, $U/t=4.9$).
 Movies: left, the coefficients of each physical orbital (one circle per qp orbital, occ/virt and $\epsilon_{qp}$ labelled, area $c^2$, color = sign, phases aligned in $U/t$); right, the sum $\sum_nc_{R_s,n}\phi^{qp}_n$ on the two physical sites, with its norm.
-Since $\Phi_{qp}\Phi_{qp}^T=1$ the sum is $R_s^T$, so the final orbital sits on site $s$ and the other site is empty (localized by construction).
+Since $C_{qp}C_{qp}^T=1$ the sum is $R_s^T$, so the final orbital sits on site $s$ and the other site is empty (localized by construction).
 \begin{itemize}[nosep]
   \item $\Ng=0$, $\dV=0$: \href{run:../scan_ng0/dV_0.0/phys_orbitals_vs_U.mp4}{physical orbitals}
   \item $\Ng=0$, $\dV=2$: \href{run:../scan_ng0/dV_2.0/phys_orbitals_vs_U.mp4}{physical orbitals}
@@ -289,7 +292,7 @@ Since $\Phi_{qp}\Phi_{qp}^T=1$ the sum is $R_s^T$, so the final orbital sits on 
 \subsubsection{Covalent versus ionic character}
 
 At the qp level the occupied orbitals give an idea of the character: a bonding combination with equal amplitudes on the two states is covalent-like, and unequal amplitudes ($\dV\neq0$) are polarized, i.e.\ ionic-like.
-At the physical level nothing can be read: the physical orbitals $R\,\Phi_{qp}$ are localized on the two sites (the final orbitals are $R_s^T$, unchanged with $U/t$ except for the norm $|R_s|$), so they carry no information on covalency or ionicity.
+At the physical level nothing can be read: the physical orbitals $R\,C_{qp}$ are localized on the two sites (the final orbitals are $R_s^T$, unchanged with $U/t$ except for the norm $|R_s|$), so they carry no information on covalency or ionicity.
 This is a property of the many-electron state, which needs the probability of finding both electrons on one site, i.e.\ the double occupancy (or equivalently the ionic weight); it is not contained in the orbitals.
 
 \subsection{$\Ng=0$ orbitals versus the $\Ng=2$ HOMO and LUMO}

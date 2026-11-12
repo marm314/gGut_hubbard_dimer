@@ -20,7 +20,7 @@ def phys_amps(f):
     return np.array([r[0] * f["ph"][0, :], r[1] * f["ph"][Neff, :]])      # (2, N)
 
 def make(fr, title, out, fps=12):
-    """Physical orbitals = R Phi_qp. R is 2 x 2(1+Ng) (row s = R_s on the block of site s), Phi_qp the 2(1+Ng) x 2(1+Ng) matrix of qp eigenvectors (columns, energy order, tracked
+    """Physical orbitals = R C_qp. R is 2 x 2(1+Ng) (row s = R_s on the block of site s), C_qp the 2(1+Ng) x 2(1+Ng) matrix of qp eigenvectors (columns, energy order, tracked
     and phase-aligned as in make_qp_orbital_videos). The product has 2 rows: the 2 physical orbitals phi_phys_s, each given by its coefficients over the qp eigenorbitals n:
     (R Phi)_{s n} = R_s . phi_n(block s). One panel per physical orbital, one circle per qp eigenorbital (left to right in energy order); area ~ coefficient^2, color = sign."""
     N = 2 * fr[0]["Neff"]; nocc = N // 2
@@ -42,7 +42,7 @@ def make(fr, title, out, fps=12):
                 oc = f["occf"][n] > 0.5
                 ax.text(n, 0.80, "occ" if oc else "virt", ha="center", va="center", fontsize=9, fontweight="bold", color=OCC_C if oc else VIRT_C)
                 ax.text(n, 0.60, rf"$\epsilon_{{qp}}$ = {f['eps'][n]:+.2f}", ha="center", va="center", fontsize=7.5, color="0.25")
-            ax.set_title(f"physical orbital {s + 1}  $\\phi^{{phys}}_{s + 1}$ (row {s + 1} of $R\\Phi^{{qp}}$):  norm$^2$ = {np.sum(RPhi[s] ** 2):.3f}", fontsize=9)
+            ax.set_title(f"physical orbital {s + 1}  $\\phi^{{phys}}_{s + 1}$ (row {s + 1} of $R\\,C_{{qp}}$):  norm$^2$ = {np.sum(RPhi[s] ** 2):.3f}", fontsize=9)
         for s in range(2):    # final physical orbital phi_phys_s = sum_n c_{R_s,n} phi_qp_n: lives on physical site s, the other site is empty
             v = f["ph"] @ RPhi[s]; ax = axr[s]; ax.clear(); ax.set_aspect("equal"); ax.axis("off"); ax.set_xlim(-1.9, 1.9); ax.set_ylim(-1.15, 1.0)
             ax.plot([-1, 1], [0, 0], color="0.6", lw=0.8, zorder=1)
@@ -52,7 +52,7 @@ def make(fr, title, out, fps=12):
                 if abs(a) > 1e-3: ax.add_patch(Circle((x, 0), 0.8 * np.sqrt(min(a * a, 1.0)), fc=POS if a > 0 else NEG, ec="none", zorder=3))
                 ax.text(x, -0.93, f"site {k + 1}" + ("" if k == s else " (empty)"), ha="center", va="center", fontsize=8, color="0.3")
             ax.set_title(rf"$\phi^{{phys}}_{s + 1} = \sum_n c_{{R_{s + 1},n}}\,\phi^{{qp}}_n$" + rf"     $\|\phi^{{phys}}_{s + 1}\|^2$ = {np.sum(v ** 2):.4f}  ($\|\phi\|$ = {np.linalg.norm(v):.4f})", fontsize=9)
-        txt.set_text(rf"{title}   $U/t$ = {f['U']:.1f}   $Z$ = {f['z']:.3f}" + "\n" + r"$\phi^{phys} = R\,\Phi^{qp}$: coefficients $c_{R_s,n}$ of the physical orbitals over the qp eigenorbitals" + "\n" + r"area $\propto c^2$, color = sign; phases aligned to previous $U/t$")
+        txt.set_text(rf"{title}   $U/t$ = {f['U']:.1f}   $Z$ = {f['z']:.3f}" + "\n" + r"$H_{qp}C_{qp}=C_{qp}\,\epsilon_{qp}$,  $\phi^{phys} = R\,C_{qp}$,  $c_{R_s,n}=(R\,C_{qp})_{sn}$: coefficients $c_{R_s,n}$ of the physical orbitals over the qp eigenorbitals" + "\n" + r"area $\propto c^2$, color = sign; phases aligned to previous $U/t$")
         return []
     ani = animation.FuncAnimation(fig, update, frames=len(fr), blit=False)
     fig.tight_layout(rect=(0, 0, 1, 0.82))
