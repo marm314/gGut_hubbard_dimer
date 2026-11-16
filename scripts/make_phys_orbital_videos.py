@@ -26,9 +26,9 @@ def make(fr, title, out, fps=12):
     N = 2 * fr[0]["Neff"]; nocc = N // 2
     Neff = fr[0]["Neff"]
     xy = mq.skeleton_xy(Neff) if Neff > 1 else np.array([(-1.0, 0.0), (1.0, 0.0)])
-    fig = plt.figure(figsize=(max(1.5 * N, 5.0) + 4.2, 4.8)); gs = fig.add_gridspec(2, 2, width_ratios=[max(N, 3.3), 3.3])
+    fig = plt.figure(figsize=(max(1.7 * N, 5.0) + 5.0, 7.4)); gs = fig.add_gridspec(2, 2, width_ratios=[max(N, 3.3), 3.3], hspace=0.5)
     axs = np.array([[fig.add_subplot(gs[s, 0])] for s in range(2)]); axr = [fig.add_subplot(gs[s, 1]) for s in range(2)]
-    txt = fig.suptitle("", fontsize=11)
+    txt = fig.suptitle("", fontsize=14)
     def update(i):
         f = fr[i]; RPhi = phys_amps(f)                      # (2, N): rows = the two physical orbitals
         for s in range(2):
@@ -38,11 +38,11 @@ def make(fr, title, out, fps=12):
                 ax.add_patch(Circle((n, 0), 0.45, fill=False, ec="0.75", lw=0.8, zorder=2))
                 a = RPhi[s, n]; rad = 0.45 * np.sqrt(min(a * a, 1.0))
                 if rad > 1e-3: ax.add_patch(Circle((n, 0), rad, fc=POS if a > 0 else NEG, ec="none", zorder=3))
-                ax.text(n, -0.62, rf"$C_{{R_{s + 1},{n + 1}}}$ = {a:+.2f}", ha="center", va="center", fontsize=7.5, color="0.25")
+                ax.text(n, -0.62, rf"$C_{{R_{s + 1},{n + 1}}}$ = {a:+.2f}", ha="center", va="center", fontsize=10, color="0.2")
                 oc = f["occf"][n] > 0.5
-                ax.text(n, 0.80, "occ" if oc else "virt", ha="center", va="center", fontsize=9, fontweight="bold", color=OCC_C if oc else VIRT_C)
-                ax.text(n, 0.60, rf"$\epsilon_{{qp}}$ = {f['eps'][n]:+.2f}", ha="center", va="center", fontsize=7.5, color="0.25")
-            ax.set_title(f"physical orbital {s + 1}  $\\phi^{{phys}}_{s + 1}$ (row {s + 1} of $R\\,C_{{qp}}$):  norm$^2$ = {np.sum(RPhi[s] ** 2):.3f}", fontsize=9)
+                ax.text(n, 0.80, "occ" if oc else "virt", ha="center", va="center", fontsize=12, fontweight="bold", color=OCC_C if oc else VIRT_C)
+                ax.text(n, 0.60, rf"$\epsilon_{{qp}}$ = {f['eps'][n]:+.2f}", ha="center", va="center", fontsize=10, color="0.2")
+            ax.set_title(rf"$\phi^{{phys}}_{s + 1}$ in the $\phi^{{qp}}_n$ basis:  $\sum_n C_{{R_{s + 1},n}}^2$ = {np.sum(RPhi[s] ** 2):.3f}", fontsize=12)
         for s in range(2):    # final physical orbital phi_phys_s = sum_n C_{R_s,n} phi_qp_n: lives on physical site s, the other site is empty
             v = f["ph"] @ RPhi[s]; ax = axr[s]; ax.clear(); ax.set_aspect("equal"); ax.axis("off"); ax.set_xlim(-1.9, 1.9); ax.set_ylim(-1.15, 1.0)
             ax.plot([-1, 1], [0, 0], color="0.6", lw=0.8, zorder=1)
@@ -50,17 +50,17 @@ def make(fr, title, out, fps=12):
                 a = v[k * Neff] if k == s else 0.0
                 ax.add_patch(Circle((x, 0), 0.8, fill=False, ec="0.75", lw=0.8, zorder=2))
                 if abs(a) > 1e-3: ax.add_patch(Circle((x, 0), 0.8 * np.sqrt(min(a * a, 1.0)), fc=POS if a > 0 else NEG, ec="none", zorder=3))
-                ax.text(x, -0.93, f"site {k + 1}" + ("" if k == s else " (empty)"), ha="center", va="center", fontsize=8, color="0.3")
-            ax.set_title(rf"$\phi^{{phys}}_{s + 1} = \sum_n C_{{R_{s + 1},n}}\,\phi^{{qp}}_n$" + rf"     $\|\phi^{{phys}}_{s + 1}\|^2$ = {np.sum(v ** 2):.4f}  ($\|\phi\|$ = {np.linalg.norm(v):.4f})", fontsize=9)
-        txt.set_text(rf"{title}   $U/t$ = {f['U']:.1f}   $Z$ = {f['z']:.3f}" + "\n" + r"$H_{qp}C_{qp}=C_{qp}\,\epsilon_{qp}$,  $\phi^{phys} = R\,C_{qp}$,  $C_{R_s,n}=(R\,C_{qp})_{sn}$: coefficients $C_{R_s,n}$ of the physical orbitals over the qp eigenorbitals" + "\n" + r"area $\propto C_{R_s,n}^2$, color = sign; phases aligned to previous $U/t$")
+                ax.text(x, -0.93, f"site {k + 1}" + ("" if k == s else " (empty)"), ha="center", va="center", fontsize=11, color="0.2")
+            ax.set_title(rf"$\phi^{{phys}}_{s + 1} = \sum_i R_{{{s + 1}i}}\,\chi_i$  (in the $\chi$ basis)" + "\n" + rf"$\|\phi^{{phys}}_{s + 1}\|^2$ = {np.sum(v ** 2):.4f}", fontsize=12)
+        txt.set_text(rf"{title}   $U/t$ = {f['U']:.1f}   $Z$ = {f['z']:.3f}" + "\n" + r"$\chi_i$: site+ghost basis;   $\phi^{qp}_n=\sum_i\chi_i\,(C_{qp})_{in}$: eigenorbitals of $H_{qp}$ (occ/virt, $\epsilon_{qp}$)" + "\n" + r"$\phi^{phys}_s=\sum_n C_{R_s,n}\,\phi^{qp}_n=\sum_i R_{si}\chi_i$,   $C_{R_s,n}=(R\,C_{qp})_{sn}$;   area $\propto C_{R_s,n}^2$, color = sign")
         return []
     ani = animation.FuncAnimation(fig, update, frames=len(fr), blit=False)
-    fig.tight_layout(rect=(0, 0, 1, 0.82))
+    fig.subplots_adjust(left=0.03, right=0.98, top=0.72, bottom=0.04, hspace=0.75, wspace=0.12)
     from matplotlib.patches import FancyArrowPatch
     for s_ in range(2):
         bl, br = axs[s_, 0].get_position(), axr[s_].get_position(); y = 0.5 * (bl.y0 + bl.y1); x0, x1 = bl.x1 + 0.005, br.x0 - 0.005
         fig.add_artist(FancyArrowPatch((x0, y), (x1, y), transform=fig.transFigure, arrowstyle="-|>", mutation_scale=18, lw=2, color="k"))
-        fig.text(0.5 * (x0 + x1), y + 0.03, "sum over n\nfinal orbital", ha="center", va="bottom", fontsize=8, transform=fig.transFigure)
+        fig.text(0.5 * (x0 + x1), y + 0.03, "sum over n\nfinal orbital", ha="center", va="bottom", fontsize=11, transform=fig.transFigure)
     ani.save(out, writer=animation.FFMpegWriter(fps=fps, bitrate=2000)); plt.close(fig)
     print("wrote", out, flush=True)
 
