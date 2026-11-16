@@ -246,10 +246,9 @@ Above $U_c$ the two weights approach each other but are not equal up to $U/t=10$
 \subsection{Quasiparticle orbitals and density: the gap closing at $U_c$}
 
 Two more movies per case show the eigenorbitals of $H_{qp}$ and the quasiparticle density as $U/t$ grows ($\Ng=0$ and $2$; $\dV=0,2$; script \texttt{make\_qp\_orbital\_videos.py}).
-They are drawn on the skeleton of the dimer: the two large circles joined left to right are the two states (the direction of $R_s$, the only qp orbital that hops to the other site), and the small outer
-circles are their ghosts (the on-site eigenvectors orthogonal to it). Occupation as in the code (\texttt{gga\_dimer.qp\_state}): the lowest $N/2$ eigenvectors returned by \texttt{eigh} are filled,
-without fractional occupation. In the orbital movies each panel follows one orbital as $U/t$ grows (it is matched to the previous $U/t$ by maximum overlap, so it does not jump when levels cross or split; the orbitals of degenerate levels are rotated onto the previous ones); the title gives its occupation, energy and $A(\omega)$ weight. Circle area is $|\text{amplitude}|^2$ and
-the color is the sign (the signs of the orbitals and of the ghost circles are aligned with the previous $U/t$, so a color change is a change of the orbital, not of the phase). In the density movies the colors give the qp density per orbital (the code's $\rho$), next to the gaps, bond order, $Z$ and double occupancy (or state density
+They are drawn in the $\chi$ basis of the solver, $\phi^{qp}_n=\sum_i\chi_i(C_{qp})_{in}$ with $C_{qp}$ the eigenvectors returned by \texttt{eigh}: one circle per $\chi_i$ of site~1 (left, $\chi_1,\dots,\chi_{1+\Ng}$) and of site~2 (right, the next $1+\Ng$), labelled $\chi_1,\dots,\chi_{2(1+\Ng)}$ (at $\Ng=0$ there is a single $\chi$ per site, so nothing is permuted). The qp states are the eigenvectors in the energy order of \texttt{eigh}, one panel each (occupied in the first row, virtual in the second): they are never permuted, never mixed and never tracked, and only the overall sign of each state is chosen, as a phase, to agree with the previous $U/t$ (a color change of one circle is then a change of the amplitude, not of the phase of the state).
+The solver returns every converged solution in its own ordering of the $\chi_i$ inside each site block. In the movies the $\chi_i$ of a site are therefore only reordered, as if the AO basis of the site were listed in another order (permutations inside $\chi_1,\dots,\chi_{1+\Ng}$ and inside the second block only, never between the two sites; no mixing, no rotation, no sign change of an individual $\chi_i$; $\epsilon_{qp}$, occupations, $\rho$ up to the same reordering and $C_{R_s,n}$ are unchanged). The reordering at each $U/t$ is the one, among all permutations of each site, that maximizes the sign-sensitive match $\sum_n|\langle\phi^{qp}_n(U_{k-1})|\phi^{qp}_n(U_k)\rangle|$ with the previous $U/t$, starting from the frame with the best separated levels; the labels $\chi_i$ may therefore differ from those of the solver. This removes the changes of the ordering of the solver, not those due to a change of the shape of a state: for $\Ng=2$ the largest change of a component between consecutive $U/t$ exceeds $0.5$ at $14$ of $99$ steps at $\dV=0$ and at $16$ of $99$ at $\dV=2$ (the median change is $0.21$ and $0.01$), namely where the levels are degenerate ($\epsilon_{qp}=0$, small $U/t$ and above $U_c$, where \texttt{eigh} returns an arbitrary combination) and where the solver changes the mixing of the ghost functions of a site between two solutions ($\dV=2$: $U/t=3.4$--$3.8$, $4.7$--$6.1$); a permutation of the $\chi_i$ cannot follow these. For $\dV=0$ at $U/t\gtrsim6.6$ two states have $\epsilon_{qp}=0$ and the occupied one is the choice of \texttt{eigh} (occupying the other changes $\rho$ in the site blocks by almost $1$, so it is not an equivalent solution of the same equations). An extra movie, \texttt{qp\_orbitals\_chi\_raw\_vs\_U.mp4} ($\Ng=2$, $\dV=0$), shows the raw solver $\chi$ with no reordering at all. The two sites need not look alike. The words ``state'' and ``ghosts'' used below refer to the gauge-fixed basis $\chi'$ of the next subsection (the star basis of the first versions of these movies), where $\chi'_1$ of each site is the state (the direction of $R_s$) and $\chi'_{j>1}$ are the ghosts (the on-site eigenvectors orthogonal to it). Occupation as in the code (\texttt{gga\_dimer.qp\_state}): the lowest $N/2$ eigenvectors returned by \texttt{eigh} are filled,
+without fractional occupation. The title of each panel gives its occupation, energy and $A(\omega)$ weight. Circle area is $|\text{amplitude}|^2$ and the color is the sign. In the density movies the colors give the qp density $\rho_{ii}$ of each $\chi_i$ (the code's $\rho$ in the $\chi$ basis, reordered like the $\chi_i$), next to the gaps, the qp electrons per spin on site~1, $Z$ and double occupancy (or state density
 at $\dV=2$) as functions of $U/t$; the dashed line is $U_c/t$.
 \begin{itemize}[nosep]
   \item $\Ng=0$, $\dV=0$: \href{run:../scan_ng0/dV_0.0/qp_orbitals_vs_U.mp4}{orbitals}, \href{run:../scan_ng0/dV_0.0/qp_density_vs_U.mp4}{density}
@@ -263,9 +262,9 @@ What can be seen at the critical $U_c/t$ of the weight transfer ($6.56$ for $\dV
   ($2.0$ at $U/t=0.1$, $1.14$ at $4$, $0.27$ at $6$ for $\dV=0$; $4.39$, $2.0$ (at $U/t=4$) and $1.19$ (at $6$) for $\dV=2$, $\Ng=2$) and closes at $U_c$; the next grid point has a large gap
   ($0.03\to4.94$ between $U/t=6.5$ and $6.6$ at $\dV=0$; $0.001\to4.36$ between $8.5$ and $8.6$ at $\dV=2$, $\Ng=2$), and it grows afterwards (at $U/t=10$: $8.59$ and $5.76$).
   The qp gap (HOMO--LUMO) is zero from $U_c$ on; before $U_c$ it follows the spectral gap, except at small $U/t$, where weightless ghost levels lie inside the gap.
-  \item \emph{Orbitals}: below $U_c$ the HOMO and LUMO have amplitude on the two states and carry $A(\omega)$ weight; from $U_c$ on, the orbitals at $\epsilon=0$ have no amplitude on the states and zero weight, and sit on ghost circles only
+  \item \emph{Orbitals}: below $U_c$ the HOMO and LUMO have amplitude on the two states ($\chi'_1$) and carry $A(\omega)$ weight; from $U_c$ on, the orbitals at $\epsilon=0$ have no amplitude on the states and zero weight, and sit on the ghosts only
   (two of them). Which of these degenerate orbitals are occupied is the choice of \texttt{eigh}, so the occupied ghost orbitals change from frame to frame above $U_c$.
-  \item \emph{Bond order and double occupancy} (center--center density matrix element, per spin): both change slope at $U_c$ (at $\dV=0$: bond order $0.17$, $0.09$, $0.08$ and double occupancy $0.040$, $0.016$, $0.013$ at $U/t=6$, $6.5$, $6.6$).
+  \item \emph{Bond order and double occupancy} (bond order = density matrix element between the two states $\chi'_1$ of the sites, per spin, computed from the same data; the density movies now show $\rho_{ii}$ in $\chi$ instead): both change slope at $U_c$ (at $\dV=0$: bond order $0.17$, $0.09$, $0.08$ and double occupancy $0.040$, $0.016$, $0.013$ at $U/t=6$, $6.5$, $6.6$).
   At $\dV=2$ the bond order has a maximum ($0.40$) at $U/t\simeq4.3$ and falls to $0.08$ at $U_c$.
   \item \emph{State density at $\dV=2$}: the densities of the two states are polarized at small $U/t$ ($0.945$ and $0.055$ at $U/t=0.1$, $0.63$ and $0.37$ at $6$) and become equal at $U_c$ ($0.50$ and $0.50$, $\Ng=2$), staying equal above.
   \item $Z$ stays $\ge0.975$ for all $U/t$ (no collapse of the renormalization), and at $\dV=0$ the state densities are $0.50$ at all $U/t$; the colors of the ghost circles are not a signature of the transition.
@@ -275,29 +274,44 @@ This is a gap closing and re-opening of the gGA solution. It is not present in t
 \subsection{Physical orbitals: the quasiparticle orbitals transformed by $R$}
 \label{sec:physorb}
 
-Diagonalizing $H_{qp}$ gives $H_{qp}C_{qp}=C_{qp}\,\epsilon_{qp}$, where the columns of $C_{qp}$ are the qp eigenvectors $\phi^{qp}_n$ (dimension $2(1+\Ng)$; the lowest $1+\Ng$ occupied) and $\epsilon_{qp}$ is diagonal. With $R$ the $2\times2(1+\Ng)$ matrix whose row $s$ is $R_s$ on the block of site $s$ (zero elsewhere), the physical orbitals are
+Diagonalizing $H_{qp}$ gives $H_{qp}C_{qp}=C_{qp}\,\epsilon_{qp}$, where $\chi_i$ is the site+ghost basis and the columns of $C_{qp}$ are the qp eigenvectors, $\phi^{qp}_n=\sum_i\chi_i(C_{qp})_{in}$ (dimension $2(1+\Ng)$; the lowest $1+\Ng$ occupied) and $\epsilon_{qp}$ is diagonal. With $R$ the $2\times2(1+\Ng)$ matrix whose row $s$ holds the entries $R_{si}$ on the block of site $s$ (zero elsewhere), the physical orbitals are
 \begin{equation*}
 \phi^{phys}=R\,C_{qp},\qquad C_{R_s,n}=(R\,C_{qp})_{sn},
 \end{equation*}
 i.e.\ two orbitals (the rows) with coefficients $C_{R_s,n}$ over the qp eigenorbitals.
 For $\Ng=2$ the shapes are: $R$ is $2\times6$, $C_{qp}$ is $6\times6$ (column $n$ is $\phi^{qp}_n$) and $R\,C_{qp}$ is $2\times6$,
 \begin{equation*}
-R=\begin{pmatrix} R_{1,1} & R_{1,2} & R_{1,3} & 0 & 0 & 0\\ 0 & 0 & 0 & R_{2,1} & R_{2,2} & R_{2,3}\end{pmatrix},
+R=\begin{pmatrix} R_{11} & R_{12} & R_{13} & 0 & 0 & 0\\ 0 & 0 & 0 & R_{21} & R_{22} & R_{23}\end{pmatrix},
 \end{equation*}
 \begin{align*}
-C_{R_1,n}&=R_{1,1}C_{1n}+R_{1,2}C_{2n}+R_{1,3}C_{3n}+0\cdot C_{4n}+0\cdot C_{5n}+0\cdot C_{6n},\\
-C_{R_2,n}&=0\cdot C_{1n}+0\cdot C_{2n}+0\cdot C_{3n}+R_{2,1}C_{4n}+R_{2,2}C_{5n}+R_{2,3}C_{6n},\qquad n=1,\dots,6,
+C_{R_1,n}&=R_{11}(C_{qp})_{1n}+R_{12}(C_{qp})_{2n}+R_{13}(C_{qp})_{3n}+0\cdot(C_{qp})_{4n}+0\cdot(C_{qp})_{5n}+0\cdot(C_{qp})_{6n},\\
+C_{R_2,n}&=0\cdot(C_{qp})_{1n}+0\cdot(C_{qp})_{2n}+0\cdot(C_{qp})_{3n}+R_{21}(C_{qp})_{4n}+R_{22}(C_{qp})_{5n}+R_{23}(C_{qp})_{6n},\qquad n=1,\dots,6,
 \end{align*}
-i.e.\ $C_{R_s,n}$ is row $s$ of $R$ times column $n$ of $C_{qp}$ (one number). The zeros of $R$ remove only the components of $\phi^{qp}_n$ on the other site's block; since every eigenvector extends over both blocks (the hopping $-tR_0R_1^T$ couples them), all $C_{R_s,n}$ are in general non-zero.
+i.e.\ $C_{R_s,n}=\sum_iR_{si}(C_{qp})_{in}$ is row $s$ of $R$ times column $n$ of $C_{qp}$ (one number). The movies use the $\chi$ basis of the solver (relabelled as above), where $R_{si}$ has components on all the $\chi_i$ of the block; in the gauge-fixed basis $\chi'$ below the same number is $C_{R_s,n}=|R_s|\,(C'_{qp})_{1n}$. The zeros of $R$ remove only the components of $\phi^{qp}_n$ on the other site's block; since every eigenvector extends over both blocks (the hopping $-tR_1R_2^T$ couples them), all $C_{R_s,n}$ are in general non-zero.
 Their squared norm is $\sum_nC_{R_s,n}^2=|R_s|^2<1$ (e.g.\ $0.996$ at $\Ng=2$, $\dV=0$, $U/t=4.9$).
-Movies: with $\chi_i$ the site+ghost basis and $\phi^{qp}_n=\sum_i\chi_i(C_{qp})_{in}$ the eigenorbitals of $H_{qp}$, the left panels show each physical orbital in the $\phi^{qp}_n$ basis (one circle per eigenorbital, occ/virt and $\epsilon_{qp}$ labelled, area $C_{R_s,n}^2$, color = sign, phases aligned in $U/t$); the right panels show the same orbital in the $\chi$ basis, $\phi^{phys}_s=\sum_nC_{R_s,n}\phi^{qp}_n=\sum_iR_{si}\chi_i$ (on physical site $s$ only), with its norm.
-Since $C_{qp}C_{qp}^T=1$ the sum is $R_s^T$, so the final orbital sits on site $s$ and the other site is empty (localized by construction).
+Movies: with $\chi_i$ the site+ghost basis and $\phi^{qp}_n=\sum_i\chi_i(C_{qp})_{in}$ the eigenorbitals of $H_{qp}$, the left panels show each physical orbital in the $\phi^{qp}_n$ basis (one circle per eigenorbital, occ/virt and $\epsilon_{qp}$ labelled, area $C_{R_s,n}^2$, color = sign, phases aligned in $U/t$); the right panels show the same orbital in the $\chi$ basis, $\phi^{phys}_s=\sum_nC_{R_s,n}\phi^{qp}_n=\sum_iR_{si}\chi_i$ (circles $\chi_i$ with area $R_{si}^2$ on the block of site $s$ only), with its norm $\sum_iR_{si}^2$.
+Since $C_{qp}C_{qp}^T=1$ the sum is $\phi^{phys}_s=\sum_iR_{si}\chi_i$, so the final orbital sits on site $s$ and the other site is empty (localized by construction).
 \begin{itemize}[nosep]
   \item $\Ng=0$, $\dV=0$: \href{run:../scan_ng0/dV_0.0/phys_orbitals_vs_U.mp4}{physical orbitals}
   \item $\Ng=0$, $\dV=2$: \href{run:../scan_ng0/dV_2.0/phys_orbitals_vs_U.mp4}{physical orbitals}
   \item $\Ng=2$, $\dV=0$: \href{run:../scan_ng2_not_imp/phys_orbitals_vs_U.mp4}{physical orbitals}
   \item $\Ng=2$, $\dV=2$: \href{run:../scan_ng2_dV2_confirmed/phys_orbitals_vs_U.mp4}{physical orbitals}
 \end{itemize}
+
+\subsubsection{Gauge freedom and the gauge-fixed basis $\chi'$ (after Lanat\`a~\cite{Lanata2023}, Sec.~III)}
+
+Rotating the $\chi_i$ inside the block of site $s$ by a unitary $U_s$, $\chi'_j=\sum_i\chi_i(U_s)_{ij}$, gives $R'_{sj}=\sum_iR_{si}(U_s)_{ij}$; with $U=\mathrm{blockdiag}(U_1,U_2)$, $H'_{qp}=U^\dagger H_{qp}U$ and $C'_{qp}=U^\dagger C_{qp}$. The eigenorbitals do not change, $\phi^{qp}_n=\sum_i\chi_i(C_{qp})_{in}=\sum_j\chi'_j(C'_{qp})_{jn}$, so nothing physical changes (gauge freedom).
+The ideal picture is that $\phi^{phys}_s$ is exactly one $\chi$ (the state) and the other $\chi$ are ghosts, i.e.\ $R_{si}=\delta_{i1}$, which needs $|R_s|^2=\sum_i|R_{si}|^2=1$. In gGA $|R_s|^2\simeq1$ but not exactly ($0.9988$ at $\Ng=2$, $\dV=0$, $U/t=3.7$).
+The ``QE gauge'' is obtained from the singular value decomposition of $R_s$, which for one row is just a normalization: take $(U_s)_{i1}=R_{si}/|R_s|$ and any orthonormal completion for the other columns. Then
+\begin{equation*}
+R'_{sj}=|R_s|\,\delta_{j1},\qquad \phi^{phys}_s=\sum_iR_{si}\chi_i=|R_s|\,\chi'_1 .
+\end{equation*}
+For the single-band Hubbard model at particle-hole symmetry the paper gives $R_s=(\sqrt Z,\sqrt{h/2},\sqrt{h/2})\to(\sqrt{Z+h},0,0)$, with $Z+h=|R_s|^2$.
+The coefficients of the movies are then
+\begin{equation*}
+C_{R_s,n}=\sum_iR_{si}(C_{qp})_{in}=\sum_jR'_{sj}(C'_{qp})_{jn}=|R_s|\,(C'_{qp})_{1n},
+\end{equation*}
+with $(C'_{qp})_{1n}$ the amplitude of $\phi^{qp}_n$ on the state $\chi'_1$ of site $s$. The movies are drawn in $\chi$, not $\chi'$; $\chi'$ (the ``star'' basis, $C'_{qp}$ = \texttt{ph} in the code) is used only to follow the orbitals in $U/t$.
 
 \subsubsection{Covalent versus ionic character}
 
@@ -635,5 +649,9 @@ $U/t$ & $P_{\rm ion}^{\bar\Psi_G}(s=1)$ & $P_{\rm ion}^{\bar\Psi_G}(s=0.96)$ & $
 \item $\Ng=2$, $U/t=4$: the decrease has a small bump near $s=0.86$--$0.88$ ($0.063\to0.095$), cause not established; at $U/t=5$ the last point ($s=0.80$) lies below the trend.
 \item Not covered: $s>1$ for $\Ng=2$ (not reachable), $\dV\ne0$, and $U/t$ outside the values listed.
 \end{itemize}}}
+
+\begin{thebibliography}{9}
+\bibitem{Lanata2023} N.~Lanat\`a, \emph{Derivation of the Ghost Gutzwiller Approximation from Quantum Embedding principles: the Ghost Density Matrix Embedding Theory}, arXiv:2305.11895 (2023).
+\end{thebibliography}
 
 \end{document}

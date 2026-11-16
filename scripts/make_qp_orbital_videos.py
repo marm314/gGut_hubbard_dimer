@@ -1,4 +1,6 @@
-"""Videos of the quasiparticle orbitals of the Hubbard dimer (gGA, Delta V = 0) as U/t grows, drawn on the star skeleton of
+"""(All videos are drawn in the chi basis of the solver: phi^qp_n = sum_i chi_i (C_qp)_{in}, C_qp = eigenvectors of H_qp as returned by eigh;
+ the star basis chi' used for the orbital tracking is only an internal tool, see make_orbitals(key="ph").)
+Videos of the quasiparticle orbitals of the Hubbard dimer (gGA, Delta V = 0) as U/t grows, drawn on the star skeleton of
 $HOME/a.jpeg (a physical-like 'center' orbital per site with Ng satellite (ghost) orbitals attached to it; the two centers are linked).
 
 Star basis of a site s: center c_s = R_s/|R_s| (the only qp orbital hopping to the other site, with -t |R_0||R_1|), and the satellites are the
@@ -7,7 +9,7 @@ Half filling, as in gga_dimer.qp_state: the lowest N/2 of the N = 2(1+Ng) eigenv
 occupation; the density is the code's own 1-RDM rho in the star basis.
 
 orbitals video : one panel per eigenorbital of H_qp (top row occupied, bottom row virtual): circle area ~ |amplitude|^2, color = sign.
-density video  : qp density rho_aa = sum_occ |phi(a)|^2 on the skeleton, bond order between centers, and gaps / Z / double occupancy vs U/t.
+density video  : qp density rho_ii = sum_occ |(C_qp)_{in}|^2 of the chi_i (solver basis) on the skeleton positions, electrons per site, and gaps / Z / double occupancy vs U/t.
 Writes <scan_dir>/qp_orbitals_vs_U.mp4 and <scan_dir>/qp_density_vs_U.mp4 (ffmpeg)."""
 import re
 import numpy as np
@@ -67,25 +69,33 @@ def skeleton_xy(Neff):
     return np.array(xy)
 
 
-def draw_sk(ax, xy, Neff, amp, color_by_sign=True, vals=None, scale=0.26, bonds=None, cmap=None):
+def draw_sk(ax, xy, Neff, amp, color_by_sign=True, vals=None, scale=0.26, bonds=None, cmap=None, chi=False, hb=None, pw=None):
+    """chi=True: the chi_i of the solver basis (all the same size, no star bonds), labelled chi_1..chi_{1+Ng} of each site"""
     ax.set_aspect("equal"); ax.axis("off"); ax.set_xlim(xy[:, 0].min() - 0.45, xy[:, 0].max() + 0.45); ax.set_ylim(xy[:, 1].min() - 0.45, xy[:, 1].max() + 0.45)
     cen = (0, Neff)
+    if chi and hb is not None:
+        for k in range(2 * Neff):
+            for l in range(k + 1, 2 * Neff):
+                if abs(hb[k, l]) > (0.05 if k // Neff == l // Neff else 0.2): ax.plot([xy[k, 0], xy[l, 0]], [xy[k, 1], xy[l, 1]], color="0.55", lw=min(0.4 + 3.0 * abs(hb[k, l]), 4.0), alpha=0.6, zorder=1)
     for s in range(2):
         for a in range(1, Neff):
+            if chi: break
             i, j = s * Neff, s * Neff + a
             lw = 0.6 if bonds is None else min(bonds[(i, j)], 3.5)
             ax.plot([xy[i, 0], xy[j, 0]], [xy[i, 1], xy[j, 1]], color="0.55", lw=lw, zorder=1)
     lw = 0.6 if bonds is None else min(bonds[(0, Neff)], 3.5)
-    ax.plot([xy[0, 0], xy[Neff, 0]], [xy[0, 1], xy[Neff, 1]], color="0.55", lw=lw, zorder=1)
+    if not chi: ax.plot([xy[0, 0], xy[Neff, 0]], [xy[0, 1], xy[Neff, 1]], color="0.55", lw=lw, zorder=1)
     for k in range(2 * Neff):
-        big = k % Neff == 0
+        big = (k % Neff == 0) and not chi
         rad = scale * (1.35 if big else 1.0)
-        ax.add_patch(Circle(xy[k], rad, fill=False, ec="0.75", lw=0.8, zorder=2))
+        ax.add_patch(Circle(xy[k], rad, fill=chi, fc="white", ec="0.75", lw=0.8, zorder=2))
         if color_by_sign:
             r = rad * np.sqrt(min(abs(amp[k]), 1.0))
             if r > 1e-3: ax.add_patch(Circle(xy[k], r, fc=POS if amp[k] > 0 else NEG, ec="none", zorder=3))
         else:
             ax.add_patch(Circle(xy[k], rad * 0.98, fc=cmap(vals[k]), ec="none", zorder=3))
+        if chi and pw is not None: ax.add_patch(Circle(xy[k], rad * 1.08, fill=False, ec="k", lw=0.3 + 7.0 * pw[k], zorder=4))
+        if chi: ax.text(xy[k, 0], xy[k, 1] + rad + 0.11, rf"$\chi_{{{k + 1}}}$", ha="center", va="center", fontsize=7, color="0.3")
 
 
 def load_frames(get_dir):
@@ -107,11 +117,40 @@ def load_frames(get_dir):
         for n in range(dim):                            # gauge: largest component positive, center0 preferred
             ref = ph[0, n] if abs(ph[0, n]) > 0.05 else ph[np.argmax(np.abs(ph[:, n])), n]
             if ref < 0: ph[:, n] *= -1
+        phi_raw = phi.copy()                            # raw eigh eigenvectors in the solver chi basis, energy order, no tracking, no rotation; sign only: largest component positive
+        for n in range(dim):
+            if phi_raw[np.argmax(np.abs(phi_raw[:, n])), n] < 0: phi_raw[:, n] *= -1
+        raw = dict(eps=eps.copy(), occf=occf.copy(), w=w.copy(), phx=phi_raw, H=H.copy(), Rraw=[np.array(R[0], float), np.array(R[1], float)])
         line = open(d + "/output.out").read()
         z = float(re.search(r"Z0=([\d.eE+-]+)", line).group(1)); md = re.search(r"docc=([\d.eE+-]+)", line); docc = float(md.group(1)) if md else np.nan
-        fr.append(dict(U=U, rho_star=rho_star, occf=occf, eps=eps, ph=ph, w=w, info=info, tc=tc, z=z, docc=docc, Neff=Neff, R=R))
+        fr.append(dict(raw=raw, U=U, T=T, Rrow=np.eye(dim), rho_chi=rho0, rho_star=rho_star, occf=occf, eps=eps, ph=ph, w=w, info=info, tc=tc, z=z, docc=docc, Neff=Neff, R=R))
     align_frames(fr)
+    for f in fr:     # eigenvectors in the solver (chi) basis, same orbitals/order/signs as the aligned star ones: ph_aligned = Rrow (T^T phi Col)  =>  phi Col = T Rrow^T ph_aligned
+        f["phx"] = f["T"] @ f["Rrow"].T @ f["ph"]
+        f["Rchi"] = [np.array(r_, dtype=float) for r_ in f["R"]]
+    align_chi(fr)
     return fr
+
+
+def align_chi(fr):
+    """Relabelling of the chi_i. The solver returns every converged solution in its own basis of the chi_i inside each site block. Here the chi_i of a site are only PERMUTED (and
+    sign-flipped) between consecutive U/t, no mixing: the permutation P_s (Hungarian on the overlaps of the block rows of the tracked orbitals with the previous U/t) and the signs
+    are applied to R_s, to the block rows of the eigenvectors and to rho (energies, occupations and C_{R_s,n} do not change). Propagation order as align_frames."""
+    from scipy.optimize import linear_sum_assignment
+    Neff = fr[0]["Neff"]
+    if Neff == 1: return
+    ref = int(np.argmax([np.diff(np.sort(f["eps"])).min() for f in fr]))
+    pairs = [(fr[k - 1], fr[k]) for k in range(ref + 1, len(fr))] + [(fr[k + 1], fr[k]) for k in range(ref - 1, -1, -1)]
+    for p_, c_ in pairs:
+        c_["rho_chi"] = c_["rho_chi"].copy()
+        for s_ in range(2):
+            rows = slice(s_ * Neff, (s_ + 1) * Neff)
+            M = p_["phx"][rows, :] @ c_["phx"][rows, :].T                  # overlap of row i (previous) with row j (current)
+            ri, ci = linear_sum_assignment(-np.abs(M))
+            Q = np.zeros((Neff, Neff))
+            for i_, j_ in zip(ri, ci): Q[i_, j_] = 1.0 if M[i_, j_] >= 0 else -1.0
+            c_["phx"][rows, :] = Q @ c_["phx"][rows, :]; c_["Rchi"][s_] = Q @ c_["Rchi"][s_]
+            c_["rho_chi"][rows, :] = Q @ c_["rho_chi"][rows, :]; c_["rho_chi"][:, rows] = c_["rho_chi"][:, rows] @ Q.T
 
 
 SAT_DEG_TOL = 0.05      # satellites of a site closer than this (in t) are treated as degenerate
@@ -141,7 +180,7 @@ def align_frames(fr):
                 ovc = np.abs(p["ph"].T @ c_["ph"][pm, :]); r_, c2_ = linear_sum_assignment(-ovc); sc_ = ovc[r_, c2_].sum()
                 if sc_ > best_sc + 1e-12: best_sc, perm = sc_, pm
         # new position i of a component = old index perm[i]
-        c_["ph"] = c_["ph"][perm, :]
+        c_["ph"] = c_["ph"][perm, :]; c_["Rrow"] = c_["Rrow"][perm, :]
         c_["info"] = [(c_["info"][s_][0], c_["info"][s_][1][perm[s_ * Neff + 1:(s_ + 1) * Neff] - s_ * Neff - 1],
                        c_["info"][s_][2][perm[s_ * Neff + 1:(s_ + 1) * Neff] - s_ * Neff - 1]) for s_ in range(2)]
         # (ii b) degenerate satellites: if the satellites of a site have (nearly) the same energy, their basis inside that subspace is arbitrary (eigh gives a different rotation
@@ -152,7 +191,7 @@ def align_frames(fr):
                 if np.ptp(c_["info"][s_][1]) < SAT_DEG_TOL:
                     rows = list(range(s_ * Neff + 1, (s_ + 1) * Neff)); A_s = p["ph"][rows, :]; B_s = c_["ph"][rows, :]
                     Uu, _, Vt = np.linalg.svd(A_s @ B_s.T); Rot = Uu @ Vt
-                    c_["ph"][rows, :] = Rot @ B_s
+                    c_["ph"][rows, :] = Rot @ B_s; c_["Rrow"][rows, :] = Rot @ c_["Rrow"][rows, :]
                     c_["info"][s_] = (c_["info"][s_][0], c_["info"][s_][1], Rot @ c_["info"][s_][2])
         # (iii) orbital tracking. Each panel follows one orbital: the current orbitals are matched to the previous frame's by maximum overlap (Hungarian on |<prev|cur>|) and
         # permuted into the previous slots (eps, w, occupation move with them), so an orbital never jumps to another panel when levels cross or split.
@@ -182,7 +221,36 @@ def align_frames(fr):
                 v = float((A_[r, :] * sig) @ B_[r, :]); rs[r] = 1.0 if v >= 0 else -1.0
             for n in range(N_):
                 v = float((rs * A_[:, n]) @ B_[:, n]); sig[n] = 1.0 if v >= 0 else -1.0
-        c_["ph"] = (A_ * rs[:, None]) * sig[None, :]
+        c_["ph"] = (A_ * rs[:, None]) * sig[None, :]; c_["Rrow"] = rs[:, None] * c_["Rrow"]
+
+
+def perm_only_frames(fr):
+    """PERMUTATIONS ONLY (the alignment used by all the chi-basis movies). Raw eigenvectors of H_qp in the solver chi basis, in the energy order of eigh (the qp states are never permuted, never
+    mixed, no orbital tracking); the only operations: (i) the chi_i of each site are reordered (as if the AO basis of the site were listed in another order) at every U/t to follow the previous
+    U/t, by exhaustive search over the permutations of each site (sign-sensitive match sum_n |<A_n|X_n>|, A = previous aligned frame); (ii) the overall sign of each qp state. The same
+    permutation is applied to R_s (Rchi) and to rho (rho_chi). Frames: energy order, eps/occf/w/phx of the raw eigh."""
+    import itertools
+    rf = [dict(f, **{k: (np.array(v) if isinstance(v, np.ndarray) else v) for k, v in f["raw"].items()}) for f in fr]
+    Neff = rf[0]["Neff"]; N = 2 * Neff
+    for f in rf: f["Rchi"] = [np.array(r_, dtype=float) for r_ in f["R"]]
+    if Neff == 1: return rf
+    ref = int(np.argmax([np.diff(np.sort(f["eps"])).min() for f in rf]))
+    pairs = [(rf[k - 1], rf[k]) for k in range(ref + 1, len(rf))] + [(rf[k + 1], rf[k]) for k in range(ref - 1, -1, -1)]
+    P = np.array(list(itertools.permutations(range(Neff))))                   # (n!, Neff)
+    for p_, c_ in pairs:
+        X0 = c_["phx"].copy(); A = p_["phx"]; Cs = []
+        for s_ in range(2):
+            rows = np.arange(s_ * Neff, (s_ + 1) * Neff)
+            Cs.append(np.einsum("in,pin->pn", A[rows, :], X0[rows[P], :]))      # (n!, N): site-s part of <A_n|X_n> for every permutation of the chi_i of site s
+        score = np.abs(Cs[0][:, None, :] + Cs[1][None, :, :]).sum(axis=2)       # (n!, n!)
+        i0, i1 = np.unravel_index(np.argmax(score), score.shape)
+        idx = np.concatenate([P[i0], Neff + P[i1]])                              # new chi_i = old chi_idx[i]
+        X = X0[idx, :]
+        sg = np.where(np.sum(A * X, axis=0) < 0, -1.0, 1.0); X = X * sg
+        c_["phx"] = X
+        for s_ in range(2): c_["Rchi"][s_] = c_["Rchi"][s_][idx[s_ * Neff:(s_ + 1) * Neff] - s_ * Neff]
+        c_["rho_chi"] = c_["rho_chi"][np.ix_(idx, idx)]
+    return rf
 
 
 def bonds_from(f):
@@ -195,7 +263,8 @@ def bonds_from(f):
     return b
 
 
-def make_orbitals(fr, title, out, fps=12):
+def make_orbitals(fr, title, out, fps=12, key="phx", mode="perm"):
+    """key='phx': eigenvectors phi^qp_n = sum_i chi_i (C_qp)_{in} in the solver chi basis; key='ph': star basis chi'"""
     Neff = fr[0]["Neff"]; N = 2 * Neff; xy = skeleton_xy(Neff); nocc = N // 2
     fig, axs = plt.subplots(2, nocc, figsize=(3.4 * nocc, 6.2), squeeze=False)
     txt = fig.suptitle("", fontsize=12)
@@ -204,8 +273,10 @@ def make_orbitals(fr, title, out, fps=12):
         f = fr[i]
         for n in range(N):
             ax = axs[n // nocc, n % nocc]; ax.clear()
-            amp = f["ph"][:, n] ** 2 * np.sign(f["ph"][:, n])
-            draw_sk(ax, xy, Neff, amp, bonds=bonds_from(f))
+            v_ = f.get(key, f["ph"])[:, n]; amp = v_ ** 2 * np.sign(v_)
+            hb_ = None; pw_ = None      # bonds (|H_qp,ij|) and physical-weight rings (R_si^2/|R_s|^2) were tried and removed: too busy
+            if hb_ is not None: pw_ = np.concatenate([np.asarray(f["Rraw"][s_]) ** 2 / np.sum(np.asarray(f["Rraw"][s_]) ** 2) for s_ in range(2)])
+            draw_sk(ax, xy, Neff, amp, bonds=None if key == "phx" else bonds_from(f), chi=(key == "phx"), hb=hb_, pw=pw_)
             fo = f["occf"][n]
             lab = "occ" if fo > 0.5 else "virt"
             ax.set_title(f"{lab}  eps={f['eps'][n]:+.2f}\nA(w) weight {f['w'][n]:.3f}", fontsize=9,
@@ -216,11 +287,11 @@ def make_orbitals(fr, title, out, fps=12):
         pos = [e for e, ww in zip(f["eps"], f["w"]) if e > 1e-9 and ww >= 1e-3]; neg = [e for e, ww in zip(f["eps"], f["w"]) if e < -1e-9 and ww >= 1e-3]
         sg = (min(pos) - max(neg)) if pos and neg else float("nan")
         txt.set_text(f"{title}    U/t = {f['U']:.1f}    Z = {f['z']:.3f}\nqp gap (HOMO-LUMO) = {gap:.2f}     spectral gap = {sg:.2f}\n"
-                     f"large circles joined left-right = the two states; small outer circles = their ghosts\neach panel follows one orbital (matched to the previous U/t; phases aligned)")
+                     + (r"$\phi^{qp}_n=\sum_i\chi_i(C_{qp})_{in}$: circles = $\chi_i$, $i=1..2(1+N_g)$: site 1 (left), then site 2 (right)" + ("; raw solver basis" if mode == "raw" else ("\n$\\chi$ = solver basis, only the order of the $\\chi_i$ within each site is changed" if mode == "perm" else "\n$\\chi$ = solver basis, $\\chi_i$ permuted/sign-flipped per site to follow the previous $U/t$")) if key == "phx" else "large circles = the two states, small outer circles = their ghosts") + ("\neigh order, no tracking, no rotation; sign: largest component > 0" if mode == "raw" else ("\neigh order, no orbital tracking, no rotation; orbital signs aligned to the previous $U/t$" if mode == "perm" else "\neach panel follows one orbital (matched to the previous U/t; phases aligned)")))
         return []
 
     ani = animation.FuncAnimation(fig, update, frames=len(fr), blit=False)
-    fig.tight_layout(rect=(0, 0, 1, 0.83))
+    fig.tight_layout(rect=(0, 0, 1, 0.80))
     ani.save(out, writer=animation.FFMpegWriter(fps=fps, bitrate=2500)); plt.close(fig)
     print("wrote", out, flush=True)
 
@@ -238,12 +309,12 @@ def make_density(fr, title, out, fps=12):
     cmap = plt.cm.viridis
     gaps = np.array([np.sort(f["eps"])[nocc] - np.sort(f["eps"])[nocc - 1] for f in fr])
     sgap = np.array([min([e for e, ww in zip(f["eps"], f["w"]) if e > 1e-9 and ww >= 1e-3] or [np.nan]) - max([e for e, ww in zip(f["eps"], f["w"]) if e < -1e-9 and ww >= 1e-3] or [np.nan]) for f in fr])
-    rho12 = np.array([f["rho_star"][0, Neff] for f in fr])      # bond order center0-center1 (per spin)
+    rho12 = np.array([np.trace(f.get("rho_chi", f["rho_star"])[:Neff, :Neff]) for f in fr])      # qp electrons per spin on the chi_i of site 1 (basis-independent inside the block)
     zs = np.array([f["z"] for f in fr]); dc = np.array([f["docc"] for f in fr]); ucs = np.array([f["U"] for f in fr])
     fig = plt.figure(figsize=(11, 5.4)); gs = fig.add_gridspec(3, 2, width_ratios=[1.25, 1])
     ax0 = fig.add_subplot(gs[:, 0]); axa = fig.add_subplot(gs[0, 1]); axb = fig.add_subplot(gs[1, 1]); axc = fig.add_subplot(gs[2, 1])
     axa.plot(ucs, gaps, label="qp gap (HOMO-LUMO)"); axa.plot(ucs, sgap, label="spectral gap"); axa.legend(fontsize=8); axa.set_ylabel("gap")
-    axb.plot(ucs, rho12, color="C2", label="bond order rho(c0,c1)"); axb.plot(ucs, zs, color="C3", label="Z"); axb.legend(fontsize=8)
+    axb.plot(ucs, rho12, color="C2", label="qp electrons/spin on site 1"); axb.plot(ucs, zs, color="C3", label="Z"); axb.legend(fontsize=8)
     if np.isfinite(dc).any(): axc.plot(ucs, dc, color="C4", label="double occupancy"); axc.legend(fontsize=8)
     else: axc.plot(ucs, [f["rho_star"][0, 0] for f in fr], color="C0", label="state density (site 0)"); axc.plot(ucs, [f["rho_star"][fr[0]["Neff"], fr[0]["Neff"]] for f in fr], color="C1", ls="--", label="state density (site 1)"); axc.legend(fontsize=8)
     axc.set_xlabel("U/t")
@@ -251,18 +322,16 @@ def make_density(fr, title, out, fps=12):
     for ax in (axa, axb, axc): ax.axvline(uc, color="crimson", ls="--", lw=1.2)
     axa.text(uc - 0.15, axa.get_ylim()[1] * 0.50, f"$U_c/t$ = {uc:.2f} ", color="crimson", fontsize=9, va="top", ha="right")
     marks = [ax.axvline(ucs[0], color="k", lw=1) for ax in (axa, axb, axc)]
-    sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(0, 1)); fig.colorbar(sm, ax=ax0, fraction=0.04, label="qp density per spin  rho_aa (1 = full)")
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(0, 1)); fig.colorbar(sm, ax=ax0, fraction=0.04, label=r"qp density per spin  $\rho_{ii}$ (1 = full)")
     txt = fig.suptitle("")
 
     def update(i):
         f = fr[i]; ax0.clear()
-        rho = np.diag(f["rho_star"]).copy()
-        draw_sk(ax0, xy, Neff, None, color_by_sign=False, vals=np.clip(rho, 0, 1), bonds=None, cmap=cmap, scale=0.2)
-        for s in range(2):
-            ax0.text(xy[s * Neff, 0], xy[s * Neff, 1], f"{rho[s * Neff]:.2f}", ha="center", va="center", fontsize=9,
-                     color="w" if rho[s * Neff] < 0.6 else "k", zorder=5)
-        ax0.plot([xy[0, 0], xy[Neff, 0]], [xy[0, 1] + 0.0, xy[Neff, 1]], color="k", lw=0.3 + 12 * abs(rho12[i]), alpha=0.35, zorder=2)
-        ax0.set_title(f"{title}   U/t = {f['U']:.1f}  (large circles = the two states, small outer = ghosts)\nbond order c0-c1 = {rho12[i]:.3f};  qp electrons per spin: {rho[:Neff].sum():.2f} | {rho[Neff:].sum():.2f}", fontsize=9)
+        rho = np.diag(f.get("rho_chi", f["rho_star"])).copy()
+        draw_sk(ax0, xy, Neff, None, color_by_sign=False, vals=np.clip(rho, 0, 1), bonds=None, cmap=cmap, scale=0.2, chi=True)
+        for k_ in range(2 * Neff):
+            ax0.text(xy[k_, 0], xy[k_, 1], f"{rho[k_]:.2f}", ha="center", va="center", fontsize=8, color="w" if rho[k_] < 0.6 else "k", zorder=5)
+        ax0.set_title(rf"{title}   U/t = {f['U']:.1f}   $\rho_{{ii}}$ in the $\chi_i$ basis (circles = $\chi_i$ of site 1 left, site 2 right)" + f"\nqp electrons per spin: {rho[:Neff].sum():.2f} | {rho[Neff:].sum():.2f}", fontsize=9)
         for m_ in marks: m_.set_xdata([f["U"], f["U"]])
         return []
 
@@ -280,13 +349,11 @@ if __name__ == "__main__":
     import sys
     which = sys.argv[1] if len(sys.argv) > 1 else "dV0"
     if which == "dV0":
-        cases = {"scan_ng2_not_imp": (lambda U: f"scan_ng2_not_imp/{br2[U]}/U_{U:.1f}", "Ng=2, dV=0"),
-                 "scan_ng4_not_imp": (lambda U: f"scan_ng4_not_imp/U_{U:.1f}", "Ng=4, dV=0")}
+        cases = {"scan_ng2_not_imp": (lambda U: f"scan_ng2_not_imp/{br2[U]}/U_{U:.1f}", "Ng=2, dV=0")}
     else:
-        cases = {"scan_ng2_dV2_confirmed": (lambda U: f"scan_ng2_dV2_confirmed/U_{U:.1f}", "Ng=2, dV=2"),
-                 "scan_ng4_dV2_confirmed": (lambda U: f"scan_ng4_dV2_confirmed/U_{U:.1f}", "Ng=4, dV=2")}
-    for d, (gd_, ttl) in cases.items():
-        fr = load_frames(gd_)
+        cases = {"scan_ng2_dV2_confirmed": (lambda U: f"scan_ng2_dV2_confirmed/U_{U:.1f}", "Ng=2, dV=2")}
+    for d, (gd_, ttl) in cases.items():              # (Ng=4 is not touched any more)
+        fr = perm_only_frames(load_frames(gd_))      # permutations of the chi_i inside each site + sign of each qp state; the qp states stay in energy order
         if len(sys.argv) <= 2 or sys.argv[2] != "density":
-            make_orbitals(fr, ttl, f"{d}/qp_orbitals_vs_U.mp4")
+            make_orbitals(fr, ttl, f"{d}/qp_orbitals_vs_U.mp4", mode="perm")
         make_density(fr, ttl, f"{d}/qp_density_vs_U.mp4")

@@ -1,8 +1,9 @@
 """Movies of the physical (R-transformed) orbitals of the Hubbard dimer (gGA) vs U/t.
-The qp orbital phi_n (eigenvector of H_qp, qp basis of both sites) is mapped to the physical space by R: amplitude on physical site s
-a_s(n) = R_s . phi_n(site s block) = |R_s| * <center_s|phi_n>  (the ghost components are orthogonal to R_s and drop out).
-So sum_n-weight: w_n = 2 (a_0^2 + a_1^2) is the A(w) weight of the movie make_qp_weights_video. Orbitals and phases are the aligned ones of
-make_qp_orbital_videos.load_frames (same tracking, same panels). Circle area ~ a_s^2 (full circle = 1), color = sign.
+The eigenorbital phi^qp_n = sum_i chi_i (C_qp)_{in} of H_qp (chi_i = site+ghost basis, here the star basis: for each site the first chi is the "state", the others the ghosts)
+is mapped to the physical space by R: C_{R_s,n} = (R C_qp)_{sn} = sum_i R_{si} (C_qp)_{in} = |R_s| (C_qp)_{state(s),n}, since in the star basis R_{si} = |R_s| delta_{i,state(s)}
+(the ghost components are orthogonal to R_s and drop out). Physical orbital: phi^phys_s = sum_n C_{R_s,n} phi^qp_n = sum_i R_{si} chi_i.
+So sum_n-weight: w_n = 2 (C_{R_1,n}^2 + C_{R_2,n}^2) is the A(w) weight of the movie make_qp_weights_video. Orbitals and phases are the aligned ones of
+make_qp_orbital_videos.load_frames (same tracking, same panels). Circle area ~ C_{R_s,n}^2 (full circle = 1), color = sign.
 Output: <scan_dir>/phys_orbitals_vs_U.mp4"""
 import sys
 import numpy as np
@@ -16,17 +17,17 @@ from make_qp_orbital_videos import POS, NEG
 OCC_C, VIRT_C = "#0072B2", "#CC79A7"
 
 def phys_amps(f):
-    Neff = f["Neff"]; r = [np.linalg.norm(f["R"][s]) for s in range(2)]
-    return np.array([r[0] * f["ph"][0, :], r[1] * f["ph"][Neff, :]])      # (2, N)
+    Neff = f["Neff"]; X = f.get("phx", f["ph"])                           # phi^qp_n = sum_i chi_i (C_qp)_{in}, chi = solver basis
+    return np.array([f.get("Rchi", f["R"])[s] @ X[s * Neff:(s + 1) * Neff, :] for s in range(2)])      # (2, N): C_{R_s,n} = sum_i R_{si} (C_qp)_{in}
 
 def make(fr, title, out, fps=12):
-    """Physical orbitals = R C_qp. R is 2 x 2(1+Ng) (row s = R_s on the block of site s), C_qp the 2(1+Ng) x 2(1+Ng) matrix of qp eigenvectors (columns, energy order, tracked
+    """Physical orbitals = R C_qp. R is 2 x 2(1+Ng) (row s = R_{si} on the block of site s), C_qp the 2(1+Ng) x 2(1+Ng) matrix of qp eigenvectors (columns, energy order, tracked
     and phase-aligned as in make_qp_orbital_videos). The product has 2 rows: the 2 physical orbitals phi_phys_s, each given by its coefficients over the qp eigenorbitals n:
-    (R Phi)_{s n} = R_s . phi_n(block s). One panel per physical orbital, one circle per qp eigenorbital (left to right in energy order); area ~ coefficient^2, color = sign."""
+    (R Phi)_{s n} = sum_i R_{si} (C_qp)_{in}. One panel per physical orbital, one circle per qp eigenorbital (left to right in energy order); area ~ coefficient^2, color = sign."""
     N = 2 * fr[0]["Neff"]; nocc = N // 2
     Neff = fr[0]["Neff"]
     xy = mq.skeleton_xy(Neff) if Neff > 1 else np.array([(-1.0, 0.0), (1.0, 0.0)])
-    fig = plt.figure(figsize=(max(1.7 * N, 5.0) + 5.0, 7.4)); gs = fig.add_gridspec(2, 2, width_ratios=[max(N, 3.3), 3.3], hspace=0.5)
+    fig = plt.figure(figsize=(max(1.7 * N, 5.0) + 6.0, 7.4)); gs = fig.add_gridspec(2, 2, width_ratios=[max(N, 3.3), 4.6], hspace=0.5)
     axs = np.array([[fig.add_subplot(gs[s, 0])] for s in range(2)]); axr = [fig.add_subplot(gs[s, 1]) for s in range(2)]
     txt = fig.suptitle("", fontsize=14)
     def update(i):
@@ -43,16 +44,11 @@ def make(fr, title, out, fps=12):
                 ax.text(n, 0.80, "occ" if oc else "virt", ha="center", va="center", fontsize=12, fontweight="bold", color=OCC_C if oc else VIRT_C)
                 ax.text(n, 0.60, rf"$\epsilon_{{qp}}$ = {f['eps'][n]:+.2f}", ha="center", va="center", fontsize=10, color="0.2")
             ax.set_title(rf"$\phi^{{phys}}_{s + 1}$ in the $\phi^{{qp}}_n$ basis:  $\sum_n C_{{R_{s + 1},n}}^2$ = {np.sum(RPhi[s] ** 2):.3f}", fontsize=12)
-        for s in range(2):    # final physical orbital phi_phys_s = sum_n C_{R_s,n} phi_qp_n: lives on physical site s, the other site is empty
-            v = f["ph"] @ RPhi[s]; ax = axr[s]; ax.clear(); ax.set_aspect("equal"); ax.axis("off"); ax.set_xlim(-1.9, 1.9); ax.set_ylim(-1.15, 1.0)
-            ax.plot([-1, 1], [0, 0], color="0.6", lw=0.8, zorder=1)
-            for k, x in enumerate((-1.0, 1.0)):
-                a = v[k * Neff] if k == s else 0.0
-                ax.add_patch(Circle((x, 0), 0.8, fill=False, ec="0.75", lw=0.8, zorder=2))
-                if abs(a) > 1e-3: ax.add_patch(Circle((x, 0), 0.8 * np.sqrt(min(a * a, 1.0)), fc=POS if a > 0 else NEG, ec="none", zorder=3))
-                ax.text(x, -0.93, f"site {k + 1}" + ("" if k == s else " (empty)"), ha="center", va="center", fontsize=11, color="0.2")
-            ax.set_title(rf"$\phi^{{phys}}_{s + 1} = \sum_i R_{{{s + 1}i}}\,\chi_i$  (in the $\chi$ basis)" + "\n" + rf"$\|\phi^{{phys}}_{s + 1}\|^2$ = {np.sum(v ** 2):.4f}", fontsize=12)
-        txt.set_text(rf"{title}   $U/t$ = {f['U']:.1f}   $Z$ = {f['z']:.3f}" + "\n" + r"$\chi_i$: site+ghost basis;   $\phi^{qp}_n=\sum_i\chi_i\,(C_{qp})_{in}$: eigenorbitals of $H_{qp}$ (occ/virt, $\epsilon_{qp}$)" + "\n" + r"$\phi^{phys}_s=\sum_n C_{R_s,n}\,\phi^{qp}_n=\sum_i R_{si}\chi_i$,   $C_{R_s,n}=(R\,C_{qp})_{sn}$;   area $\propto C_{R_s,n}^2$, color = sign")
+        for s in range(2):    # final physical orbital phi_phys_s = sum_i R_{si} chi_i: only the chi_i of block s, the other site's chi_i are empty
+            ax = axr[s]; ax.clear(); amp = np.zeros(2 * Neff); Rs = np.asarray(f.get("Rchi", f["R"])[s]); amp[s * Neff:(s + 1) * Neff] = Rs ** 2 * np.sign(Rs)
+            mq.draw_sk(ax, xy, Neff, amp, chi=True, scale=(0.3 if Neff > 1 else 0.38))
+            ax.set_title(rf"$\phi^{{phys}}_{s + 1} = \sum_i R_{{{s + 1}i}}\,\chi_i$" + "\n" + rf"$\|\phi^{{phys}}_{s + 1}\|^2 = \sum_i R_{{{s + 1}i}}^2$ = {np.sum(f['R'][s] ** 2):.4f}", fontsize=12)
+        txt.set_text(rf"{title}   $U/t$ = {f['U']:.1f}   $Z$ = {f['z']:.3f}" + "\n" + r"$\chi_i$ ($i=1..2(1+N_g)$): solver basis, only the order of the $\chi_i$ within each site is changed;   $\phi^{qp}_n=\sum_i\chi_i\,(C_{qp})_{in}$: eigenorbitals of $H_{qp}$ (occ/virt, $\epsilon_{qp}$)" + "\n" + r"$\phi^{phys}_s=\sum_n C_{R_s,n}\,\phi^{qp}_n=\sum_i R_{si}\chi_i$,   $C_{R_s,n}=(R\,C_{qp})_{sn}$;   area $\propto C_{R_s,n}^2$, color = sign")
         return []
     ani = animation.FuncAnimation(fig, update, frames=len(fr), blit=False)
     fig.subplots_adjust(left=0.03, right=0.98, top=0.72, bottom=0.04, hspace=0.75, wspace=0.12)
@@ -90,4 +86,4 @@ if __name__ == "__main__":
     if which == "dV0": gd2, d2 = (lambda U: f"scan_ng2_not_imp/{br2[U]}/U_{U:.1f}"), "scan_ng2_not_imp"
     else: gd2, d2 = (lambda U: f"scan_ng2_dV2_confirmed/U_{U:.1f}"), "scan_ng2_dV2_confirmed"
     make(ng0_frames(dV), rf"$N_g=0$, $\Delta V={dV:g}$", f"scan_ng0/dV_{dV:.1f}/phys_orbitals_vs_U.mp4")
-    make(mq.load_frames(gd2), rf"$N_g=2$, $\Delta V={dV:g}$", f"{d2}/phys_orbitals_vs_U.mp4")
+    make(mq.perm_only_frames(mq.load_frames(gd2)), rf"$N_g=2$, $\Delta V={dV:g}$", f"{d2}/phys_orbitals_vs_U.mp4")

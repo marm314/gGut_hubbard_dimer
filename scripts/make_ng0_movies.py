@@ -69,7 +69,7 @@ def orbitals(dV, S, out):
                 ax.add_patch(plt.Circle((x, 0), 0.32, fill=False, ec="0.75", lw=1)); ax.add_patch(plt.Circle((x, 0), 0.32 * abs(u), color=POS if u >= 0 else NEG))
             ax.set_title(f"{name}\n$\\epsilon={e:+.2f}$,  $A(\\omega)$ weight $={a['w']:.2f}$", fontsize=11)
         ttl.set_text(rf"$N_g=0$, $\Delta V={dV:g}$,  $U/t={Us[i]:.1f}$,  $Z={a['Z']:.3f}$"); return []
-    fig.text(0.5, 0.02, r"circles: the two states; area $\propto|\mathrm{amplitude}|^2$, colour = sign", ha="center", fontsize=10, color="0.35")
+    fig.text(0.5, 0.02, r"circles: $\chi_1$ (site 1), $\chi_2$ (site 2), the only $\chi$ of each site at $N_g=0$; area $\propto|\mathrm{amp}|^2$, colour = sign", ha="center", fontsize=10, color="0.35")
     plt.tight_layout(rect=(0, 0.06, 1, 0.9)); save(fig, upd, out)
 def density(dV, S, out):
     Uc = uc(dV); m = np.array([a["m"] for a in S]); Z = np.array([a["Z"] for a in S]); eps = np.array([a["eps"] for a in S])
