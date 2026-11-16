@@ -69,7 +69,7 @@ def skeleton_xy(Neff):
     return np.array(xy)
 
 
-def draw_sk(ax, xy, Neff, amp, color_by_sign=True, vals=None, scale=0.26, bonds=None, cmap=None, chi=False, hb=None, pw=None):
+def draw_sk(ax, xy, Neff, amp, color_by_sign=True, vals=None, scale=0.26, bonds=None, cmap=None, chi=False, hb=None, pw=None, labels=None):
     """chi=True: the chi_i of the solver basis (all the same size, no star bonds), labelled chi_1..chi_{1+Ng} of each site"""
     ax.set_aspect("equal"); ax.axis("off"); ax.set_xlim(xy[:, 0].min() - 0.45, xy[:, 0].max() + 0.45); ax.set_ylim(xy[:, 1].min() - 0.45, xy[:, 1].max() + 0.45)
     cen = (0, Neff)
@@ -94,6 +94,7 @@ def draw_sk(ax, xy, Neff, amp, color_by_sign=True, vals=None, scale=0.26, bonds=
             if r > 1e-3: ax.add_patch(Circle(xy[k], r, fc=POS if amp[k] > 0 else NEG, ec="none", zorder=3))
         else:
             ax.add_patch(Circle(xy[k], rad * 0.98, fc=cmap(vals[k]), ec="none", zorder=3))
+        if labels is not None: ax.text(xy[k, 0], xy[k, 1] + rad + 0.11, labels[k], ha="center", va="center", fontsize=7, color="0.3")
         if chi and pw is not None: ax.add_patch(Circle(xy[k], rad * 1.08, fill=False, ec="k", lw=0.3 + 7.0 * pw[k], zorder=4))
         if chi: ax.text(xy[k, 0], xy[k, 1] + rad + 0.11, rf"$\chi_{{{k + 1}}}$", ha="center", va="center", fontsize=7, color="0.3")
 
@@ -264,7 +265,9 @@ def bonds_from(f):
 
 
 def make_orbitals(fr, title, out, fps=12, key="phx", mode="perm"):
+    """key='ph': the original star basis chi' (chi'_1 = state = direction of R_s, others ghosts), orbitals followed in U/t (tracked); key='phx': solver chi, permutations only"""
     """key='phx': eigenvectors phi^qp_n = sum_i chi_i (C_qp)_{in} in the solver chi basis; key='ph': star basis chi'"""
+    if key == "ph": mode = None          # chi' movies: orbitals followed in U/t (caption of the tracked version)
     Neff = fr[0]["Neff"]; N = 2 * Neff; xy = skeleton_xy(Neff); nocc = N // 2
     fig, axs = plt.subplots(2, nocc, figsize=(3.4 * nocc, 6.2), squeeze=False)
     txt = fig.suptitle("", fontsize=12)
@@ -276,7 +279,7 @@ def make_orbitals(fr, title, out, fps=12, key="phx", mode="perm"):
             v_ = f.get(key, f["ph"])[:, n]; amp = v_ ** 2 * np.sign(v_)
             hb_ = None; pw_ = None      # bonds (|H_qp,ij|) and physical-weight rings (R_si^2/|R_s|^2) were tried and removed: too busy
             if hb_ is not None: pw_ = np.concatenate([np.asarray(f["Rraw"][s_]) ** 2 / np.sum(np.asarray(f["Rraw"][s_]) ** 2) for s_ in range(2)])
-            draw_sk(ax, xy, Neff, amp, bonds=None if key == "phx" else bonds_from(f), chi=(key == "phx"), hb=hb_, pw=pw_)
+            draw_sk(ax, xy, Neff, amp, bonds=None if key == "phx" else bonds_from(f), chi=(key == "phx"), hb=hb_, pw=pw_, labels=(None if key == "phx" else [rf"$\chi'_{{{k_ + 1}}}$" for k_ in range(2 * Neff)]))
             fo = f["occf"][n]
             lab = "occ" if fo > 0.5 else "virt"
             ax.set_title(f"{lab}  eps={f['eps'][n]:+.2f}\nA(w) weight {f['w'][n]:.3f}", fontsize=9,
@@ -287,7 +290,7 @@ def make_orbitals(fr, title, out, fps=12, key="phx", mode="perm"):
         pos = [e for e, ww in zip(f["eps"], f["w"]) if e > 1e-9 and ww >= 1e-3]; neg = [e for e, ww in zip(f["eps"], f["w"]) if e < -1e-9 and ww >= 1e-3]
         sg = (min(pos) - max(neg)) if pos and neg else float("nan")
         txt.set_text(f"{title}    U/t = {f['U']:.1f}    Z = {f['z']:.3f}\nqp gap (HOMO-LUMO) = {gap:.2f}     spectral gap = {sg:.2f}\n"
-                     + (r"$\phi^{qp}_n=\sum_i\chi_i(C_{qp})_{in}$: circles = $\chi_i$, $i=1..2(1+N_g)$: site 1 (left), then site 2 (right)" + ("; raw solver basis" if mode == "raw" else ("\n$\\chi$ = solver basis, only the order of the $\\chi_i$ within each site is changed" if mode == "perm" else "\n$\\chi$ = solver basis, $\\chi_i$ permuted/sign-flipped per site to follow the previous $U/t$")) if key == "phx" else "large circles = the two states, small outer circles = their ghosts") + ("\neigh order, no tracking, no rotation; sign: largest component > 0" if mode == "raw" else ("\neigh order, no orbital tracking, no rotation; orbital signs aligned to the previous $U/t$" if mode == "perm" else "\neach panel follows one orbital (matched to the previous U/t; phases aligned)")))
+                     + (r"$\phi^{qp}_n=\sum_i\chi_i(C_{qp})_{in}$: circles = $\chi_i$, $i=1..2(1+N_g)$: site 1 (left), then site 2 (right)" + ("; raw solver basis" if mode == "raw" else ("\n$\\chi$ = solver basis, only the order of the $\\chi_i$ within each site is changed" if mode == "perm" else "\n$\\chi$ = solver basis, $\\chi_i$ permuted/sign-flipped per site to follow the previous $U/t$")) if key == "phx" else r"$\phi^{qp}_n=\sum_j\chi'_j(C'_{qp})_{jn}$: $\chi'_1,\chi'_{%d}$ = the two states (direction of $R_s$), small circles = their ghosts" % (Neff + 1)) + ("\neigh order, no tracking, no rotation; sign: largest component > 0" if mode == "raw" else ("\neigh order, no orbital tracking, no rotation; orbital signs aligned to the previous $U/t$" if mode == "perm" else "\neach panel follows one orbital (matched to the previous U/t; phases aligned)")))
         return []
 
     ani = animation.FuncAnimation(fig, update, frames=len(fr), blit=False)
@@ -304,17 +307,20 @@ def critical_U(ucs, sgap, thr=0.01):
     return u2 - g2 * (u2 - u1) / (g2 - g1)
 
 
-def make_density(fr, title, out, fps=12):
+def make_density(fr, title, out, fps=12, basis="chi"):
+    """basis='chi': rho_ii in the (permuted) solver chi basis; basis='chip': the original star basis chi' (state chi'_1 of each site + ghosts), with the bond order between the two states"""
+    chip = basis == "chip"
     Neff = fr[0]["Neff"]; N = 2 * Neff; nocc = N // 2; xy = skeleton_xy(Neff)
     cmap = plt.cm.viridis
     gaps = np.array([np.sort(f["eps"])[nocc] - np.sort(f["eps"])[nocc - 1] for f in fr])
     sgap = np.array([min([e for e, ww in zip(f["eps"], f["w"]) if e > 1e-9 and ww >= 1e-3] or [np.nan]) - max([e for e, ww in zip(f["eps"], f["w"]) if e < -1e-9 and ww >= 1e-3] or [np.nan]) for f in fr])
-    rho12 = np.array([np.trace(f.get("rho_chi", f["rho_star"])[:Neff, :Neff]) for f in fr])      # qp electrons per spin on the chi_i of site 1 (basis-independent inside the block)
+    if chip: rho12 = np.array([f["rho_star"][0, Neff] for f in fr])      # bond order between the two states chi'_1 of the sites (per spin)
+    else: rho12 = np.array([np.trace(f.get("rho_chi", f["rho_star"])[:Neff, :Neff]) for f in fr])      # qp electrons per spin on the chi_i of site 1 (basis-independent inside the block)
     zs = np.array([f["z"] for f in fr]); dc = np.array([f["docc"] for f in fr]); ucs = np.array([f["U"] for f in fr])
     fig = plt.figure(figsize=(11, 5.4)); gs = fig.add_gridspec(3, 2, width_ratios=[1.25, 1])
     ax0 = fig.add_subplot(gs[:, 0]); axa = fig.add_subplot(gs[0, 1]); axb = fig.add_subplot(gs[1, 1]); axc = fig.add_subplot(gs[2, 1])
     axa.plot(ucs, gaps, label="qp gap (HOMO-LUMO)"); axa.plot(ucs, sgap, label="spectral gap"); axa.legend(fontsize=8); axa.set_ylabel("gap")
-    axb.plot(ucs, rho12, color="C2", label="qp electrons/spin on site 1"); axb.plot(ucs, zs, color="C3", label="Z"); axb.legend(fontsize=8)
+    axb.plot(ucs, rho12, color="C2", label=("bond order rho(chi'_1,chi'_4)" if chip else "qp electrons/spin on site 1")); axb.plot(ucs, zs, color="C3", label="Z"); axb.legend(fontsize=8)
     if np.isfinite(dc).any(): axc.plot(ucs, dc, color="C4", label="double occupancy"); axc.legend(fontsize=8)
     else: axc.plot(ucs, [f["rho_star"][0, 0] for f in fr], color="C0", label="state density (site 0)"); axc.plot(ucs, [f["rho_star"][fr[0]["Neff"], fr[0]["Neff"]] for f in fr], color="C1", ls="--", label="state density (site 1)"); axc.legend(fontsize=8)
     axc.set_xlabel("U/t")
@@ -322,16 +328,24 @@ def make_density(fr, title, out, fps=12):
     for ax in (axa, axb, axc): ax.axvline(uc, color="crimson", ls="--", lw=1.2)
     axa.text(uc - 0.15, axa.get_ylim()[1] * 0.50, f"$U_c/t$ = {uc:.2f} ", color="crimson", fontsize=9, va="top", ha="right")
     marks = [ax.axvline(ucs[0], color="k", lw=1) for ax in (axa, axb, axc)]
-    sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(0, 1)); fig.colorbar(sm, ax=ax0, fraction=0.04, label=r"qp density per spin  $\rho_{ii}$ (1 = full)")
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(0, 1)); fig.colorbar(sm, ax=ax0, fraction=0.04, label=(r"qp density per spin  $\rho_{jj}$ in $\chi'$ (1 = full)" if chip else r"qp density per spin  $\rho_{ii}$ (1 = full)"))
     txt = fig.suptitle("")
 
     def update(i):
         f = fr[i]; ax0.clear()
-        rho = np.diag(f.get("rho_chi", f["rho_star"])).copy()
-        draw_sk(ax0, xy, Neff, None, color_by_sign=False, vals=np.clip(rho, 0, 1), bonds=None, cmap=cmap, scale=0.2, chi=True)
-        for k_ in range(2 * Neff):
-            ax0.text(xy[k_, 0], xy[k_, 1], f"{rho[k_]:.2f}", ha="center", va="center", fontsize=8, color="w" if rho[k_] < 0.6 else "k", zorder=5)
-        ax0.set_title(rf"{title}   U/t = {f['U']:.1f}   $\rho_{{ii}}$ in the $\chi_i$ basis (circles = $\chi_i$ of site 1 left, site 2 right)" + f"\nqp electrons per spin: {rho[:Neff].sum():.2f} | {rho[Neff:].sum():.2f}", fontsize=9)
+        if chip:
+            rho = np.diag(f["rho_star"]).copy()
+            draw_sk(ax0, xy, Neff, None, color_by_sign=False, vals=np.clip(rho, 0, 1), bonds=None, cmap=cmap, scale=0.2, labels=[rf"$\chi'_{{{k_ + 1}}}$" for k_ in range(2 * Neff)])
+            for s in range(2):
+                ax0.text(xy[s * Neff, 0], xy[s * Neff, 1], f"{rho[s * Neff]:.2f}", ha="center", va="center", fontsize=9, color="w" if rho[s * Neff] < 0.6 else "k", zorder=5)
+            ax0.plot([xy[0, 0], xy[Neff, 0]], [xy[0, 1] + 0.0, xy[Neff, 1]], color="k", lw=0.3 + 12 * abs(rho12[i]), alpha=0.35, zorder=2)
+            ax0.set_title(rf"{title}   U/t = {f['U']:.1f}   $\rho_{{jj}}$ in the $\chi'$ basis" + "\n" + rf"large circles = states $\chi'_1,\chi'_{{{Neff + 1}}}$, small = ghosts;  bond order between the states = {rho12[i]:.3f}" + f"\nqp electrons per spin: {rho[:Neff].sum():.2f} | {rho[Neff:].sum():.2f}", fontsize=9)
+        else:
+            rho = np.diag(f.get("rho_chi", f["rho_star"])).copy()
+            draw_sk(ax0, xy, Neff, None, color_by_sign=False, vals=np.clip(rho, 0, 1), bonds=None, cmap=cmap, scale=0.2, chi=True)
+            for k_ in range(2 * Neff):
+                ax0.text(xy[k_, 0], xy[k_, 1], f"{rho[k_]:.2f}", ha="center", va="center", fontsize=8, color="w" if rho[k_] < 0.6 else "k", zorder=5)
+            ax0.set_title(rf"{title}   U/t = {f['U']:.1f}   $\rho_{{ii}}$ in the $\chi_i$ basis (circles = $\chi_i$ of site 1 left, site 2 right)" + f"\nqp electrons per spin: {rho[:Neff].sum():.2f} | {rho[Neff:].sum():.2f}", fontsize=9)
         for m_ in marks: m_.set_xdata([f["U"], f["U"]])
         return []
 
