@@ -15282,9 +15282,9 @@
     "semantic_hash": ""
   },
   "doc/results.pdf": {
-    "mtime": 1794434063.8577588,
-    "seen": 1794434100.5990043,
-    "ast_hash": "5244c2b2aa8f2e49e563f8d16ba80593",
+    "mtime": 1794866016.3454204,
+    "seen": 1794866229.8400774,
+    "ast_hash": "ac66588aa5671243d9e3b3c0891d2b96",
     "semantic_hash": ""
   },
   "cederbaum_data/cederbaum_energies.png": {
@@ -15714,15 +15714,15 @@
     "semantic_hash": ""
   },
   "scan_ng2_dV2_confirmed/qp_density_vs_U.mp4": {
-    "mtime": 1793279619.316709,
-    "seen": 1793625618.3209145,
-    "ast_hash": "2ec92113a0d711d81f95955d62e3d22f",
+    "mtime": 1794865692.3313205,
+    "seen": 1794866229.8402889,
+    "ast_hash": "4d7066b2ec7e29312e3f207abe1d35d3",
     "semantic_hash": ""
   },
   "scan_ng2_dV2_confirmed/qp_orbitals_vs_U.mp4": {
-    "mtime": 1793633812.5195374,
-    "seen": 1793634646.2378874,
-    "ast_hash": "f82d8971e4f423533db162138017d3f1",
+    "mtime": 1794865649.6815767,
+    "seen": 1794866229.8402903,
+    "ast_hash": "91f5795b6bcfebe65237f374d83fb977",
     "semantic_hash": ""
   },
   "scan_ng2_dV2_confirmed/qp_weights_vs_U.mp4": {
@@ -15732,15 +15732,15 @@
     "semantic_hash": ""
   },
   "scan_ng2_not_imp/qp_density_vs_U.mp4": {
-    "mtime": 1793279619.3267088,
-    "seen": 1793625618.320921,
-    "ast_hash": "d60233a00a3eea234d75cc64275f14d0",
+    "mtime": 1794865498.2525022,
+    "seen": 1794866229.8403018,
+    "ast_hash": "c2eb57e7ac6e13d1f60cb2e83e756e39",
     "semantic_hash": ""
   },
   "scan_ng2_not_imp/qp_orbitals_vs_U.mp4": {
-    "mtime": 1793633781.5037951,
-    "seen": 1793634646.2378955,
-    "ast_hash": "0b8c6fccd2a92d63752c9aa4b6a654f3",
+    "mtime": 1794865456.7127612,
+    "seen": 1794866229.8403063,
+    "ast_hash": "4b3a92d3099a46732a1b2ce330e616b3",
     "semantic_hash": ""
   },
   "scan_ng2_not_imp/qp_weights_vs_U.mp4": {
@@ -15750,15 +15750,15 @@
     "semantic_hash": ""
   },
   "scan_ng4_dV2_confirmed/qp_density_vs_U.mp4": {
-    "mtime": 1793279619.3487086,
-    "seen": 1793625618.3209274,
-    "ast_hash": "34c55a2472f9dfb5f30af720b7975794",
+    "mtime": 1794861756.4213648,
+    "seen": 1794866229.8403158,
+    "ast_hash": "cffcf70a831a6001e8b0b65891543538",
     "semantic_hash": ""
   },
   "scan_ng4_dV2_confirmed/qp_orbitals_vs_U.mp4": {
-    "mtime": 1793279619.3507085,
-    "seen": 1793625618.3209286,
-    "ast_hash": "bd4e095d2bebf0bc734b6455f49b0f49",
+    "mtime": 1794861705.2048059,
+    "seen": 1794866229.8403177,
+    "ast_hash": "08975c843c130fe513f1d37a2ec11b50",
     "semantic_hash": ""
   },
   "scan_ng4_dV2_confirmed/qp_weights_vs_U.mp4": {
@@ -15768,15 +15768,15 @@
     "semantic_hash": ""
   },
   "scan_ng4_not_imp/qp_density_vs_U.mp4": {
-    "mtime": 1793279619.3567085,
-    "seen": 1793625618.3209336,
-    "ast_hash": "83cff3c7b9ef7ae6ab5a36193b8c1bf1",
+    "mtime": 1794861352.7844875,
+    "seen": 1794866229.8403254,
+    "ast_hash": "4a3e7dc087f69a0bda251fe3ae3f31de",
     "semantic_hash": ""
   },
   "scan_ng4_not_imp/qp_orbitals_vs_U.mp4": {
-    "mtime": 1793279619.3587084,
-    "seen": 1793625618.3209348,
-    "ast_hash": "f4e3704baaa2d79c3f15c13ccaa7200f",
+    "mtime": 1794861301.0171564,
+    "seen": 1794866229.840327,
+    "ast_hash": "9d37a41d54862dc3dcc47355c483b0ce",
     "semantic_hash": ""
   },
   "scan_ng4_not_imp/qp_weights_vs_U.mp4": {
@@ -16002,9 +16002,9 @@
     "semantic_hash": ""
   },
   "scripts/make_qp_orbital_videos.py": {
-    "mtime": 1793794974.7662761,
-    "seen": 1793795564.7086227,
-    "ast_hash": "ef2b8c26cc6d841e7caa4477ddf8f20b",
+    "mtime": 1794865371.5365434,
+    "seen": 1794866229.8303156,
+    "ast_hash": "bac28fb86a563b2431e6a7c4c66d1daa",
     "semantic_hash": ""
   },
   "scripts/make_qp_weights_video.py": {
@@ -29970,21 +29970,21 @@
     "semantic_hash": ""
   },
   "merged_Ng/ng0_3d_dV0.png": {
-    "mtime": 1793632538.874463,
-    "seen": 1793632649.7725778,
+    "mtime": 1794858868.2036872,
+    "seen": 1794866229.8401575,
     "ast_hash": "67b6326e8bf6410df4f96813cba6cf3c",
     "semantic_hash": ""
   },
   "merged_Ng/ng0_3d_dV2.png": {
-    "mtime": 1793632539.3764648,
-    "seen": 1793632649.772579,
+    "mtime": 1794858869.4736893,
+    "seen": 1794866229.8401592,
     "ast_hash": "d5dc08c93e2415c9779c80b49000c68b",
     "semantic_hash": ""
   },
   "scripts/make_ng0_movies.py": {
-    "mtime": 1793634095.131862,
-    "seen": 1793634646.232574,
-    "ast_hash": "432fb440343bed73b022d896325e687b",
+    "mtime": 1794861989.848099,
+    "seen": 1794866229.830285,
+    "ast_hash": "492a2bde1f7efa21b5453010e754ad30",
     "semantic_hash": ""
   },
   "scripts/make_ng0_videos.py": {
@@ -30018,15 +30018,15 @@
     "semantic_hash": ""
   },
   "scan_ng0/dV_0.0/qp_density_vs_U.mp4": {
-    "mtime": 1793632566.8495517,
-    "seen": 1793632649.7726574,
+    "mtime": 1794861878.7903788,
+    "seen": 1794866229.8402662,
     "ast_hash": "28d3156e9cf089b584890aed12740766",
     "semantic_hash": ""
   },
   "scan_ng0/dV_0.0/qp_orbitals_vs_U.mp4": {
-    "mtime": 1793634107.2920036,
-    "seen": 1793634646.2378771,
-    "ast_hash": "915a10153af3977eaf2e4dd560566a73",
+    "mtime": 1794862010.1454077,
+    "seen": 1794866229.8402684,
+    "ast_hash": "0030ee129abe16a32794ae2bf1df52ef",
     "semantic_hash": ""
   },
   "scan_ng0/dV_0.0/qp_weights_vs_U.mp4": {
@@ -30042,15 +30042,15 @@
     "semantic_hash": ""
   },
   "scan_ng0/dV_2.0/qp_density_vs_U.mp4": {
-    "mtime": 1793632602.353637,
-    "seen": 1793632649.772662,
+    "mtime": 1794861937.196937,
+    "seen": 1794866229.8402789,
     "ast_hash": "20d3a9cee565070450dd7c636365d275",
     "semantic_hash": ""
   },
   "scan_ng0/dV_2.0/qp_orbitals_vs_U.mp4": {
-    "mtime": 1793634119.162899,
-    "seen": 1793634646.2378826,
-    "ast_hash": "bd706bcd0daa1500788113eca9bcdb16",
+    "mtime": 1794862034.2962375,
+    "seen": 1794866229.8402805,
+    "ast_hash": "3e1b3fa45dde92294ae23198f1ad8574",
     "semantic_hash": ""
   },
   "scan_ng0/dV_2.0/qp_weights_vs_U.mp4": {
@@ -30069,18 +30069,6 @@
     "mtime": 1793633812.5275373,
     "seen": 1793634646.2365499,
     "ast_hash": "e5de29b2421a7e3806fd5062f0b5ae10",
-    "semantic_hash": ""
-  },
-  "scan_ng2_dV2_confirmed/qp_orbitals_vs_U_before_tracking.mp4": {
-    "mtime": 1793633197.5801706,
-    "seen": 1793634646.2378886,
-    "ast_hash": "9363357ecbbc1fc2a3edd6b401a6bf44",
-    "semantic_hash": ""
-  },
-  "scan_ng2_not_imp/qp_orbitals_vs_U_before_tracking.mp4": {
-    "mtime": 1793633197.5785306,
-    "seen": 1793634646.2378967,
-    "ast_hash": "e787ecf396eaf1f58b712cfb48184f57",
     "semantic_hash": ""
   },
   "scripts/check_full_kkt.py": {
@@ -30282,9 +30270,9 @@
     "semantic_hash": ""
   },
   "scripts/psi_tables.py": {
-    "mtime": 1793720261.2872303,
-    "seen": 1793794960.554089,
-    "ast_hash": "5afc6a27fa527b3a5baf4f94221df2a2",
+    "mtime": 1794489766.7290804,
+    "seen": 1794866229.8304267,
+    "ast_hash": "0d4fcc9794926dd9613f67d499e91e69",
     "semantic_hash": ""
   },
   "psi_scan/ng0_dV0.txt": {
@@ -30318,9 +30306,9 @@
     "semantic_hash": ""
   },
   "psi_scan/psi_summary.png": {
-    "mtime": 1793720262.2040503,
-    "seen": 1793794960.588858,
-    "ast_hash": "af7fea3e7492a2228d6c8db8abd71095",
+    "mtime": 1794489767.794034,
+    "seen": 1794866229.8401656,
+    "ast_hash": "c8d33ba90631b3a07cac4ed226abde2f",
     "semantic_hash": ""
   },
   "scripts/psi_R_modify.py": {
@@ -30522,15 +30510,15 @@
     "semantic_hash": ""
   },
   "scripts/pion_compare_plot.py": {
-    "mtime": 1793962215.3786924,
-    "seen": 1794402532.3651261,
-    "ast_hash": "1f049e3b74f86f3f9d5d6544749d9ce3",
+    "mtime": 1794488977.7127836,
+    "seen": 1794866229.8303583,
+    "ast_hash": "deebbbd275a0a4c1351b7f47ee29d833",
     "semantic_hash": ""
   },
   "scripts/plot_fixedR.py": {
-    "mtime": 1793801957.0056505,
-    "seen": 1794402532.3651452,
-    "ast_hash": "9e6ad867c54b46da3f6528a595800904",
+    "mtime": 1794488977.7126446,
+    "seen": 1794866229.830393,
+    "ast_hash": "8d17293815fa9fe4803237fa667e9bdd",
     "semantic_hash": ""
   },
   "scripts/psi_R_consistency.py": {
@@ -30696,9 +30684,9 @@
     "semantic_hash": ""
   },
   "doc/psi_norm.pdf": {
-    "mtime": 1793968843.9551084,
-    "seen": 1794402532.3707163,
-    "ast_hash": "31b3df52572fb73ec5978acb070e9845",
+    "mtime": 1794488950.1419163,
+    "seen": 1794866229.840074,
+    "ast_hash": "6dce417bccc5bf9acbb2d8bb755b45cb",
     "semantic_hash": ""
   },
   "doc/hubbard_sat_spectrum.png": {
@@ -30708,15 +30696,15 @@
     "semantic_hash": ""
   },
   "merged_Ng/Rfix_pion_vs_R.png": {
-    "mtime": 1793801958.1066446,
-    "seen": 1794402532.3707426,
-    "ast_hash": "9c09ade9a823a83165ae2741e11afbf2",
+    "mtime": 1794488978.6387203,
+    "seen": 1794866229.8401306,
+    "ast_hash": "8c0800aabe9e59351dfad692e71a4dd8",
     "semantic_hash": ""
   },
   "psi_scan/pion_compare.png": {
-    "mtime": 1793962215.9980063,
-    "seen": 1794402532.3707616,
-    "ast_hash": "ab84a01dc3ff6293684c71cdf12d3e72",
+    "mtime": 1794488979.5417142,
+    "seen": 1794866229.8401632,
+    "ast_hash": "63fd61dacef8b52f3bf93a7a50c917d3",
     "semantic_hash": ""
   },
   "scripts/hubbard_sat_Vscan.py": {
@@ -30774,33 +30762,57 @@
     "semantic_hash": ""
   },
   "scripts/make_phys_orbital_videos.py": {
-    "mtime": 1794433483.5770652,
-    "seen": 1794434100.5933967,
-    "ast_hash": "e6a4ec49939324aabc92ecd48eb6aa10",
+    "mtime": 1794865809.6822593,
+    "seen": 1794866229.830303,
+    "ast_hash": "26e85379ebf95a0adfa5dda7a74974e2",
     "semantic_hash": ""
   },
   "scan_ng0/dV_0.0/phys_orbitals_vs_U.mp4": {
-    "mtime": 1794433501.9661517,
-    "seen": 1794434100.5991075,
-    "ast_hash": "75df4e1fe4c39d8e75354348189f3a07",
+    "mtime": 1794865847.5354013,
+    "seen": 1794866229.8402638,
+    "ast_hash": "351c1f1d6f03bfe0cbd10ee298dd4ad3",
     "semantic_hash": ""
   },
   "scan_ng0/dV_2.0/phys_orbitals_vs_U.mp4": {
-    "mtime": 1794433551.3049896,
-    "seen": 1794434100.5991142,
-    "ast_hash": "053a8dcf4794fbd105f973023828e98a",
+    "mtime": 1794865946.8418224,
+    "seen": 1794866229.8402765,
+    "ast_hash": "876090af7408705d1d64caff0fa35a23",
     "semantic_hash": ""
   },
   "scan_ng2_dV2_confirmed/phys_orbitals_vs_U.mp4": {
-    "mtime": 1794433578.8908937,
-    "seen": 1794434100.59912,
-    "ast_hash": "d2bf31a4784348609ef068292991d6d6",
+    "mtime": 1794866003.8894923,
+    "seen": 1794866229.8402867,
+    "ast_hash": "dbd08d431cbd810167b7574c56edf003",
     "semantic_hash": ""
   },
   "scan_ng2_not_imp/phys_orbitals_vs_U.mp4": {
-    "mtime": 1794433529.3620632,
-    "seen": 1794434100.5991297,
-    "ast_hash": "caefa4766355298113b02f0a20f1e0b9",
+    "mtime": 1794865906.6600559,
+    "seen": 1794866229.8403,
+    "ast_hash": "c8af5b2246fe65da44f7164455d695bf",
+    "semantic_hash": ""
+  },
+  "scripts/make_qp_orbital_perm_video.py": {
+    "mtime": 1794865357.3333914,
+    "seen": 1794866229.8303068,
+    "ast_hash": "bd74c5987f34342306ab45d361eff904",
+    "semantic_hash": ""
+  },
+  "scripts/make_qp_orbital_raw_video.py": {
+    "mtime": 1794865357.3271382,
+    "seen": 1794866229.8303103,
+    "ast_hash": "194433cfb7b1233c974f7ca2e6be72b0",
+    "semantic_hash": ""
+  },
+  "scripts/trimer_gut.py": {
+    "mtime": 1794822705.1905432,
+    "seen": 1794866229.8304877,
+    "ast_hash": "cc7388bf70297b05200a491ce7a06da9",
+    "semantic_hash": ""
+  },
+  "scan_ng2_not_imp/qp_orbitals_chi_raw_vs_U.mp4": {
+    "mtime": 1794861826.5157893,
+    "seen": 1794866229.8403041,
+    "ast_hash": "958e754c94aad7d9499a912b54ac1f74",
     "semantic_hash": ""
   }
 }
