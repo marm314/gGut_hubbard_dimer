@@ -331,6 +331,16 @@ Movies of the matrix $R'_{sj}$ ($2\times2(1+\Ng)$) and $|R_s|$, $|R_s|^2$, $Z$ v
   \item $\dV=2$: \href{run:../scan_ng2_dV2_confirmed/r_matrix_in_chip.mp4}{$R'$ movie}
 \end{itemize}
 
+\subsubsection{Spectral function in $\chi'$}
+\label{sec:specchip}
+
+The code builds $G^{phys}(\omega)=R\,G^{qp}(\omega)\,R^T$ ($2\times2$, sites) with $G^{qp}=[\omega+i\eta-H_{qp}]^{-1}$ and $A(\omega)=-\tfrac{2}{\pi}\mathrm{Im}\,\mathrm{Tr}\,G^{phys}$ (factor 2: spin). Since $R'_{sj}=|R_s|\delta_{j,\mathrm{state}(s)}$ in $\chi'$ (Sec.~\ref{sec:chip}), only the two states $\chi'_1$ and $\chi'_{2+\Ng}$ enter,
+\begin{equation*}
+G^{phys}_{ss'}(\omega)=|R_s||R_{s'}|\sum_n\frac{(C'_{qp})_{a_sn}(C'_{qp})_{a_{s'}n}}{\omega+i\eta-\epsilon_n},\qquad
+A(\omega)=2\sum_n\big(C_{R_1,n}^2+C_{R_2,n}^2\big)\,\delta_\eta(\omega-\epsilon_n),
+\end{equation*}
+with $a_1=1$, $a_2=2+\Ng$ and $C_{R_s,n}=|R_s|(C'_{qp})_{a_sn}$. The poles $\epsilon_n$ are those of the full $H_{qp}$ (ghosts included), but their weights are fixed by the amplitudes of $\phi^{qp}_n$ on the two states: a level with no amplitude on $\chi'_1,\chi'_{2+\Ng}$ (a ghost level, e.g.\ $\epsilon=0$ above $U_c$) has zero weight, and the off-diagonal element $G^{phys}_{12}$ has the weights $C_{R_1,n}C_{R_2,n}$.
+
 \subsection{$\Ng=0$ orbitals versus the $\Ng=2$ HOMO and LUMO}
 \label{sec:orbcomp}
 
