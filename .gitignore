@@ -56,3 +56,6 @@ hubbard4_fci/*/spectra.npz
 scan_4site_ng*/*/forward/
 scan_4site_ng*/*/backward/
 scan_4site_ng*/*/polish/
+doc/results_4site.aux
+doc/results_4site.out
+doc/results_4site.toc
