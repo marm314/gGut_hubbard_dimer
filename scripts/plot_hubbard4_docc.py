@@ -4,7 +4,7 @@ are ensemble-averaged. Checked against Hellmann-Feynman, D = (1/L) dE0/dU.
 
     ~/.venv/bin/python scripts/plot_hubbard4_docc.py [--dir hubbard4_fci] [--mark 1 10]
 
-Writes <dir>/{obc,pbc}/docc.dat and <dir>/plots/docc_vs_U.png.
+Writes <dir>/{obc,pbc,apbc}/docc.dat and <dir>/plots/docc_vs_U.png.
 """
 import argparse
 import os
@@ -26,8 +26,8 @@ ap.add_argument("--mark", type=float, nargs="+", default=[1.0, 10.0])
 args = ap.parse_args()
 
 
-def docc(U, pbc, degtol=1e-8):
-    sec = all_sectors(hopping(args.t, pbc), onsite_eri(U), NHALF)
+def docc(U, bc, degtol=1e-8):
+    sec = all_sectors(hopping(args.t, bc), onsite_eri(U), NHALF)
     E0 = lowest(sec)
     D, ng = np.zeros(L), 0
     for nel, (E, C) in sec.items():
@@ -39,9 +39,11 @@ def docc(U, pbc, degtol=1e-8):
 
 
 fig, ax = plt.subplots(figsize=(7, 5))
-for bc, c in (("obc", "C0"), ("pbc", "C3")):
+for bc, c in (("obc", "C0"), ("pbc", "C3"), ("apbc", "C1")):
+    if not os.path.exists(os.path.join(args.dir, bc, "energies.dat")):
+        continue
     Us = np.loadtxt(os.path.join(args.dir, bc, "energies.dat"))[:, 0]
-    res = [docc(U, bc == "pbc") for U in Us]
+    res = [docc(U, bc) for U in Us]
     E0 = np.array([r[0] for r in res])
     D = np.array([r[1] for r in res])
     Dav = D.mean(axis=1)
@@ -58,11 +60,11 @@ for bc, c in (("obc", "C0"), ("pbc", "C3")):
         i = int(np.argmin(np.abs(Us - Um)))
         ax.plot(Us[i] / args.t, Dav[i], "o", color=c)
         ax.annotate(f"{Dav[i]:.4f}", (Us[i] / args.t, Dav[i]), textcoords="offset points",
-                    xytext=(6, 6 if bc == "pbc" else -14), color=c, fontsize=9)
+                    xytext=(6, {"obc": -14, "pbc": 6, "apbc": 14}[bc]), color=c, fontsize=9)
         print(f"  U/t={Us[i] / args.t:5.2f}  D_avg={Dav[i]:.6f}  D_sites={np.round(D[i], 6)}")
 
 ax.axhline(0.25, color="gray", lw=0.8, ls=":")
-ax.text(9.9, 0.252, "uncorrelated 1/4", ha="right", va="bottom", color="gray", fontsize=8)
+ax.text(Us[-1] / args.t - 0.1, 0.252, "uncorrelated 1/4", ha="right", va="bottom", color="gray", fontsize=8)
 ax.set_xlabel("U/t")
 ax.set_ylabel(r"$D = \langle n_\uparrow n_\downarrow \rangle$ per site")
 ax.set_title("4-site Hubbard, half filling, FCI: double occupancy")

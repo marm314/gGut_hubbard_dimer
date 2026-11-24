@@ -21,16 +21,17 @@ args = ap.parse_args()
 
 pdir = os.path.join(args.dir, "plots")
 os.makedirs(pdir, exist_ok=True)
-S = {bc: np.load(os.path.join(args.dir, bc, "spectra.npz")) for bc in ("obc", "pbc")}
+BCS = [b for b in ("obc", "pbc", "apbc") if os.path.exists(os.path.join(args.dir, b, "spectra.npz"))]
+S = {bc: np.load(os.path.join(args.dir, bc, "spectra.npz")) for bc in BCS}
 w = S["obc"]["w"]
 Us = S["obc"]["U"]
-klab = ["0", r"\pi/2", r"\pi", r"3\pi/2"]
+KLAB = dict(pbc=["0", r"\pi/2", r"\pi", r"3\pi/2"], apbc=[r"\pi/4", r"3\pi/4", r"5\pi/4", r"7\pi/4"])
 
 for U in args.U:
     iu = int(np.argmin(np.abs(Us - U)))
     U = Us[iu]
-    fig, axs = plt.subplots(2, 2, figsize=(12, 8), sharex=True)
-    for col, bc in enumerate(("obc", "pbc")):
+    fig, axs = plt.subplots(2, len(BCS), figsize=(6 * len(BCS), 8), sharex=True)
+    for col, bc in enumerate(BCS):
         s = S[bc]
         ax = axs[0, col]
         for i in range(4):
@@ -40,10 +41,10 @@ for U in args.U:
         ax.set_ylabel(r"$A(\omega)$ per spin")
         ax.legend(fontsize=8)
         ax = axs[1, col]
-        if bc == "pbc":
+        if "A_k" in s.files:
             for k in range(4):
-                ax.plot(w, s["A_k"][iu, k], lw=1.2, label=rf"$k={klab[k]}$")
-            ax.set_title(f"PBC  U={U:g}: momentum-resolved $A_k(\\omega)$")
+                ax.plot(w, s["A_k"][iu, k], lw=1.2, label=rf"$k={KLAB[bc][k]}$")
+            ax.set_title(f"{bc.upper()}  U={U:g}: momentum-resolved $A_k(\\omega)$")
         else:
             for a in range(4):
                 ax.plot(w, s["A_orb"][iu, a], lw=1.2,
@@ -58,8 +59,8 @@ for U in args.U:
     plt.close(fig)
     print("wrote", fn)
 
-fig, axs = plt.subplots(1, 2, figsize=(12, 5), sharey=True)
-for ax, bc in zip(axs, ("obc", "pbc")):
+fig, axs = plt.subplots(1, len(BCS), figsize=(6 * len(BCS), 5), sharey=True)
+for ax, bc in zip(axs, BCS):
     s = S[bc]
     im = ax.pcolormesh(Us, w, np.log10(s["A_tot"].T + 1e-4), shading="auto", cmap="magma",
                        vmin=-3, vmax=1)

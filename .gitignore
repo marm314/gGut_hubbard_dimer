@@ -50,3 +50,9 @@ doc/*.tex.bak
 # 4-site FCI broadened spectra (regenerate: ~/.venv/bin/python scripts/hubbard4_fci.py, ~10 s)
 hubbard4_fci/*/A_loc_U*.dat
 hubbard4_fci/*/spectra.npz
+
+# 4-site (g)Gutzwiller per-run folders (inputs, gg.out, A.npz; ~800 MB). Regenerate:
+#   scripts/scan_4site_cpp.py --Ng {0,2} --bc obc pbc apbc; scripts/polish_4site_cpp.py --Ng {0,2}
+scan_4site_ng*/*/forward/
+scan_4site_ng*/*/backward/
+scan_4site_ng*/*/polish/

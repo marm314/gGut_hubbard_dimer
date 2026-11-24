@@ -1,6 +1,6 @@
 """Exact (FCI) ground-state energies and spectral functions of the half-filled
 4-site Hubbard model, open (chain) and periodic (ring) boundary conditions,
-for U = Umin..Umax in steps of dU, using PySCF's FCI kernel in the site basis.
+for U = Umin..Umax (default 0..20) in steps of dU, using PySCF's FCI kernel in the site basis.
 
     H = -t sum_<ij>,s c+_is c_js + U sum_i n_iup n_idn
 
@@ -20,13 +20,14 @@ Pole energies are stored relative to mu = (E_0^{N+1} - E_0^{N-1}) / 2 (= U/2 by
 particle-hole symmetry), so the spectrum is centered at w = 0.
 
 Output (in --out, default hubbard4_fci/):
-  {obc,pbc}/energies.dat     U, E0(N), E0(N+1), E0(N-1), mu, gap, ground degeneracy
+  {obc,pbc,apbc}/energies.dat     U, E0(N), E0(N+1), E0(N-1), mu, gap, ground degeneracy
   {obc,pbc}/poles_U*.npz     raw poles + residue matrices (site basis, per spin avg)
   {obc,pbc}/spectra.npz      broadened A(w) on a grid for all U:
                                A_loc[U, site, w]  local, per spin
                                A_tot[U, w]        sum over sites, per spin
                                A_orb[U, orb, w]   in the U=0 one-body eigenbasis
-                               A_k[U, k, w]       (pbc only) k = 0, pi/2, pi, 3pi/2
+                               A_k[U, k, w]       (rings only) PBC k = 0, pi/2, pi, 3pi/2;
+                                                  APBC k = pi/4, 3pi/4, 5pi/4, 7pi/4
   {obc,pbc}/A_loc_U*.dat     w, A_site1..4, A_tot (text, per U)
 
 Run e.g.
@@ -43,12 +44,14 @@ L = 4
 NHALF = L  # half filling: N = L electrons
 
 
-def hopping(t, pbc):
+def hopping(t, bc):
+    """bc: 'obc' chain, 'pbc' ring, 'apbc' ring with antiperiodic (sign-flipped) closing
+    bond, which makes the L=4 half-filled ring closed-shell (levels +-sqrt(2) t)."""
     h = np.zeros((L, L))
     for i in range(L - 1):
         h[i, i + 1] = h[i + 1, i] = -t
-    if pbc:
-        h[0, L - 1] = h[L - 1, 0] = -t
+    if bc in ("pbc", "apbc"):
+        h[0, L - 1] = h[L - 1, 0] = -t if bc == "pbc" else t
     return h
 
 
@@ -87,8 +90,8 @@ def lowest(sectors):
     return min(E[0] for E, _ in sectors.values())
 
 
-def solve(U, t, pbc, degtol=1e-8):
-    h1e = hopping(t, pbc)
+def solve(U, t, bc, degtol=1e-8):
+    h1e = hopping(t, bc)
     eri = onsite_eri(U)
     sec0 = all_sectors(h1e, eri, NHALF)
     secp = all_sectors(h1e, eri, NHALF + 1)
@@ -155,34 +158,34 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--t", type=float, default=1.0)
     ap.add_argument("--umin", type=float, default=0.0)
-    ap.add_argument("--umax", type=float, default=10.0)
+    ap.add_argument("--umax", type=float, default=20.0)
     ap.add_argument("--du", type=float, default=0.2)
     ap.add_argument("--eta", type=float, default=0.05, help="Lorentzian broadening")
-    ap.add_argument("--wmin", type=float, default=-12.0)
-    ap.add_argument("--wmax", type=float, default=12.0)
-    ap.add_argument("--nw", type=int, default=4801)
-    ap.add_argument("--bc", choices=["obc", "pbc", "both"], default="both")
+    ap.add_argument("--wmin", type=float, default=-20.0)
+    ap.add_argument("--wmax", type=float, default=20.0)
+    ap.add_argument("--nw", type=int, default=8001)
+    ap.add_argument("--bc", choices=["obc", "pbc", "apbc", "all"], default="all")
     ap.add_argument("--out", default="hubbard4_fci")
     args = ap.parse_args()
 
     Us = np.round(np.arange(args.umin, args.umax + 0.5 * args.du, args.du), 10)
     wgrid = np.linspace(args.wmin, args.wmax, args.nw)
-    bcs = ["obc", "pbc"] if args.bc == "both" else [args.bc]
+    bcs = ["obc", "pbc", "apbc"] if args.bc == "all" else [args.bc]
 
     # U=0 one-body eigenbasis for orbital-resolved spectra
     for bc in bcs:
-        pbc = bc == "pbc"
+        ring = bc in ("pbc", "apbc")
         d = os.path.join(args.out, bc)
         os.makedirs(d, exist_ok=True)
-        eps0, phi = np.linalg.eigh(hopping(args.t, pbc))
-        if pbc:  # plane waves, c_k = 1/sqrt(L) sum_j e^{-ikj} c_j
-            ks = 2 * np.pi * np.arange(L) / L
+        eps0, phi = np.linalg.eigh(hopping(args.t, bc))
+        if ring:  # plane waves, c_k = 1/sqrt(L) sum_j e^{-ikj} c_j
+            ks = (2 * np.arange(L) + (bc == "apbc")) * np.pi / L  # APBC: k = (2n+1) pi / L
             Fk = np.exp(1j * np.outer(ks, np.arange(L))) / np.sqrt(L)  # [k, j]
 
         A_loc = np.zeros((len(Us), L, args.nw))
         A_tot = np.zeros((len(Us), args.nw))
         A_orb = np.zeros((len(Us), L, args.nw))
-        A_k = np.zeros((len(Us), L, args.nw)) if pbc else None
+        A_k = np.zeros((len(Us), L, args.nw)) if ring else None
 
         fe = open(os.path.join(d, "energies.dat"), "w")
         fe.write(f"# 4-site Hubbard, {bc.upper()}, half filling, t={args.t}, FCI (pyscf)\n")
@@ -190,7 +193,7 @@ def main():
         print(f"=== {bc.upper()} ===", flush=True)
         for iu, U in enumerate(Us):
             t0 = time.time()
-            r = solve(U, args.t, pbc)
+            r = solve(U, args.t, bc)
             fe.write(f"{U:6.2f} {r['E0']:18.12f} {r['Ep']:18.12f} {r['Em']:18.12f} "
                      f"{r['mu']:14.10f} {r['gap']:14.10f} {r['ndeg']:3d}\n")
             fe.flush()
@@ -201,7 +204,7 @@ def main():
             A_loc[iu] = np.einsum("wii->iw", Aw)
             A_tot[iu] = A_loc[iu].sum(axis=0)
             A_orb[iu] = np.einsum("ia,wij,ja->aw", phi, Aw, phi)
-            if pbc:
+            if ring:
                 A_k[iu] = np.einsum("ki,wij,kj->kw", Fk, Aw, Fk.conj()).real
 
             # sum rule check: total weight per site and spin = 1
@@ -222,7 +225,7 @@ def main():
 
         out = dict(U=Us, w=wgrid, eta=args.eta, t=args.t, A_loc=A_loc, A_tot=A_tot,
                    A_orb=A_orb, eps0=eps0, phi0=phi)
-        if pbc:
+        if ring:
             out.update(A_k=A_k, k=ks)
         np.savez(os.path.join(d, "spectra.npz"), **out)
         print(f"wrote {d}/", flush=True)
