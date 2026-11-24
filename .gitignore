@@ -46,3 +46,7 @@ doc/results.out
 doc/results.toc
 doc/*.tex.bak
 *.orig
+
+# 4-site FCI broadened spectra (regenerate: ~/.venv/bin/python scripts/hubbard4_fci.py, ~10 s)
+hubbard4_fci/*/A_loc_U*.dat
+hubbard4_fci/*/spectra.npz
