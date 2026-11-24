@@ -19,7 +19,7 @@
 \newcommand{\EFCI}{E_{\mathrm{FCI}}}
 
 \title{The Half-Filled 4-Site Hubbard Model:\\ FCI vs.\ (Ghost) Gutzwiller\\
-\large (Open, Periodic and Antiperiodic Boundary Conditions; $\Ng=0$ and $\Ng=2$)}
+\large (Open, Periodic and Antiperiodic Boundary Conditions; $\Ng=0$, $2$ and $4$)}
 \author{}
 \date{\today}
 
@@ -140,7 +140,7 @@ is insulating for every $U>0$ anyway: what the FCI shows is a band-to-Mott cross
 \section{Gutzwiller results}
 \label{sec:gutz}
 
-\paragraph{Setup.} Four single-site fragments, $\Ng=0$ (ordinary Gutzwiller) and $\Ng=2$ ghosts per site,
+\paragraph{Setup.} Four single-site fragments, $\Ng=0$ (ordinary Gutzwiller), $\Ng=2$ and $\Ng=4$ ghosts per site,
 paramagnetic, $N_\uparrow=N_\downarrow=2$ fixed. For each geometry and $\Ng$
 (\texttt{scripts/scan\_4site\_cpp.py}):
 \begin{itemize}[nosep]
@@ -148,12 +148,13 @@ paramagnetic, $N_\uparrow=N_\downarrow=2$ fixed. For each geometry and $\Ng$
         converged $(R,\lambda)$. $\Ng=0$: forward starts from $R=1,\lambda=0$, backward from the forward $U=20$ solution.
         $\Ng=2$: a cold start lands on the sleeping-ghost branch, so the forward sweep starts from the dimer solution
         \texttt{examples/U2\_backward} and the backward one from \texttt{examples/U10} (dimer atom 0 $\to$ sites 1,3;
-        atom 1 $\to$ sites 2,4);
+        atom 1 $\to$ sites 2,4). $\Ng=4$: the same, from the converged $\Ng=4$ dimer solutions at $U=2$ and $U=10$
+        (\texttt{scan\_ng4\_not\_imp/U\_\{2,10\}.0}, copied to \texttt{scan\_4site\_ng4/seeds/});
   \item \emph{polish} (\texttt{scripts/polish\_4site\_cpp.py}): alternating up/down re-sweeps, each $U$ reseeded from the
         current best solution at the neighbouring $U$, until nothing improves.
 \end{itemize}
 Only the lowest converged energy per $U$ is shown. Convergence: $|\Delta E|,|\Delta\mathrm{mat}|<10^{-8}$; the code prints
-$\Evar$ to $\sim6$ significant digits. The $|R|^2$ shown is the norm of the 1$\times$(1+$\Ng$) row $R_i$ (for $\Ng=2$ it is not the
+$\Evar$ to $\sim6$ significant digits. The $|R|^2$ shown is the norm of the 1$\times$(1+$\Ng$) row $R_i$ (for $\Ng>0$ it is not the
 quasiparticle weight).
 
 \paragraph{PBC caveat.} With PBC the quasiparticle Hamiltonian has the same degenerate pair at the Fermi level as
@@ -192,24 +193,43 @@ large $U$. At small $U$ the best $\Ng=2$ solution is hardly better than $\Ng=0$ 
 sleeping-ghost solution, identical to $\Ng=0$); above $U\approx7$ the ghost-active branch wins.
 The polish step lowered 16 APBC points ($U=6$--$9$, by up to $0.12t$) and removed a branch jump there.
 
+\subsection{$\Ng=4$}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../scan_4site_ng4/gutz_vs_fci.png}
+  \caption{$\Ng=4$: as Fig.~\ref{fig:ng0}. PBC has no converged solution at $U=1.6$, $1.8$, $2.0$ and $5.8$.}
+  \label{fig:ng4}
+\end{figure}
+
+For OBC and APBC, $\Ng=4$ gives the same energies as $\Ng=2$ to within $10^{-3}t$ (largest gain $9\times10^{-4}$ for OBC near
+$U=5$, otherwise $\lesssim10^{-4}$): same maximum error ($0.78$ at $U=6.8$, OBC; $0.89$ at $U=8.4$, APBC), same $D$, $|R|^2\geq0.98$.
+Forward and backward sweeps end on the same solution, all 101 points converge, and polishing changed only 4 APBC
+points ($U=1$--$1.6$, by $\leq5\times10^{-5}$), so the $\Ng=4$ curves have no branch jumps. With one-site fragments,
+going from two to four ghosts per site therefore does not improve the energy: either $\Ng=2$ already saturates
+this ansatz or the extra ghosts are redundant (not checked).
+For PBC, $\Ng=4$ is smoother than $\Ng=2$: the jumps at $U\approx10$--$15$ are gone and above $U\approx6$ the error is close
+to APBC ($0.69$ at $U=10$ vs.\ $1.31$ for $\Ng=2$). At small $U$ it still has the CDW artifact ($D\approx0.30>0.25$).
+Convergence for PBC is slow ($\sim2$ min per point vs.\ $\sim9$ s for OBC/APBC).
+
 \begin{table}[H]
 \centering
 \caption{Energy error $\Evar-\EFCI$ ($t=1$) of the lowest Gutzwiller solution.}
 \label{tab:err}
-\begin{tabular}{r rr rr}
+\begin{tabular}{r rrr rrr}
 \toprule
- & \multicolumn{2}{c}{OBC} & \multicolumn{2}{c}{APBC}\\
-\cmidrule(lr){2-3}\cmidrule(lr){4-5}
-$U/t$ & $\Ng=0$ & $\Ng=2$ & $\Ng=0$ & $\Ng=2$\\
+ & \multicolumn{3}{c}{OBC} & \multicolumn{3}{c}{APBC}\\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+$U/t$ & $\Ng=0$ & $\Ng=2$ & $\Ng=4$ & $\Ng=0$ & $\Ng=2$ & $\Ng=4$\\
 \midrule
- 1 & 0.045 & 0.042 & 0.022 & 0.022\\
- 2 & 0.172 & 0.159 & 0.090 & 0.089\\
- 4 & 0.559 & 0.499 & 0.357 & 0.349\\
- 6 & 0.908 & 0.750 & 0.719 & 0.678\\
- 8 & 1.042 & 0.730 & 1.019 & 0.883\\
-10 & 0.912 & 0.605 & 1.132 & 0.798\\
-15 & 0.620 & 0.418 & 0.805 & 0.535\\
-20 & 0.469 & 0.318 & 0.603 & 0.401\\
+ 1 & 0.045 & 0.042 & 0.042 & 0.022 & 0.022 & 0.022\\
+ 2 & 0.172 & 0.159 & 0.159 & 0.090 & 0.089 & 0.089\\
+ 4 & 0.559 & 0.499 & 0.499 & 0.357 & 0.349 & 0.349\\
+ 6 & 0.908 & 0.750 & 0.749 & 0.719 & 0.678 & 0.678\\
+ 8 & 1.042 & 0.730 & 0.729 & 1.019 & 0.883 & 0.883\\
+10 & 0.912 & 0.605 & 0.605 & 1.132 & 0.798 & 0.797\\
+15 & 0.620 & 0.418 & 0.418 & 0.805 & 0.535 & 0.535\\
+20 & 0.469 & 0.318 & 0.318 & 0.603 & 0.401 & 0.401\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -224,7 +244,7 @@ The Gutzwiller Green's function is the one evaluated by \texttt{run\_ggut} on th
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{../hubbard4_fci/plots/spectra_gutz_vs_fci.png}
-  \caption{Total spectral function $A_{tot}=\sum_iA_{ii}$: FCI (black), Gutzwiller $\Ng=0$ (blue) and $\Ng=2$ (red),
+  \caption{Total spectral function $A_{tot}=\sum_iA_{ii}$: FCI (black), Gutzwiller $\Ng=0$ (blue), $\Ng=2$ (red) and $\Ng=4$ (green),
   lowest branch, at $U/t=1,5,10,20$. Script \texttt{plot\_4site\_spectra\_gutz\_vs\_fci.py}.}
   \label{fig:spec}
 \end{figure}
@@ -245,6 +265,12 @@ has 3--4 spread over a wider range. In the $k$-resolved APBC spectra the main pe
 position; the FCI satellites are only partly captured, as single shifted peaks. The worst case is OBC at $U\approx5$,
 where $\Ng=2$ puts peaks inside the FCI gap region, the same $U$ range where the energy error peaks.
 
+Although $\Ng=4$ and $\Ng=2$ have the same energies, their spectra are not the same. For APBC they coincide at
+$U=1$ and $U=20$ (peaks at $\pm9.1$, $\pm10.5$), but at $U=5$ and $10$ $\Ng=4$ spreads each Hubbard band over more peaks.
+For OBC at $U=20$, $\Ng=4$ gives 7 peaks per band ($7.1$--$11.2$, vs.\ $9.0$--$10.6$ for $\Ng=2$), some of them about
+$1$--$2t$ closer to the gap than in FCI. Neither $\Ng$ reproduces the FCI peak positions in detail at large $U$, and
+equal total energies do not imply equally good spectra.
+
 \subsection{Spectral function movies}
 
 One frame per $U/t$ ($0\to20$, step $0.2$): Gutzwiller $A_{tot}(\omega)$ of the lowest branch (filled) vs.\ FCI (red);
@@ -256,6 +282,9 @@ the frame also gives $\Evar-\EFCI$ and $|R_1|^2$ (script \texttt{make\_4site\_A\
   \item $\Ng=2$: \href{run:../scan_4site_ng2/obc/A_omega_vs_U.mp4}{OBC},
         \href{run:../scan_4site_ng2/apbc/A_omega_vs_U.mp4}{APBC},
         \href{run:../scan_4site_ng2/pbc/A_omega_vs_U.mp4}{PBC (unreliable)}
+  \item $\Ng=4$: \href{run:../scan_4site_ng4/obc/A_omega_vs_U.mp4}{OBC},
+        \href{run:../scan_4site_ng4/apbc/A_omega_vs_U.mp4}{APBC},
+        \href{run:../scan_4site_ng4/pbc/A_omega_vs_U.mp4}{PBC (unreliable)}
 \end{itemize}
 \noindent (Links open the movie with the PDF viewer's associated application, if the viewer supports \texttt{run:} links.)
 
@@ -269,6 +298,8 @@ the frame also gives $\Evar-\EFCI$ and $|R_1|^2$ (script \texttt{make\_4site\_A\
         no Hubbard bands; error up to $\sim1.1t$.
   \item $\Ng=2$: no transition, Hubbard bands with about the right gap, error at most $0.78t$ (OBC) and
         $0.89t$ (APBC) and $\sim30\%$ below $\Ng=0$ at large $U$; at small $U$ hardly better than $\Ng=0$.
+  \item $\Ng=4$: OBC/APBC energies equal to $\Ng=2$ within $10^{-3}t$, with no branch jumps; the spectra differ
+        (more peaks per Hubbard band) but are not closer to FCI. PBC becomes smoother but keeps the small-$U$ CDW artifact.
   \item PBC: the open-shell 4-site ring is not handled by the integer-occupation Gutzwiller code; use APBC.
 \end{itemize}
 

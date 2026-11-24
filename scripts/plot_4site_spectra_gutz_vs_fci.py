@@ -1,5 +1,5 @@
 """Spectral functions of the half-filled 4-site Hubbard model: FCI (hubbard4_fci.py) vs
-(g)Gutzwiller Ng=0 and Ng=2 (C++ run_ggut, lowest-energy branch per U from lowest_energy.txt).
+(g)Gutzwiller Ng=0, 2 (and 4 when present) (C++ run_ggut, lowest-energy branch per U from lowest_energy.txt).
 
 Both are per spin, Lorentzian eta = 0.05, w relative to mu = U/2.
 
@@ -23,7 +23,9 @@ ap.add_argument("--U", type=float, nargs="+", default=[1.0, 5.0, 10.0, 20.0])
 ap.add_argument("--wmax", type=float, default=14.0)
 args = ap.parse_args()
 BCS = ("obc", "pbc", "apbc")
-NGS = ((0, "C0"), (2, "C3"))
+NGS = tuple((ng, col) for ng, col in ((0, "C0"), (2, "C3"), (4, "C2"))
+            if all(os.path.exists(os.path.join(REPO, f"scan_4site_ng{ng}", bc, "lowest_energy.txt"))
+                   for bc in ("obc", "pbc", "apbc")))
 
 
 def gutz_A(ng, bc, U):

@@ -58,5 +58,6 @@ print("wrote", fn)
 for bc in BCS:
     fci = np.loadtxt(os.path.join(REPO, "hubbard4_fci", bc, "energies.dat"))
     g = np.loadtxt(os.path.join(top, bc, "lowest_energy.txt"), usecols=range(9))
-    d = g[:, 1] - (fci[:, 1] - 2 * fci[:, 0])
+    iu = np.rint(g[:, 0] / (fci[1, 0] - fci[0, 0])).astype(int)  # U grids may differ (missing points)
+    d = g[:, 1] - (fci[iu, 1] - 2 * fci[iu, 0])
     print(f"{bc}: min(E_gutz - E_fci) = {d.min():+.5f} at U={g[d.argmin(), 0]}")
